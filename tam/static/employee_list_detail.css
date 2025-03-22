@@ -1,0 +1,31 @@
+body {
+    font-family: Arial, sans-serif;
+    background-image: url("../static/image/th.jpeg"); /* Đường dẫn đến ảnh */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+.container {
+    background-image: url("../static/image/nen2.jpg"); /* Đường dẫn đến ảnh */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+.table {
+    margin-top: 20px;
+}
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+.git-icon {
+    position: fixed; /* Cố định vị trí */
+    bottom: 10px;  /* Cách lề dưới 10px */
+    right: 20px;   /* Cách lề phải 10px */
+    width: 200px;  /* Giảm kích thước */
+    height: auto;  /* Giữ tỷ lệ ảnh */
+    z-index: 1000; /* Hiển thị trên cùng */
+}
