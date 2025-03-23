@@ -1,0 +1,59 @@
+body {
+    font-family: Arial, sans-serif;
+    background-image: url("../static/image/th.jpeg"); /* Đường dẫn đến ảnh */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+.container {
+    background-image: url("../static/image/nen2_2.jpg"); /* Đường dẫn đến ảnh */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+.table {
+    margin-top: 20px;
+}
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+/* Tiêu đề từng phần */
+h3 {
+    color: #d35400;
+    border-bottom: 2px solid #d35400;
+    display: inline-block;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+/* Căn chỉnh thông tin */
+p {
+    margin: 5px 0;
+    padding-left: 30px; /* Thụt lề sâu hơn */
+    text-indent: -15px; /* Dòng đầu vẫn lùi ra cho đẹp */
+    line-height: 1.6;
+}
+
+/* Nhóm thông tin con thụt vào nhiều hơn */
+.info-detail {
+    padding-left: 50px; /* Thụt lề sâu hơn */
+    color: #555; /* Màu nhẹ hơn để dễ nhìn */
+}
+
+/* Phần lương có màu nhẹ */
+.salary {
+    background: #fff3cd;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+/* Lương thực lĩnh in đậm */
+.highlight {
+    color: #c0392b;
+    font-weight: bold;
+}
