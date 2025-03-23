@@ -1,0 +1,105 @@
+/* Specific styles for notifications page */
+#notifications .tabs {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+#notifications .tab-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+}
+
+#notifications .tab-item.active {
+  border-bottom-color: var(--primary-color);
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+#notifications .notification-card {
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+#notifications .notification-card:hover {
+  background-color: #f8f9fa;
+}
+
+#notifications .notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+#notifications .notification-title {
+  font-weight: 600;
+}
+
+#notifications .notification-status {
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+#notifications .notification-status.sent {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+#notifications .notification-status.draft {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+#notifications .notification-meta {
+  color: #6c757d;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+#notifications .notification-content {
+  color: #495057;
+  margin-bottom: 12px;
+}
+
+#notifications .notification-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+#notifications .notification-timestamp {
+  color: #6c757d;
+}
+
+#notifications .notification-actions {
+  display: flex;
+  gap: 8px;
+}
+
+#notifications .notification-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+#notifications .notification-action-btn.primary {
+  color: var(--primary-color);
+}
+
+#notifications .notification-action-btn.secondary {
+  color: #6c757d;
+}
+
+#notifications .notification-action-btn:hover {
+  text-decoration: underline;
+}

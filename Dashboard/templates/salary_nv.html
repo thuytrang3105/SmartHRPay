@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bảng Lương Nhân Viên</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='salary_nv.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h2>Bảng Lương Nhân Viên</h2>
+
+      <table class="salary-table">
+        <tr>
+          <th>Mục</th>
+          <th>Số Tiền (VNĐ)</th>
+        </tr>
+        <tr>
+          <td>Lương Cơ Bản</td>
+          <td id="LuongCoBan"></td>
+        </tr>
+        <tr>
+          <td>Thưởng</td>
+          <td id="Thuong"></td>
+        </tr>
+        <tr>
+          <td>Khấu Trừ</td>
+          <td id="KhauTru"></td>
+        </tr>
+        <tr class="total">
+          <td>Tổng Lương</td>
+          <td id="TongLuong"></td>
+        </tr>
+      </table>
+
+      <div class="btn-container">
+        <button class="btn" onclick="PersonalInfo()">Quay về</button>
+      </div>
+    </div>
+
+    <script>
+      function getSalaryData() {
+        fetch("/get_salary")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.error) {
+              alert(data.error);
+              return;
+            }
+
+            document.getElementById("LuongCoBan").innerText =
+              data.LuongCoBan.toLocaleString() + " VNĐ";
+            document.getElementById("Thuong").innerText =
+              data.Thuong.toLocaleString() + " VNĐ";
+            document.getElementById("KhauTru").innerText =
+              data.KhauTru.toLocaleString() + " VNĐ";
+            document.getElementById("TongLuong").innerText =
+              data.TongLuong.toLocaleString() + " VNĐ";
+          });
+      }
+      function PersonalInfo() {
+        window.location.href = "/home-nv"; // Chuyển đến trang thông tin cá nhân
+      }
+
+      window.onload = getSalaryData;
+    </script>
+  </body>
+</html>

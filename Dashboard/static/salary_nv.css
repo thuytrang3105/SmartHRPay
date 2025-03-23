@@ -1,0 +1,62 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+body {
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  width: 500px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+h2 {
+  color: #0077cc;
+  margin-bottom: 15px;
+}
+.salary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.salary-table th,
+.salary-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+.salary-table th {
+  background-color: #0077cc;
+  color: white;
+}
+.total {
+  font-weight: bold;
+  color: #d9534f;
+}
+.btn-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+.btn {
+  padding: 10px 15px;
+  background: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 45%;
+}
+.btn:hover {
+  background: #005fa3;
+}

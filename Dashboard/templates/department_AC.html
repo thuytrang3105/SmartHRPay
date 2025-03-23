@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Báo cáo theo phòng ban - Hệ thống Quản lý Lương</title>
+    <link rel="stylesheet" href="../static/common_AC.css" />
+    <link rel="stylesheet" href="../static/department_AC.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h3>Payroll Manager</h3>
+          <p>Hệ thống Quản lý Lương</p>
+        </div>
+        <div class="sidebar-menu">
+          <a href="payroll_AC.html" class="menu-item">
+            <i class="fa fa-money-bill"></i>
+            <span>Bảng lương nhân viên</span>
+          </a>
+          <a href="department_AC.html" class="menu-item active">
+            <i class="fa fa-building"></i>
+            <span>Báo cáo theo phòng ban</span>
+          </a>
+          <a href="history_AC.html" class="menu-item">
+            <i class="fa fa-history"></i>
+            <span>Lịch sử lương nhân viên</span>
+          </a>
+          <a href="notifications_AC.html" class="menu-item">
+            <i class="fa fa-bell"></i>
+            <span>Thông báo bảng lương</span>
+          </a>
+          <a href="logout_AC.html" class="menu-item">
+            <i class="fa fa-sign-out-alt"></i>
+            <span>Đăng xuất</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="header">
+          <h2>Hệ thống Quản lý Lương</h2>
+          <div class="user-info">
+            <img
+              src="https://ui-avatars.com/api/?name=Nguyen+Van+A&size=40&background=random"
+              alt="User avatar"
+            />
+            <span>Nguyễn Văn A | Quản lý Lương</span>
+          </div>
+        </div>
+
+        <!-- UC15: Báo cáo lương theo phòng ban -->
+        <div class="panel" id="department-report">
+          <div class="panel-header">
+            <h3>Báo cáo lương theo phòng ban</h3>
+            <div>
+              <select class="form-control">
+                <option value="current">Tháng 3/2025</option>
+                <option value="last">Tháng 2/2025</option>
+                <option value="custom">Tùy chỉnh...</option>
+              </select>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <p>Biểu đồ tổng lương theo phòng ban</p>
+            </div>
+
+            <div class="grid-2">
+              <div class="panel-inner">
+                <div class="panel-inner-header">
+                  <h3>Tổng quan</h3>
+                </div>
+                <div class="panel-inner-body">
+                  <table>
+                    <tr>
+                      <td>Tổng số nhân viên:</td>
+                      <td class="text-right"><strong>120</strong></td>
+                    </tr>
+                    <tr>
+                      <td>Tổng quỹ lương:</td>
+                      <td class="text-right">
+                        <strong>1,890,000,000 đ</strong>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Tổng thưởng:</td>
+                      <td class="text-right"><strong>245,000,000 đ</strong></td>
+                    </tr>
+                    <tr>
+                      <td>Tổng khấu trừ:</td>
+                      <td class="text-right"><strong>156,000,000 đ</strong></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+
+              <div class="panel-inner">
+                <div class="panel-inner-header">
+                  <h3>Phân tích chi tiết</h3>
+                </div>
+                <div class="panel-inner-body">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Phòng ban</th>
+                        <th>Số NV</th>
+                        <th>Tổng lương</th>
+                        <th>Lương TB</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Công nghệ thông tin</td>
+                        <td>32</td>
+                        <td>576,000,000 đ</td>
+                        <td>18,000,000 đ</td>
+                      </tr>
+                      <tr>
+                        <td>Nhân sự</td>
+                        <td>15</td>
+                        <td>195,000,000 đ</td>
+                        <td>13,000,000 đ</td>
+                      </tr>
+                      <tr>
+                        <td>Kinh doanh</td>
+                        <td>45</td>
+                        <td>720,000,000 đ</td>
+                        <td>16,000,000 đ</td>
+                      </tr>
+                      <tr>
+                        <td>Marketing</td>
+                        <td>28</td>
+                        <td>399,000,000 đ</td>
+                        <td>14,250,000 đ</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Handle responsive sidebar
+      function handleResponsive() {
+        const sidebar = document.querySelector(".sidebar");
+        const mainContent = document.querySelector(".main-content");
+
+        if (window.innerWidth <= 768) {
+          sidebar.style.width = "70px";
+          mainContent.style.marginLeft = "70px";
+        } else {
+          sidebar.style.width = "250px";
+          mainContent.style.marginLeft = "250px";
+        }
+      }
+
+      // Initial check and on resize
+      handleResponsive();
+      window.addEventListener("resize", handleResponsive);
+
+      // In a real application, this would render a chart using a library like Chart.js
+      function renderDepartmentChart() {
+        console.log("Rendering department chart...");
+        // This would be implemented with a chart library like Chart.js
+      }
+
+      // Example function to update the report data when month selection changes
+      document
+        .querySelector("select.form-control")
+        .addEventListener("change", function () {
+          console.log("Month selection changed to:", this.value);
+          // In a real app, this would fetch new data and update the UI
+        });
+
+      // Call chart rendering function
+      renderDepartmentChart();
+    </script>
+  </body>
+</html>

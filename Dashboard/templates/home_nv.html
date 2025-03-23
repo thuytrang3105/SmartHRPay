@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Dashboard</title>
+    <link rel="stylesheet" href="/static/home_nv.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h2>Employee Dashboard</h2>
+      <div class="user-info">
+        <span class="profile">A</span>
+        <!-- nút đăng xuất -->
+        <div class="logout-container">
+          <a href="/login" class="logout-btn">Đăng xuất</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-box">
+      <h3>Thông tin cá nhân</h3>
+      <table border="1">
+        <tr>
+          <th>Thuộc tính</th>
+          <th>Giá trị</th>
+        </tr>
+        <tr>
+          <td>ID</td>
+          <td id="employeeID">12345</td>
+        </tr>
+        <tr>
+          <td>Họ</td>
+          <td id="lastName">Nguyễn</td>
+        </tr>
+        <tr>
+          <td>Tên</td>
+          <td id="firstName">Văn A</td>
+        </tr>
+        <tr>
+          <td>Email</td>
+          <td id="email">vana@example.com</td>
+        </tr>
+        <tr>
+          <td>Điện thoại</td>
+          <td id="phone">0987654321</td>
+        </tr>
+        <tr>
+          <td>Ngày vào làm</td>
+          <td id="startDate">01/01/2022</td>
+        </tr>
+        <tr>
+          <td>Phòng ban</td>
+          <td id="department">IT</td>
+        </tr>
+        <tr>
+          <td>Chức vụ</td>
+          <td id="position">Nhân viên</td>
+        </tr>
+        <tr>
+          <td>Trạng thái</td>
+          <td id="status">Đang làm việc</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="main-content">
+      <div class="tabs">
+        <button class="tab-btn" onclick="showTab('notifications')">
+          Thông báo
+        </button>
+        <button class="tab-btn" onclick="showTab('salary')">Bảng lương</button>
+      </div>
+
+      <div id="notifications" class="content-box">
+        <p>Chưa có thông báo nào.</p>
+      </div>
+
+      <div id="salary" class="content-box" style="display: none">
+        <h3>Chọn tháng/năm để xem bảng lương</h3>
+        <label
+          >Tháng:
+          <select id="month">
+            <script>
+              for (let i = 1; i <= 12; i++) {
+                document.write(`<option value="${i}">${i}</option>`);
+              }
+            </script>
+          </select>
+        </label>
+        <label
+          >Năm:
+          <select id="year">
+            <script>
+              let currentYear = new Date().getFullYear();
+              for (let i = currentYear - 5; i <= currentYear; i++) {
+                document.write(`<option value="${i}">${i}</option>`);
+              }
+            </script>
+          </select>
+        </label>
+        <button onclick="showSalary()">Xem lương</button>
+
+        <div id="salaryTable" style="display: none">
+          <h3>
+            Bảng lương tháng <span id="selectedMonth"></span>/<span
+              id="selectedYear"
+            ></span>
+          </h3>
+          <table border="1">
+            <tr>
+              <th>Thuộc tính</th>
+              <th>Giá trị</th>
+            </tr>
+            <tr>
+              <td>Lương cơ bản</td>
+              <td id="basicSalary"></td>
+            </tr>
+            <tr>
+              <td>Thưởng</td>
+              <td id="bonus"></td>
+            </tr>
+            <tr>
+              <td>Ngày công</td>
+              <td id="workDays"></td>
+            </tr>
+            <tr>
+              <td>Số ngày nghỉ phép</td>
+              <td id="leaveDays"></td>
+            </tr>
+            <tr>
+              <td>Số ngày vắng</td>
+              <td id="absentDays"></td>
+            </tr>
+            <tr>
+              <td>Khấu trừ</td>
+              <td id="deduction"></td>
+            </tr>
+            <tr>
+              <td><b>Tổng lương</b></td>
+              <td id="totalSalary"><b></b></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="timekeeping">
+      <h3>Chấm công</h3>
+      <button class="check-in" onclick="checkIn()">Check-in</button>
+      <button class="check-out" onclick="checkOut()">Check-out</button>
+    </div>
+    <script>
+      function showTab(tab) {
+        document.getElementById("notifications").style.display =
+          tab === "notifications" ? "block" : "none";
+        document.getElementById("salary").style.display =
+          tab === "salary" ? "block" : "none";
+      }
+
+      function showSalary() {
+        let month = document.getElementById("month").value;
+        let year = document.getElementById("year").value;
+
+        // Cập nhật tháng năm trong bảng
+        document.getElementById("selectedMonth").textContent = month;
+        document.getElementById("selectedYear").textContent = year;
+
+        // Giả lập dữ liệu lương
+        let basicSalary = 10000000;
+        let bonus = 2000000;
+        let workDays = 22;
+        let leaveDays = 2;
+        let absentDays = 1;
+        let deduction = absentDays * (basicSalary / 26); // Mỗi ngày vắng trừ lương
+
+        let totalSalary = basicSalary + bonus - deduction;
+
+        // Hiển thị dữ liệu vào bảng
+        document.getElementById("basicSalary").textContent =
+          basicSalary.toLocaleString() + " VND";
+        document.getElementById("bonus").textContent =
+          bonus.toLocaleString() + " VND";
+        document.getElementById("workDays").textContent = workDays + " ngày";
+        document.getElementById("leaveDays").textContent = leaveDays + " ngày";
+        document.getElementById("absentDays").textContent =
+          absentDays + " ngày";
+        document.getElementById("deduction").textContent =
+          deduction.toLocaleString() + " VND";
+        document.getElementById("totalSalary").textContent =
+          totalSalary.toLocaleString() + " VND";
+
+        // Hiển thị bảng lương
+        document.getElementById("salaryTable").style.display = "block";
+      }
+
+      function getCurrentDate() {
+        const today = new Date();
+        return today.toISOString().split("T")[0]; // Format YYYY-MM-DD
+      }
+
+      function checkIn() {
+        const now = new Date().toLocaleTimeString();
+        localStorage.setItem("checkin_time", now);
+        localStorage.setItem("checkin_date", getCurrentDate());
+        updateStatus();
+      }
+
+      function checkOut() {
+        const now = new Date().toLocaleTimeString();
+        localStorage.setItem("checkout_time", now);
+        updateStatus();
+      }
+
+      function updateStatus() {
+        const checkinTime = localStorage.getItem("checkin_time");
+        const checkoutTime = localStorage.getItem("checkout_time");
+        const checkinDate = localStorage.getItem("checkin_date");
+        const currentDate = getCurrentDate();
+
+        if (checkinDate !== currentDate) {
+          // Reset trạng thái nếu đã qua ngày mới
+          localStorage.removeItem("checkin_time");
+          localStorage.removeItem("checkout_time");
+          localStorage.setItem("checkin_date", currentDate);
+          document.getElementById("status").textContent = "Chưa check-in";
+        } else if (checkoutTime) {
+          document.getElementById(
+            "status"
+          ).textContent = `Đã check-out lúc ${checkoutTime}`;
+        } else if (checkinTime) {
+          document.getElementById(
+            "status"
+          ).textContent = `Đã check-in lúc ${checkinTime}`;
+        }
+      }
+
+      // Gọi hàm này khi trang load để cập nhật trạng thái
+      updateStatus();
+    </script>
+  </body>
+</html>

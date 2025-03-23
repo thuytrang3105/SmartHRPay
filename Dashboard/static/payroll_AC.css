@@ -1,0 +1,58 @@
+/* Specific styles for payroll page */
+#payroll-editor .panel-header {
+  background-color: #f9f9f9;
+}
+
+#employee-modal .grid-cols-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+#employee-modal .grid-cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+#employee-modal .grid-cols-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  #employee-modal .grid-cols-2,
+  #employee-modal .grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+#employee-modal input,
+#employee-modal select,
+#employee-modal textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+}
+
+#employee-modal input:focus,
+#employee-modal select:focus,
+#employee-modal textarea:focus {
+  border-color: var(--primary-color);
+}
+
+#employee-modal label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+#employee-modal .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #eee;
+}

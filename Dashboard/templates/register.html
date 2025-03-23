@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <link rel="stylesheet" href="/static/register.css" />
+  </head>
+  <body>
+    <div class="register-container">
+      <span class="close-btn" onclick="goToLogin()">&times;</span>
+      <form class="register-form">
+        <h2>Register</h2>
+
+        <div class="input-group">
+          <label for="name">Name</label>
+          <input
+            type="text"
+            id="name"
+            placeholder="Enter your full name"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="Enter your email"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="confirm-password">Confirm Password</label>
+          <input
+            type="password"
+            id="confirm-password"
+            placeholder="Re-enter your password"
+            required
+          />
+        </div>
+
+        <button type="submit">Register</button>
+
+        <p>Already have an account? <a href="/">Login</a></p>
+      </form>
+    </div>
+    <script>
+      function goToLogin() {
+        window.location.href = "{{ url_for('login') }}";
+      }
+    </script>
+  </body>
+</html>
