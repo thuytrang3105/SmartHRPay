@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Báo cáo theo phòng ban - Hệ thống Quản lý Lương</title>
+    <link rel="stylesheet" href="../static/common_AC.css" />
+    <link rel="stylesheet" href="../static/department_AC.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h3>Payroll Manager</h3>
+        <p>Hệ thống Quản lý Lương</p>
+      </div>
+      <div class="sidebar-menu">
+        <a href="{{ url_for('home_accountant') }}" class="menu-item">
+          <i class="fa fa-money-bill"></i>
+          <span>Home </span>
+        </a>
+        <a href="{{ url_for('payroll') }}" class="menu-item">
+          <i class="fa fa-money-bill"></i>
+          <span>Bảng lương nhân viên</span>
+        </a>
+        <a href="{{ url_for('department_report') }}" class="menu-item">
+          <i class="fa fa-building"></i>
+          <span>Báo cáo theo phòng ban</span>
+        </a>
+        <a href="{{ url_for('history_payroll') }}" class="menu-item">
+          <i class="fa fa-history"></i>
+          <span>Lịch sử lương nhân viên</span>
+        </a>
+        <a href="{{ url_for('get_notifications') }}" class="menu-item">
+          <i class="fa fa-bell"></i>
+          <span>Thông báo bảng lương</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="menu-item">
+          <i class="fa fa-sign-out-alt"></i>
+          <span>Đăng xuất</span>
+        </a>
+      </div>
+    </div>
+
+      <div class="main-content">
+        <div class="header">
+          <h2>Hệ thống Quản lý Lương</h2>
+        </div>
+        <div class="panel" id="department-report">
+          <div class="panel-header">
+            <h3>Báo cáo lương theo phòng ban</h3>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <p>Biểu đồ tổng lương theo phòng ban</p>
+              <canvas id="departmentSalaryChart"></canvas>
+              <script>
+                function renderDepartmentChart() {
+                  const ctx = document.getElementById("departmentSalaryChart").getContext("2d");
+                  const labels = {{ data.departments | tojson }};
+                  const salaries = {{ data.salaries | tojson }};
+                  new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                      labels: labels,
+                      datasets: [{
+                        label: "Tổng lương (VNĐ)",
+                        data: salaries,
+                        backgroundColor: ["#4CAF50", "#FFC107", "#2196F3", "#E91E63"],
+                        borderWidth: 1,
+                      }],
+                    },
+                    options: {
+                      responsive: true,
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          ticks: {
+                            callback: function (value) {
+                              return value.toLocaleString("vi-VN") + " đ";
+                            },
+                          },
+                        },
+                      },
+                    },
+                  });
+                }
+                renderDepartmentChart();
+              </script>
+            </div>
+
+            <div class="grid-2">
+              <div class="panel-inner">
+                <div class="panel-inner-header">
+                  <h3>Phân tích chi tiết</h3>
+                </div>
+                <div class="panel-inner-body">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Phòng ban</th>
+                        <th>Số NV</th>
+                        <th>Tổng lương</th>
+                        <th>Lương TB</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for dept in data.details %}
+                      <tr>
+                        <td>{{ dept.department }}</td>
+                        <td>{{ dept.employees }}</td>
+                        <td>{{ "{:,.0f}".format(dept.total_salary) }} đ</td>
+                        <td>{{ "{:,.0f}".format(dept.avg_salary) }} đ</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
