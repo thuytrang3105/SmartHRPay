@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Thông Báo</title>
+    <link rel="stylesheet" href="../static/notifications_AD.css" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Trang Chủ Admin<br /></h2>
+
+      <div class="menu-group">
+        <h3>TỔNG QUAN</h3>
+        <ul>
+          <li>
+            <a href="dashboard_AD.html"><i>📊</i> Dashboard</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="menu-group">
+        <h3>QUẢN LÝ</h3>
+        <ul>
+          <li>
+            <a href="home_HR.html"><i>👥</i> Nhân viên</a>
+          </li>
+          <li>
+            <a href="home_AC.html"><i>💰</i> Lương</a>
+          </li>
+          <li>
+            <a href="user_roles_AD.html"><i>🏢</i> Phân quyền người dùng</a>
+          </li>
+          <li>
+            <a href="update_user_role.html"
+              ><i>🔑</i> Cập nhật quyền người dùng</a
+            >
+          </li>
+          <li>
+            <a href="notifications_AD.html" class="active"
+              ><i>📢</i> Quản lý thông báo</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div class="menu-group">
+        <h3>BÁO CÁO</h3>
+        <ul>
+          <li>
+            <a href="reports_AD.html"><i>📈</i> Báo cáo nhân sự</a>
+          </li>
+          <li>
+            <a href="activity_log_AD.html"><i>📜</i> Lịch sử hoạt động</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="menu-group">
+        <h3>HỆ THỐNG</h3>
+        <ul>
+          <li>
+            <a href="logout.html"><i>🚪</i> Đăng xuất</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h1>Hệ thống Quản lý Lương</h1>
+        <div class="user-info">NGUYỄN VĂN B<br />ADMIN</div>
+      </div>
+
+      <!-- Notification List -->
+      <div class="notification-container">
+        <div class="tabs">
+          <a href="#" class="active">Tất cả thông báo</a>
+          <a href="#">Đã gửi</a>
+          <a href="#">Lưu nháp</a>
+        </div>
+        <a href="#" class="create-btn">Tạo thông báo mới</a>
+        <div id="notificationList">
+          <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+        </div>
+      </div>
+
+      <!-- Modal for Details -->
+      <div id="detailsModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeModal('detailsModal')"
+            >&times;</span
+          >
+          <h2>Chi tiết Thông báo</h2>
+          <div class="form-group">
+            <label>Tiêu đề</label>
+            <p id="detailsMessage"></p>
+          </div>
+          <div class="form-group">
+            <label>Gửi đến</label>
+            <p id="detailsRecipient"></p>
+          </div>
+          <div class="form-group">
+            <label>Tạo lúc</label>
+            <p id="detailsCreatedAt"></p>
+          </div>
+          <div class="form-group">
+            <label>Trạng thái</label>
+            <p id="detailsStatus"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal for Edit -->
+      <div id="editModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeModal('editModal')">&times;</span>
+          <h2>Chỉnh sửa Thông báo</h2>
+          <div class="form-group">
+            <label>Tiêu đề</label>
+            <textarea id="editMessage"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Gửi đến</label>
+            <input type="text" id="editRecipient" />
+          </div>
+          <button class="save-btn" onclick="saveNotification()">Lưu</button>
+          <div id="editMessage" class="message"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentNotificationId = null;
+
+      // Hàm lấy danh sách thông báo từ API
+      async function fetchNotifications() {
+        try {
+          const response = await fetch("http://localhost:5000/notifications");
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+
+          const notificationList = document.getElementById("notificationList");
+          notificationList.innerHTML = ""; // Xóa dữ liệu cũ
+
+          // Thêm dữ liệu vào danh sách
+          data.forEach((notification) => {
+            const item = document.createElement("div");
+            item.className = "notification-item";
+            item.innerHTML = `
+                        <h3>${notification.message}</h3>
+                        <p>Gửi đến: ${notification.recipient}</p>
+                        <div class="meta">Tạo lúc: ${
+                          notification.created_at
+                        }</div>
+                        <div class="actions">
+                            ${
+                              notification.status === "sent"
+                                ? '<span class="sent">Đã gửi</span>'
+                                : '<span class="draft">Lưu nháp</span>'
+                            }
+                            <a href="#" class="details" onclick="showDetails(${
+                              notification.id
+                            }, '${notification.message}', '${
+              notification.recipient
+            }', '${notification.created_at}', '${
+              notification.status
+            }')">Chi tiết</a>
+                            ${
+                              notification.status === "sent"
+                                ? `<a href="#" class="resend" onclick="resendNotification(${notification.id})">Gửi lại</a>`
+                                : `<a href="#" class="edit" onclick="showEdit(${notification.id}, '${notification.message}', '${notification.recipient}')">Chỉnh sửa</a>`
+                            }
+                        </div>
+                    `;
+            notificationList.appendChild(item);
+          });
+        } catch (error) {
+          console.error("Lỗi khi lấy danh sách thông báo:", error);
+          const notificationList = document.getElementById("notificationList");
+          notificationList.innerHTML =
+            "<p>Không thể tải thông báo. Vui lòng thử lại sau.</p>";
+        }
+      }
+
+      // Hàm hiển thị chi tiết thông báo
+      function showDetails(id, message, recipient, createdAt, status) {
+        document.getElementById("detailsMessage").textContent = message;
+        document.getElementById("detailsRecipient").textContent = recipient;
+        document.getElementById("detailsCreatedAt").textContent = createdAt;
+        document.getElementById("detailsStatus").textContent = status;
+        document.getElementById("detailsModal").style.display = "block";
+      }
+
+      // Hàm hiển thị form chỉnh sửa
+      function showEdit(id, message, recipient) {
+        currentNotificationId = id;
+        document.getElementById("editMessage").value = message;
+        document.getElementById("editRecipient").value = recipient;
+        document.getElementById("editModal").style.display = "block";
+      }
+
+      // Hàm gửi lại thông báo
+      async function resendNotification(id) {
+        try {
+          const response = await fetch(
+            `http://localhost:5000/notifications/resend/${id}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+          alert(data.message);
+          fetchNotifications(); // Làm mới danh sách
+        } catch (error) {
+          console.error("Lỗi khi gửi lại thông báo:", error);
+          alert("Không thể gửi lại thông báo. Vui lòng thử lại sau.");
+        }
+      }
+
+      // Hàm lưu thông báo đã chỉnh sửa
+      async function saveNotification() {
+        const message = document.getElementById("editMessage").value;
+        const recipient = document.getElementById("editRecipient").value;
+
+        try {
+          const response = await fetch(
+            `http://localhost:5000/notifications/update/${currentNotificationId}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ message, recipient }),
+            }
+          );
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+          showMessage("editMessage", data.message, "success");
+          closeModal("editModal");
+          fetchNotifications(); // Làm mới danh sách
+        } catch (error) {
+          console.error("Lỗi khi lưu thông báo:", error);
+          showMessage(
+            "editMessage",
+            "Không thể lưu thông báo. Vui lòng thử lại sau.",
+            "error"
+          );
+        }
+      }
+
+      // Hàm đóng modal
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+      }
+
+      // Hàm hiển thị thông báo
+      function showMessage(elementId, text, type) {
+        const messageDiv = document.getElementById(elementId);
+        messageDiv.textContent = text;
+        messageDiv.className = `message ${type}`;
+        messageDiv.style.display = "block";
+
+        // Ẩn thông báo sau 5 giây
+        setTimeout(() => {
+          messageDiv.style.display = "none";
+        }, 5000);
+      }
+
+      // Gọi hàm lấy dữ liệu khi trang được tải
+      fetchNotifications();
+    </script>
+  </body>
+</html>
