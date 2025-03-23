@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Chức Vụ và Phòng Ban</title>
+    <link rel="stylesheet" href="../static/depart_pos.css" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Trang Chủ HR<br /></h2>
+      <div class="menu-group">
+        <h3>QUẢN LÝ</h3>
+        <ul>
+          <li>
+            <a href="employee_HR.html"><i>👥</i> Nhân viên</a>
+          </li>
+          <li>
+            <a href="depar_pos.html" class="active"
+              ><i>👔</i> Phòng ban và chức vụ</a
+            >
+          </li>
+          <li>
+            <a href="reports_HR.html"><i>📈</i> Báo cáo nhân sự </a>
+          </li>
+        </ul>
+      </div>
+      <div class="menu-group">
+        <h3>HỆ THỐNG</h3>
+        <ul>
+          <li>
+            <a href="logout.html"><i>🚪</i> Đăng xuất</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h1>Quản Lý Chức Vụ và Phòng Ban</h1>
+        <div class="user-info">NGUYỄN VĂN A <br />HR</div>
+      </div>
+
+      <!-- Chức Vụ -->
+      <div class="section">
+        <div class="section-title">Chức Vụ</div>
+        <div class="table-container">
+          <div class="table-header">
+            <div class="search-container">
+              <input
+                type="text"
+                class="search-bar"
+                id="searchPositionInput"
+                placeholder="Tìm kiếm chức vụ..."
+              />
+              <button class="search-btn" onclick="searchPositions()">
+                Tìm kiếm
+              </button>
+            </div>
+            <button class="add-btn" onclick="openAddPositionModal()">
+              Thêm Chức Vụ
+            </button>
+          </div>
+          <table id="positionTable">
+            <thead>
+              <tr>
+                <th>Mã Chức Vụ</th>
+                <th>Tên Chức Vụ</th>
+                <th>Hành Động</th>
+              </tr>
+            </thead>
+            <tbody id="positionBody">
+              <!-- Dữ liệu mẫu -->
+              <tr>
+                <td>CV001</td>
+                <td>Nhân viên</td>
+                <td>
+                  <button
+                    class="action-btn view-btn"
+                    onclick="viewPositionEmployees('CV001', 'Nhân viên')"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    class="action-btn delete-btn"
+                    onclick="deletePosition('CV001')"
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>CV002</td>
+                <td>Quản lý</td>
+                <td>
+                  <button
+                    class="action-btn view-btn"
+                    onclick="viewPositionEmployees('CV002', 'Quản lý')"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    class="action-btn delete-btn"
+                    onclick="deletePosition('CV002')"
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Phòng Ban -->
+      <div class="section">
+        <div class="section-title">Phòng Ban</div>
+        <div class="table-container">
+          <div class="table-header">
+            <div class="search-container">
+              <input
+                type="text"
+                class="search-bar"
+                id="searchDepartmentInput"
+                placeholder="Tìm kiếm phòng ban..."
+              />
+              <button class="search-btn" onclick="searchDepartments()">
+                Tìm kiếm
+              </button>
+            </div>
+            <button class="add-btn" onclick="openAddDepartmentModal()">
+              Thêm Phòng Ban
+            </button>
+          </div>
+          <table id="departmentTable">
+            <thead>
+              <tr>
+                <th>Mã Phòng Ban</th>
+                <th>Tên Phòng Ban</th>
+                <th>Hành Động</th>
+              </tr>
+            </thead>
+            <tbody id="departmentBody">
+              <!-- Dữ liệu mẫu -->
+              <tr>
+                <td>PB001</td>
+                <td>IT</td>
+                <td>
+                  <button
+                    class="action-btn view-btn"
+                    onclick="viewDepartmentEmployees('PB001', 'IT')"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    class="action-btn delete-btn"
+                    onclick="deleteDepartment('PB001')"
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>PB002</td>
+                <td>HR</td>
+                <td>
+                  <button
+                    class="action-btn view-btn"
+                    onclick="viewDepartmentEmployees('PB002', 'HR')"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    class="action-btn delete-btn"
+                    onclick="deleteDepartment('PB002')"
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Thêm Chức Vụ -->
+    <div id="addPositionModal" class="modal">
+      <div class="modal-content">
+        <h2>Thêm Chức Vụ</h2>
+        <form id="addPositionForm">
+          <label for="positionName">Tên Chức Vụ:</label>
+          <input type="text" id="positionName" name="positionName" required />
+
+          <div class="modal-buttons">
+            <button
+              type="button"
+              class="cancel-btn"
+              onclick="closeAddPositionModal()"
+            >
+              Hủy
+            </button>
+            <button type="submit" class="save-btn">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Thêm Phòng Ban -->
+    <div id="addDepartmentModal" class="modal">
+      <div class="modal-content">
+        <h2>Thêm Phòng Ban</h2>
+        <form id="addDepartmentForm">
+          <label for="departmentName">Tên Phòng Ban:</label>
+          <input
+            type="text"
+            id="departmentName"
+            name="departmentName"
+            required
+          />
+
+          <div class="modal-buttons">
+            <button
+              type="button"
+              class="cancel-btn"
+              onclick="closeAddDepartmentModal()"
+            >
+              Hủy
+            </button>
+            <button type="submit" class="save-btn">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Xem Danh Sách Nhân Viên Theo Chức Vụ -->
+    <div id="positionEmployeesModal" class="modal">
+      <div class="modal-content">
+        <h2>
+          Danh Sách Nhân Viên Theo Chức Vụ:
+          <span id="positionNameDisplay"></span>
+        </h2>
+        <table id="positionEmployeesTable">
+          <thead>
+            <tr>
+              <th>Mã Nhân Viên</th>
+              <th>Tên</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody id="positionEmployeesBody"></tbody>
+        </table>
+        <div class="modal-buttons">
+          <button class="close-btn" onclick="closePositionEmployeesModal()">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Xem Danh Sách Nhân Viên Theo Phòng Ban -->
+    <div id="departmentEmployeesModal" class="modal">
+      <div class="modal-content">
+        <h2>
+          Danh Sách Nhân Viên Theo Phòng Ban:
+          <span id="departmentNameDisplay"></span>
+        </h2>
+        <table id="departmentEmployeesTable">
+          <thead>
+            <tr>
+              <th>Mã Nhân Viên</th>
+              <th>Tên</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody id="departmentEmployeesBody"></tbody>
+        </table>
+        <div class="modal-buttons">
+          <button class="close-btn" onclick="closeDepartmentEmployeesModal()">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Dữ liệu nhân viên mẫu (mô phỏng)
+      const employees = [
+        {
+          id: "NV001",
+          name: "Nguyễn Văn B",
+          email: "nvb@example.com",
+          position: "Nhân viên",
+          department: "IT",
+        },
+        {
+          id: "NV002",
+          name: "Trần Thị C",
+          email: "ttc@example.com",
+          position: "Quản lý",
+          department: "HR",
+        },
+        {
+          id: "NV003",
+          name: "Lê Văn D",
+          email: "lvd@example.com",
+          position: "Nhân viên",
+          department: "IT",
+        },
+        {
+          id: "NV004",
+          name: "Phạm Thị E",
+          email: "pte@example.com",
+          position: "Quản lý",
+          department: "HR",
+        },
+      ];
+
+      // --- Chức Vụ ---
+      // Mở modal thêm chức vụ
+      function openAddPositionModal() {
+        document.getElementById("addPositionModal").style.display = "block";
+      }
+
+      // Đóng modal thêm chức vụ
+      function closeAddPositionModal() {
+        document.getElementById("addPositionModal").style.display = "none";
+        document.getElementById("addPositionForm").reset();
+      }
+
+      // Xử lý khi submit form thêm chức vụ
+      document
+        .getElementById("addPositionForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Lấy dữ liệu từ form
+          const positionName = document.getElementById("positionName").value;
+
+          // Tạo mã chức vụ mới (mô phỏng)
+          const positionId =
+            "CV" + String(Math.floor(Math.random() * 1000)).padStart(3, "0");
+
+          // Thêm chức vụ vào bảng
+          const tableBody = document.getElementById("positionBody");
+          const newRow = document.createElement("tr");
+          newRow.innerHTML = `
+          <td>${positionId}</td>
+          <td>${positionName}</td>
+          <td>
+            <button class="action-btn view-btn" onclick="viewPositionEmployees('${positionId}', '${positionName}')">Sửa</button>
+            <button class="action-btn delete-btn" onclick="deletePosition('${positionId}')">Xóa</button>
+          </td>
+        `;
+          tableBody.appendChild(newRow);
+
+          // Đóng modal và reset form
+          closeAddPositionModal();
+        });
+
+      // Tìm kiếm chức vụ
+      function searchPositions() {
+        const input = document
+          .querySelector("#searchPositionInput")
+          .value.toLowerCase();
+        const rows = document.querySelectorAll("#positionBody tr");
+        rows.forEach((row) => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(input) ? "" : "none";
+        });
+      }
+
+      // Xem danh sách nhân viên theo chức vụ
+      function viewPositionEmployees(positionId, positionName) {
+        document.getElementById("positionEmployeesModal").style.display =
+          "block";
+        document.getElementById("positionNameDisplay").textContent =
+          positionName;
+
+        // Lọc danh sách nhân viên theo chức vụ
+        const filteredEmployees = employees.filter(
+          (emp) => emp.position === positionName
+        );
+        const tableBody = document.getElementById("positionEmployeesBody");
+        tableBody.innerHTML = "";
+
+        if (filteredEmployees.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc chức vụ này.</td></tr>`;
+        } else {
+          filteredEmployees.forEach((emp) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${emp.id}</td>
+              <td>${emp.name}</td>
+              <td>${emp.email}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        }
+      }
+
+      // Đóng modal danh sách nhân viên theo chức vụ
+      function closePositionEmployeesModal() {
+        document.getElementById("positionEmployeesModal").style.display =
+          "none";
+      }
+
+      // Xóa chức vụ
+      function deletePosition(positionId) {
+        if (confirm(`Bạn có chắc chắn muốn xóa chức vụ ${positionId}?`)) {
+          const row = document.querySelector(
+            `#positionBody tr td:first-child:contains('${positionId}')`
+          ).parentElement;
+          row.remove();
+        }
+      }
+
+      // --- Phòng Ban ---
+      // Mở modal thêm phòng ban
+      function openAddDepartmentModal() {
+        document.getElementById("addDepartmentModal").style.display = "block";
+      }
+
+      // Đóng modal thêm phòng ban
+      function closeAddDepartmentModal() {
+        document.getElementById("addDepartmentModal").style.display = "none";
+        document.getElementById("addDepartmentForm").reset();
+      }
+
+      // Xử lý khi submit form thêm phòng ban
+      document
+        .getElementById("addDepartmentForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Lấy dữ liệu từ form
+          const departmentName =
+            document.getElementById("departmentName").value;
+
+          // Tạo mã phòng ban mới (mô phỏng)
+          const departmentId =
+            "PB" + String(Math.floor(Math.random() * 1000)).padStart(3, "0");
+
+          // Thêm phòng ban vào bảng
+          const tableBody = document.getElementById("departmentBody");
+          const newRow = document.createElement("tr");
+          newRow.innerHTML = `
+          <td>${departmentId}</td>
+          <td>${departmentName}</td>
+          <td>
+            <button class="action-btn view-btn" onclick="viewDepartmentEmployees('${departmentId}', '${departmentName}')">Sửa</button>
+            <button class="action-btn delete-btn" onclick="deleteDepartment('${departmentId}')">Xóa</button>
+          </td>
+        `;
+          tableBody.appendChild(newRow);
+
+          // Đóng modal và reset form
+          closeAddDepartmentModal();
+        });
+
+      // Tìm kiếm phòng ban
+      function searchDepartments() {
+        const input = document
+          .querySelector("#searchDepartmentInput")
+          .value.toLowerCase();
+        const rows = document.querySelectorAll("#departmentBody tr");
+        rows.forEach((row) => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(input) ? "" : "none";
+        });
+      }
+
+      // Xem danh sách nhân viên theo phòng ban
+      function viewDepartmentEmployees(departmentId, departmentName) {
+        document.getElementById("departmentEmployeesModal").style.display =
+          "block";
+        document.getElementById("departmentNameDisplay").textContent =
+          departmentName;
+
+        // Lọc danh sách nhân viên theo phòng ban
+        const filteredEmployees = employees.filter(
+          (emp) => emp.department === departmentName
+        );
+        const tableBody = document.getElementById("departmentEmployeesBody");
+        tableBody.innerHTML = "";
+
+        if (filteredEmployees.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc phòng ban này.</td></tr>`;
+        } else {
+          filteredEmployees.forEach((emp) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${emp.id}</td>
+              <td>${emp.name}</td>
+              <td>${emp.email}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        }
+      }
+
+      // Đóng modal danh sách nhân viên theo phòng ban
+      function closeDepartmentEmployeesModal() {
+        document.getElementById("departmentEmployeesModal").style.display =
+          "none";
+      }
+
+      // Xóa phòng ban
+      function deleteDepartment(departmentId) {
+        if (confirm(`Bạn có chắc chắn muốn xóa phòng ban ${departmentId}?`)) {
+          const row = document.querySelector(
+            `#departmentBody tr td:first-child:contains('${departmentId}')`
+          ).parentElement;
+          row.remove();
+        }
+      }
+
+      // Hàm hỗ trợ tìm kiếm phần tử bằng nội dung
+      HTMLElement.prototype.contains = function (text) {
+        return this.textContent.includes(text);
+      };
+    </script>
+  </body>
+</html>

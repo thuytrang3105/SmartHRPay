@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Báo Cáo Nhân Sự</title>
+    <link rel="stylesheet" href="../static/reports_HR.css" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Trang Chủ HR<br /></h2>
+      <div class="menu-group">
+        <h3>QUẢN LÝ</h3>
+        <ul>
+          <li>
+            <a href="employee_HR.html"><i>👥</i> Nhân viên</a>
+          </li>
+          <li>
+            <a href="depar_pos.html"><i>👔</i> Phòng ban và chức vụ</a>
+          </li>
+          <li>
+            <a href="reports_HR.html" class="active"
+              ><i>📈</i> Báo cáo nhân sự
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="menu-group">
+        <h3>HỆ THỐNG</h3>
+        <ul>
+          <li>
+            <a href="logout.html"><i>🚪</i> Đăng xuất</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h1>Báo cáo chi tiết</h1>
+        <div class="user-info">NGUYỄN VĂN A <br />HR</div>
+      </div>
+
+      <div class="report-table">
+        <div class="table-header">
+          <div class="filter-container">
+            <select id="timeFilter">
+              <option value="today">Hôm nay</option>
+              <option value="thisMonth">Quý này</option>
+              <option value="thisYear">Năm nay</option>
+            </select>
+          </div>
+        </div>
+        <table id="reportTable">
+          <thead>
+            <tr>
+              <th>Phòng ban</th>
+              <th>Tổng nhân viên</th>
+              <th>Nhân viên mới</th>
+              <th>Nghỉ việc</th>
+              <th>Tỷ lệ biến động</th>
+            </tr>
+          </thead>
+          <tbody id="reportBody">
+            <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      // Tải dữ liệu từ file JSON
+      async function loadEmployees() {
+        try {
+          const response = await fetch("../data/employee.json");
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error("Lỗi khi tải dữ liệu từ JSON:", error);
+          return [];
+        }
+      }
+
+      // Tải báo cáo khi trang được tải
+      window.onload = async function () {
+        const employees = await loadEmployees();
+        generateReport(employees);
+      };
+
+      // Hàm tạo báo cáo
+      function generateReport(employees) {
+        const timeFilter = document.getElementById("timeFilter").value;
+        const departments = ["IT", "HR", "Marketing", "Operations", "Finance"];
+        const reportBody = document.getElementById("reportBody");
+        reportBody.innerHTML = "";
+
+        let totalEmployees = 0;
+        let totalNewEmployees = 0;
+        let totalResigned = 0;
+
+        departments.forEach((dept) => {
+          // Lọc nhân viên theo phòng ban
+          const deptEmployees = employees.filter(
+            (emp) => emp.department === dept
+          );
+
+          // Tổng nhân viên
+          const total = deptEmployees.length;
+
+          // Nhân viên mới (giả sử nhân viên mới là những người vào làm trong năm nay)
+          const currentYear = new Date().getFullYear();
+          const newEmployees = deptEmployees.filter((emp) => {
+            const hireYear = new Date(emp.hireDate).getFullYear();
+            return hireYear === currentYear;
+          }).length;
+
+          // Nhân viên nghỉ việc
+          const resigned = deptEmployees.filter(
+            (emp) => emp.status === "Nghỉ việc"
+          ).length;
+
+          // Tỷ lệ biến động (giả sử tính bằng (nhân viên mới + nghỉ việc) / tổng nhân viên)
+          const turnoverRate =
+            total > 0
+              ? (((newEmployees + resigned) / total) * 100).toFixed(2) + "%"
+              : "0.00%";
+
+          // Thêm hàng vào bảng
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${dept}</td>
+            <td>${total}</td>
+            <td>${newEmployees}</td>
+            <td>${resigned}</td>
+            <td>${turnoverRate}</td>
+          `;
+          reportBody.appendChild(row);
+
+          // Cộng dồn tổng
+          totalEmployees += total;
+          totalNewEmployees += newEmployees;
+          totalResigned += resigned;
+        });
+
+        // Thêm hàng "Tổng cộng"
+        const totalTurnoverRate =
+          totalEmployees > 0
+            ? (
+                ((totalNewEmployees + totalResigned) / totalEmployees) *
+                100
+              ).toFixed(2) + "%"
+            : "0.00%";
+        const totalRow = document.createElement("tr");
+        totalRow.classList.add("total-row");
+        totalRow.innerHTML = `
+          <td>Tổng cộng</td>
+          <td>${totalEmployees}</td>
+          <td>${totalNewEmployees}</td>
+          <td>${totalResigned}</td>
+          <td>${totalTurnoverRate}</td>
+        `;
+        reportBody.appendChild(totalRow);
+      }
+
+      // Lọc theo thời gian
+      document
+        .getElementById("timeFilter")
+        .addEventListener("change", async () => {
+          const employees = await loadEmployees();
+          generateReport(employees);
+        });
+    </script>
+  </body>
+</html>

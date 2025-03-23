@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trang chủ</title>
+    <link rel="stylesheet" href="../static/logout.css" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Trang Chủ HR<br /></h2>
+      <div class="menu-group">
+        <h3>QUẢN LÝ</h3>
+        <ul>
+          <li>
+            <a href="employee_HR.html"><i>👥</i> Nhân viên</a>
+          </li>
+          <li>
+            <a href="depar_pos.html"><i>👔</i> Phòng ban và chức vụ</a>
+          </li>
+          <li>
+            <a href="reports_HR.html"><i>📈</i> Báo cáo nhân sự </a>
+          </li>
+      </div>
+    <div class="menu-group">
+      <h3>HỆ THỐNG</h3>
+      <ul>
+        <li>
+          <a href="logout.html"><i>🚪</i> Đăng xuất</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+          <h1>Đăng xuất</h1>
+          <div class="user-info">NGUYỄN VĂN A<br />HR</div>
+        </div>
+        <div class="logout-container">
+          <div class="logout-card">
+            <h3>Bạn có chắc chắn muốn đăng xuất?</h3>
+            <p>Vui lòng xác nhận để thoát khỏi hệ thống.</p>
+            <button class="btn confirm-btn" onclick="logout()">
+              Xác nhận đăng xuất
+            </button>
+            <a href="home_HR.html" class="btn cancel-btn">Hủy</a>
+          </div>
+        </div>
+      </div>
+  
+      <script>
+        function logout() {
+          // Chuyển hướng đến trang đăng nhập
+          window.location.href = "login.html";
+        }
+      </script>
+    </body>
+  </html>
