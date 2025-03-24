@@ -6,13 +6,12 @@ import mysql.connector
 
 fake = Faker()
 
-# Thông tin kết nối SQL Server (HUMAN_2025)
+# Thông tin kết nối database
 DB_HUMAN = {
-    'server': '.',  # Hoặc 'localhost' nếu chạy cục bộ
+    'server': '.', 
     'database': 'HUMAN_2025'
 }
 
-# Thông tin kết nối MySQL (payroll)
 DB_PAYROLL = {
     'host': 'localhost',
     'database': 'payroll',
@@ -20,7 +19,7 @@ DB_PAYROLL = {
     'password': '123456123456'
 }
 
-# Kết nối đến SQL Server (HUMAN_2025) - Windows Authentication
+# Kết nối database
 conn_human = pyodbc.connect(
     f"DRIVER={{SQL Server}};"
     f"SERVER={DB_HUMAN['server']};"
@@ -29,18 +28,12 @@ conn_human = pyodbc.connect(
 )
 cursor_human = conn_human.cursor()
 
-# Kết nối đến MySQL (payroll)
-conn_payroll = mysql.connector.connect(
-    host=DB_PAYROLL['host'],
-    user=DB_PAYROLL['user'],
-    password=DB_PAYROLL['password'],
-    database=DB_PAYROLL['database']
-)
+conn_payroll = mysql.connector.connect(**DB_PAYROLL)
 cursor_payroll = conn_payroll.cursor()
 
 print("Kết nối thành công!")
 
-# Danh sách chức vụ công ty công nghệ
+# Tạo Jobs
 job_titles = [
     "Software Engineer", "Backend Developer", "Frontend Developer", "Data Scientist",
     "DevOps Engineer", "QA Engineer", "Product Manager", "UI/UX Designer",
@@ -52,88 +45,132 @@ for job_title in job_titles:
     min_salary = round(random.uniform(1000, 5000), 2)
     max_salary = min_salary + round(random.uniform(2000, 7000), 2)
     
-    cursor_human.execute("INSERT INTO jobs (jobtitle, minsalary, maxsalary) OUTPUT INSERTED.jobid VALUES (?, ?, ?)",
-                         (job_title, min_salary, max_salary))
+    # Thêm vào cả hai database
+    cursor_human.execute("INSERT INTO Jobs (JobTitle, MinSalary, MaxSalary) OUTPUT INSERTED.JobID VALUES (?, ?, ?)",
+                        (job_title, min_salary, max_salary))
     job_id = cursor_human.fetchone()[0]
+    cursor_payroll.execute("INSERT INTO jobs (job_id, job_title, min_salary, max_salary) VALUES (%s, %s, %s, %s)",
+                         (job_id, job_title, min_salary, max_salary))
     jobs.append(job_id)
-conn_human.commit()
 
-# Danh sách phòng ban
+# Tạo Departments
 departments_list = [
     "Engineering", "Product Management", "Quality Assurance", "Human Resources",
-    "IT Support", "Marketing", "Finance", "Sales", "Customer Support", "Research & Development"
+    "IT Support", "Marketing", "Finance", "Sales", "Customer Support", "R&D"
 ]
 
 departments = []
-for department_name in departments_list:
-    cursor_human.execute("INSERT INTO departments (departmentname) OUTPUT INSERTED.departmentid VALUES (?)", (department_name,))
-    department_id = cursor_human.fetchone()[0]
-    departments.append(department_id)
-conn_human.commit()
+for dept_name in departments_list:
+    cursor_human.execute("INSERT INTO Departments (DepartmentName) OUTPUT INSERTED.DepartmentID VALUES (?)", (dept_name,))
+    dept_id = cursor_human.fetchone()[0]
+    cursor_payroll.execute("INSERT INTO departments (department_id, department_name) VALUES (%s, %s)",
+                         (dept_id, dept_name))
+    departments.append(dept_id)
 
-# Ứng viên
+# Tạo Applicants và Employees
 applicants = []
+employees = []
 for _ in range(30):
     first_name = fake.first_name()
     last_name = fake.last_name()
     email = f"{first_name.lower()}.{last_name.lower()}@company.com"
     phone = fake.phone_number()[:15]
-    application_date = datetime.now() - timedelta(days=random.randint(1, 365))
+    app_date = datetime.now() - timedelta(days=random.randint(1, 365))
     status = random.choice(["Pending", "Interviewing", "Hired", "Rejected"])
     job_id = random.choice(jobs)
     
-    cursor_human.execute("INSERT INTO applicants (firstname, lastname, email, phone, applicationdate, status, jobid) OUTPUT INSERTED.applicantid VALUES (?, ?, ?, ?, ?, ?, ?)",
-                         (first_name, last_name, email, phone, application_date, status, job_id))
+    cursor_human.execute("""
+        INSERT INTO Applicants (FirstName, LastName, Email, Phone, ApplicationDate, Status, JobID) 
+        OUTPUT INSERTED.ApplicantID 
+        VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (first_name, last_name, email, phone, app_date, status, job_id))
     applicant_id = cursor_human.fetchone()[0]
     applicants.append(applicant_id)
-conn_human.commit()
+    
+    # Tạo Employees cho 20 applicants đầu tiên
+    if len(employees) < 20:
+        hire_date = datetime.now() - timedelta(days=random.randint(30, 1000))
+        dept_id = random.choice(departments)
+        salary = round(random.uniform(3000, 15000), 2)
+        emp_status = random.choice(["Active", "Inactive"])
+        
+        cursor_human.execute("""
+            INSERT INTO Employees (ApplicantID, DepartmentID, HireDate, Salary, Status) 
+            OUTPUT INSERTED.EmployeeID 
+            VALUES (?, ?, ?, ?, ?)""",
+            (applicant_id, dept_id, hire_date, salary, emp_status))
+        emp_id = cursor_human.fetchone()[0]
+        
+        # Đồng bộ sang MySQL
+        cursor_payroll.execute("""
+            INSERT INTO employees (employee_id, first_name, last_name, email, phone, hire_date, department_id, job_id, salary, status) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE 
+            first_name=%s, last_name=%s, email=%s, phone=%s, hire_date=%s, department_id=%s, job_id=%s, salary=%s, status=%s""",
+            (emp_id, first_name, last_name, email, phone, hire_date, dept_id, job_id, salary, emp_status,
+             first_name, last_name, email, phone, hire_date, dept_id, job_id, salary, emp_status))
+        
+        employees.append(emp_id)
 
-# Nhân viên
-employees = []
-for applicant_id in applicants[:20]:
-    hire_date = datetime.now() - timedelta(days=random.randint(30, 1000))
-    department_id = random.choice(departments)
-    salary = round(random.uniform(3000, 15000), 2)
-    status = random.choice(["Active", "Inactive"])
-
-    cursor_human.execute("INSERT INTO employees (applicantid, departmentid, hiredate, salary, status) OUTPUT INSERTED.employeeid VALUES (?, ?, ?, ?, ?)",
-                         (applicant_id, department_id, hire_date, salary, status))
-    employee_id = cursor_human.fetchone()[0]
-    employees.append(employee_id)
-conn_human.commit()
-
-# Đồng bộ nhân viên sang payroll
+# Tạo Payroll
 for emp_id in employees:
-    cursor_payroll.execute("INSERT INTO employees (employee_id) VALUES (%s) ON DUPLICATE KEY UPDATE employee_id=employee_id", (emp_id,))
-conn_payroll.commit()
+    for _ in range(3):  # 3 bản ghi payroll cho mỗi nhân viên
+        pay_date = datetime.now() - timedelta(days=random.randint(1, 90))
+        base_salary = round(random.uniform(3000, 15000), 2)
+        bonus = round(random.uniform(0, 5000), 2)
+        deductions = round(random.uniform(0, 1000), 2)
+        
+        cursor_human.execute("""
+            INSERT INTO Payroll (EmployeeID, PayDate, BaseSalary, Bonus, Deductions) 
+            VALUES (?, ?, ?, ?, ?)""",
+            (emp_id, pay_date, base_salary, bonus, deductions))
+        
+        cursor_payroll.execute("""
+            INSERT INTO payroll (employee_id, pay_date, base_salary, bonus, deductions, net_salary) 
+            VALUES (%s, %s, %s, %s, %s, %s)""",
+            (emp_id, pay_date, base_salary, bonus, deductions, base_salary + bonus - deductions))
 
-# Tạo dữ liệu Payroll
-for emp_id in employees:
-    pay_date = datetime.now() - timedelta(days=random.randint(1, 30))
-    base_salary = round(random.uniform(3000, 15000), 2)
-    bonus = round(random.uniform(0, 5000), 2)
-    deductions = round(random.uniform(0, 1000), 2)
-    net_salary = base_salary + bonus - deductions
-
-    cursor_payroll.execute("INSERT INTO payroll (employee_id, pay_date, base_salary, bonus, deductions, net_salary) VALUES (%s, %s, %s, %s, %s, %s)",
-                           (emp_id, pay_date, base_salary, bonus, deductions, net_salary))
-conn_payroll.commit()
-
-# Tạo dữ liệu Attendance
+# Tạo Attendance
 for emp_id in employees:
     for _ in range(20):
         work_date = datetime.now() - timedelta(days=random.randint(1, 60))
         status = random.choice(["present", "absent", "leave"])
-        cursor_payroll.execute("INSERT INTO attendance (employee_id, date, status) VALUES (%s, %s, %s)",
-                               (emp_id, work_date, status))
-conn_payroll.commit()
+        cursor_payroll.execute("""
+            INSERT INTO attendance (employee_id, date, status) 
+            VALUES (%s, %s, %s)""",
+            (emp_id, work_date, status))
 
-# Đồng bộ phòng ban giữa hai database
-cursor_human.execute("SELECT departmentid, departmentname FROM departments")
-departments_human = cursor_human.fetchall()
-for dep_id, dep_name in departments_human:
-    cursor_payroll.execute("INSERT INTO departments (department_id, department_name) VALUES (%s, %s) ON DUPLICATE KEY UPDATE department_name=%s",
-                           (dep_id, dep_name, dep_name))
+# Tạo Shareholders
+shareholders = []
+for _ in range(10):
+    full_name = fake.first_name()
+    unique_num = random.randint(1000, 9999)  # Thêm số ngẫu nhiên
+    email = f"{first_name.lower()}.{last_name.lower()}{unique_num}@shareholder.com"
+    phone = fake.phone_number()[:15]
+    investment = round(random.uniform(10000, 1000000), 2)
+    is_employee = random.choice([0, 1])
+    emp_id = random.choice(employees) if is_employee else None
+    
+    cursor_human.execute("""
+        INSERT INTO Shareholders (FullName, Email, Phone, InvestmentAmount, IsEmployee, EmployeeID) 
+        OUTPUT INSERTED.ShareholderID 
+        VALUES (?, ?, ?, ?, ?, ?)""",
+        (full_name, email, phone, investment, is_employee, emp_id))
+    shareholder_id = cursor_human.fetchone()[0]
+    shareholders.append(shareholder_id)
+
+# Tạo Dividends
+for shareholder_id in shareholders:
+    for _ in range(2):  # 2 lần chia cổ tức
+        div_amount = round(random.uniform(1000, 50000), 2)
+        pay_date = datetime.now() - timedelta(days=random.randint(1, 180))
+        cursor_human.execute("""
+            INSERT INTO Dividends (ShareholderID, DividendAmount, PaymentDate) 
+            VALUES (?, ?, ?)""",
+            (shareholder_id, div_amount, pay_date))
+
+# Commit tất cả thay đổi
+conn_human.commit()
 conn_payroll.commit()
 
 # Đóng kết nối
@@ -142,4 +179,4 @@ conn_human.close()
 cursor_payroll.close()
 conn_payroll.close()
 
-print("✅ Dữ liệu đã được tạo thành công với đầy đủ liên kết giữa hai database!")
+print("✅ Dữ liệu đã được tạo thành công với đầy đủ thông tin và liên kết giữa hai database!")
