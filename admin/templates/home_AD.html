@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trang chủ</title>
+    <link rel="stylesheet" href="../static/index_AD.css" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Trang Chủ Admin<br /></h2>
+
+      <div class="menu-group">
+        <h3>TỔNG QUAN</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('dashboard_AD') }}"><i>📊</i> Dashboard</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="menu-group">
+        <h3>QUẢN LÝ</h3>
+        <ul>
+          <li><a href="{{ url_for('home_HR') }}"><i>👥</i> Nhân viên</a></li>
+          <li><a href="{{ url_for('home_AC') }}"><i>💰</i> Lương</a></li>
+          <li><a href="{{ url_for('shareholder') }}" ><i>🔑</i> Cổ Đông</a></li>
+          <li><a href="{{ url_for('user_roles') }}"><i>🏢</i> Phân quyền người dùng</a></li>
+          <li><a href="{{ url_for('notifications_AD') }}"><i>📢</i> Quản lý thông báo</a></li>
+        </ul>
+      </div>
+
+      <div class="menu-group">
+        <h3>BÁO CÁO</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('reports_AD') }}"><i>📈</i> Báo cáo nhân sự</a>
+          </li>
+          <li>
+            <a href="{{ url_for('activity_log_AD') }}"><i>📜</i> Lịch sử hoạt động</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="menu-group">
+        <h3>HỆ THỐNG</h3>
+        <ul>
+          <li>
+            <li><a href="{{ url_for('Logout') }}" ><i>🚪</i> Đăng xuất</a></li>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h1>Dashboard</h1>
+        <div class="user-info">NGUYỄN VĂN B<br />ADMIN</div>
+      </div>
+    </div>
+  </body>
+</html>

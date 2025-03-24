@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lịch sử hoạt động</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='activity_log_AD.css') }}" />
+
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Trang Chủ Admin</h2>
+        <div class="menu-group">
+          <h3>TỔNG QUAN</h3>
+          <ul>
+              <li>
+                  <a href="{{ url_for('dashboard_AD') }}"><i>📊</i> Dashboard</a>
+              </li>
+          </ul>
+        </div>
+
+      <div class="menu-group">
+          <h3>QUẢN LÝ</h3>
+          <ul>
+              <li><a href="{{ url_for('home_HR') }}"><i>👥</i> Nhân viên</a></li>
+              <li><a href="{{ url_for('home_AC') }}"><i>💰</i> Lương</a></li>
+              <li><a href="{{ url_for('shareholder') }}" ><i>🔑</i> Cổ Đông</a></li>
+              <li><a href="{{ url_for('user_roles') }}"><i>🏢</i> Phân quyền người dùng</a></li>
+              <li><a href="{{ url_for('notifications_AD') }}"><i>📢</i> Quản lý thông báo</a></li>
+          </ul>
+      </div>
+
+      <div class="menu-group">
+          <h3>BÁO CÁO</h3>
+          <ul>
+              <li><a href="{{ url_for('reports_AD') }}"><i>📈</i> Báo cáo nhân sự</a></li>
+              <li><a href="{{ url_for('activity_log_AD') }}" class="active"><i>📜</i> Lịch sử hoạt động</a></li>
+          </ul>
+      </div>
+
+      <div class="menu-group">
+          <h3>HỆ THỐNG</h3>
+          <ul>
+            <li><a href="{{ url_for('Logout') }}" ><i>🚪</i> Đăng xuất</a></li>
+          </ul>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h1>Lịch sử hoạt động</h1>
+        <div class="user-info">NGUYỄN VĂN B<br />ADMIN</div>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="filter-section">
+        <div class="filter-group">
+          <label for="role-filter">Vai trò:</label>
+          <select id="role-filter">
+            <option value="all">Tất cả</option>
+            <option value="admin">Admin</option>
+            <option value="accountant">Kế toán</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="date-from">Từ ngày:</label>
+          <input type="date" id="date-from" />
+        </div>
+        <div class="filter-group">
+          <label for="date-to">Đến ngày:</label>
+          <input type="date" id="date-to" />
+        </div>
+        <button class="filter-btn">Lọc</button>
+      </div>
+
+      <!-- Activity Log Table -->
+      <div class="content">
+        <table class="activity-table">
+          <thead>
+            <tr>
+              <th>Thời gian</th>
+              <th>Người dùng</th>
+              <th>Vai trò</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in activity_logs %}
+            <tr>
+              <td>{{ log.time }}</td>
+              <td>{{ log.user }}</td>
+              <td>{{ log.role }}</td>
+              <td>{{ log.action }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>          
+        </table>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const roleFilter = document.getElementById("role-filter");
+        const dateFrom = document.getElementById("date-from");
+        const dateTo = document.getElementById("date-to");
+        const filterBtn = document.querySelector(".filter-btn");
+        const table = document.querySelector(".activity-table");
+        const rows = table.querySelectorAll("tbody tr");
+
+        filterBtn.addEventListener("click", function () {
+          const selectedRole = roleFilter.value;
+          const fromDate = dateFrom.value ? new Date(dateFrom.value) : null;
+          const toDate = dateTo.value ? new Date(dateTo.value) : null;
+
+          rows.forEach((row) => {
+            const timeCell = row.cells[0].textContent;
+            const roleCell = row.cells[2].textContent;
+
+            const timeParts = timeCell.split(" ");
+            const dateParts = timeParts[0].split("/");
+            const time = timeParts[1];
+            const rowDate = new Date(
+              `${dateParts[2]}-${dateParts[1]}-${dateParts[0]} ${time}`
+            );
+
+            let showRow = true;
+
+            if (
+              selectedRole !== "all" &&
+              roleCell.toLowerCase() !== selectedRole
+            ) {
+              showRow = false;
+            }
+
+            if (fromDate && rowDate < fromDate) {
+              showRow = false;
+            }
+            if (toDate && rowDate > toDate) {
+              showRow = false;
+            }
+
+            row.style.display = showRow ? "" : "none";
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -131,23 +131,37 @@ body {
   color: #dc3545;
 }
 
-/* Charts Section */
 .charts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: space-between;
 }
 
 .chart-box {
+  flex: 1;
+  min-width: 390px; /* Tăng kích thước tối thiểu */
+  max-width: 85%; /* Tăng từ 48% lên 62% */
   background-color: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
-.chart-box h3 {
-  font-size: 16px;
-  margin-bottom: 15px;
+/* Đảm bảo biểu đồ không bị tràn */
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 1024px) {
+  .charts {
+    flex-direction: column;
+  }
+  .chart-box {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 768px) {
@@ -157,10 +171,6 @@ body {
 
   .main-content {
     margin-left: 200px;
-  }
-
-  .charts {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -174,5 +184,13 @@ body {
   .main-content {
     margin-left: 0;
     padding: 10px;
+  }
+
+  .charts {
+    flex-direction: column;
+  }
+
+  .chart-box {
+    max-width: 100%;
   }
 }
