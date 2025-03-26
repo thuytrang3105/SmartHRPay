@@ -38,11 +38,14 @@ cursor_human = conn_human.cursor()
 conn_payroll = mysql.connector.connect(**DB_PAYROLL)
 cursor_payroll = conn_payroll.cursor()
 
-# Sửa lỗi: Tạo kết nối riêng cho database user
 conn_user = mysql.connector.connect(**DB_USER)
 cursor_user = conn_user.cursor()
 
 print("Kết nối thành công!")
+
+# Xóa dữ liệu cũ trong bảng account để tránh trùng lặp
+cursor_user.execute("DELETE FROM account")
+conn_user.commit()
 
 # Tạo Jobs
 job_titles = [
@@ -122,26 +125,27 @@ for _ in range(30):
         
         employees.append(emp_id)
 
-# Tạo dữ liệu cho bảng account
-# Lấy danh sách nhân viên từ bảng employees trong database payroll (MySQL)
+# Gán manager_id cho các phòng ban
+manager_ids = random.sample(employees, 5)
+for dept_id in departments:
+    if manager_ids:
+        manager_id = random.choice(manager_ids)
+        cursor_human.execute("UPDATE Departments SET ManagerID = ? WHERE DepartmentID = ?",
+                            (manager_id, dept_id))
+        cursor_payroll.execute("UPDATE departments SET manager_id = %s WHERE department_id = %s",
+                              (manager_id, dept_id))
+
+# Tạo dữ liệu cho bảng account (chỉ trong database user)
 cursor_payroll.execute("SELECT employee_id, first_name, last_name FROM employees")
 employee_data = cursor_payroll.fetchall()
 
-# Tạo dữ liệu cho bảng account và thêm vào cả HUMAN_2025 và user
 for emp in employee_data:
     emp_id, first_name, last_name = emp
-    username = f"{first_name}{emp_id}"  # Tạo username theo định dạng first_name + employee_id
-    password_hash = "000000"  # Mật khẩu mặc định
+    username = f"{first_name.lower()}_{emp_id}"
+    password_hash = "000000"
     employee_name = f"{first_name} {last_name}"
     role_name = "employee"
     
-    # Thêm vào SQL Server (HUMAN_2025)
-    cursor_human.execute("""
-        INSERT INTO account (username, password_hash, employee_id, employee_name, role_name) 
-        VALUES (?, ?, ?, ?, ?)""",
-        (username, password_hash, emp_id, employee_name, role_name))
-    
-    # Thêm vào MySQL (database user, không phải payroll)
     cursor_user.execute("""
         INSERT INTO account (username, password_hash, employee_id, employee_name, role_name) 
         VALUES (%s, %s, %s, %s, %s)""",
@@ -149,7 +153,7 @@ for emp in employee_data:
 
 # Tạo Payroll
 for emp_id in employees:
-    for _ in range(3):  # 3 bản ghi payroll cho mỗi nhân viên
+    for _ in range(3):
         pay_date = datetime.now() - timedelta(days=random.randint(1, 90))
         base_salary = round(random.uniform(3000, 15000), 2)
         bonus = round(random.uniform(0, 5000), 2)
@@ -167,9 +171,9 @@ for emp_id in employees:
 
 # Tạo Attendance
 for emp_id in employees:
-    for _ in range(20):
-        work_date = datetime.now() - timedelta(days=random.randint(1, 60))
-        status = random.choice(["present", "absent", "leave"])
+    for day in range(90):
+        work_date = datetime.now() - timedelta(days=day)
+        status = random.choices(["present", "absent", "leave"], weights=[0.8, 0.1, 0.1], k=1)[0]
         cursor_payroll.execute("""
             INSERT INTO attendance (employee_id, date, status) 
             VALUES (%s, %s, %s)""",
@@ -178,8 +182,10 @@ for emp_id in employees:
 # Tạo Shareholders
 shareholders = []
 for _ in range(10):
-    full_name = fake.first_name()
-    unique_num = random.randint(1000, 9999)  # Thêm số ngẫu nhiên
+    first_name = fake.first_name()
+    last_name = fake.last_name()
+    full_name = f"{first_name} {last_name}"  # Kết hợp first_name và last_name thành FullName
+    unique_num = random.randint(1000, 9999)
     email = f"{first_name.lower()}.{last_name.lower()}{unique_num}@shareholder.com"
     phone = fake.phone_number()[:15]
     investment = round(random.uniform(10000, 1000000), 2)
@@ -196,7 +202,7 @@ for _ in range(10):
 
 # Tạo Dividends
 for shareholder_id in shareholders:
-    for _ in range(2):  # 2 lần chia cổ tức
+    for _ in range(2):
         div_amount = round(random.uniform(1000, 50000), 2)
         pay_date = datetime.now() - timedelta(days=random.randint(1, 180))
         cursor_human.execute("""

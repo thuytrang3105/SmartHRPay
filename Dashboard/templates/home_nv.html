@@ -11,9 +11,8 @@
       <h2>Employee Dashboard</h2>
       <div class="user-info">
         <span class="profile">A</span>
-        <!-- nút đăng xuất -->
         <div class="logout-container">
-          <a href="/login" class="logout-btn">Đăng xuất</a>
+          <a href="/" class="logout-btn">Đăng xuất</a>
         </div>
       </div>
     </header>
@@ -72,7 +71,7 @@
         <button class="tab-btn" onclick="showTab('salary')">Bảng lương</button>
       </div>
 
-      <div id="notifications" class="content-box" style="display: none">
+      <div id="notifications" class="content-box" style="display: block">
         {% if notifications %} {% for notification in notifications %}
         <div class="notification">
           <h3>{{ notification.title }}</h3>
@@ -86,8 +85,8 @@
 
       <div id="salary" class="content-box" style="display: none">
         <h3>Chọn tháng/năm để xem bảng lương</h3>
-        <label
-          >Tháng:
+        <label>
+          Tháng:
           <select id="month">
             <script>
               for (let i = 1; i <= 12; i++) {
@@ -96,8 +95,8 @@
             </script>
           </select>
         </label>
-        <label
-          >Năm:
+        <label>
+          Năm:
           <select id="year">
             <script>
               let currentYear = new Date().getFullYear();
@@ -109,14 +108,10 @@
         </label>
         <button onclick="showSalary()">Xem lương</button>
 
-        <div id="salaryTable" style="display: none">
-          {% if salary %}
+        <div id="salaryTable">
           <h3>
             Bảng lương tháng
-            <span id="selectedMonth">{{ selected_month }}</span>/<span
-              id="selectedYear"
-              >{{ selected_year }}</span
-            >
+            <span id="selectedMonth">{{ selected_month }}</span>/<span id="selectedYear">{{ selected_year }}</span>
           </h3>
           <table border="1">
             <tr>
@@ -125,116 +120,93 @@
             </tr>
             <tr>
               <td>Lương cơ bản</td>
-              <td>{{ salary.base_salary if salary else '' }}</td>
+              <td id="baseSalary">{{ salary.base_salary }}</td>
             </tr>
             <tr>
               <td>Thưởng</td>
-              <td>{{ salary.bonus if salary else '' }}</td>
+              <td id="bonus">{{ salary.bonus }}</td>
             </tr>
             <tr>
               <td>Ngày công</td>
-              <td>{{ salary.present if salary else '' }}</td>
+              <td id="present">{{ salary.present }}</td>
             </tr>
             <tr>
               <td>Số ngày nghỉ phép</td>
-              <td>{{ salary.absent if salary else '' }}</td>
+              <td id="absent">{{ salary.absent }}</td>
             </tr>
             <tr>
               <td>Số ngày vắng</td>
-              <td>{{ salary.leave if salary else '' }}</td>
+              <td id="leave">{{ salary.leave }}</td>
             </tr>
             <tr>
               <td>Khấu trừ</td>
-              <td>{{ salary.deductions if salary else '' }}</td>
+              <td id="deductions">{{ salary.deductions }}</td>
             </tr>
             <tr>
               <td><b>Tổng lương</b></td>
-              <td><b>{{ salary.net_salary if salary else '' }}</b></td>
+              <td id="netSalary"><b>{{ salary.net_salary }}</b></td>
             </tr>
           </table>
-          {% else %}
-          <p>Không có dữ liệu bảng lương cho tháng/năm đã chọn.</p>
-          {% endif %}
+          <p id="errorMessage" style="color: red; display: none;"></p>
         </div>
       </div>
     </div>
+
     <div class="timekeeping">
       <h3>Chấm công</h3>
       <button class="check-in" onclick="checkIn()">Check-in</button>
       <button class="check-out" onclick="checkOut()">Check-out</button>
+      <p id="status">Chưa check-in</p>
     </div>
+
     <script>
       function showTab(tab) {
-        document.getElementById("notifications").style.display =
-          tab === "notifications" ? "block" : "none";
-        document.getElementById("salary").style.display =
-          tab === "salary" ? "block" : "none";
+        document.getElementById("notifications").style.display = tab === "notifications" ? "block" : "none";
+        document.getElementById("salary").style.display = tab === "salary" ? "block" : "none";
       }
 
       async function showSalary() {
         const month = document.getElementById("month").value;
         const year = document.getElementById("year").value;
         const salaryTable = document.getElementById("salaryTable");
-        const loadingMessage = document.getElementById("loadingMessage");
         const errorMessage = document.getElementById("errorMessage");
 
-        // Reset previous state
         salaryTable.style.display = "none";
-        loadingMessage.style.display = "block";
         errorMessage.style.display = "none";
         errorMessage.textContent = "";
 
         try {
-          // Call API to fetch salary data
-          const response = await fetch(
-            `/api/salary?month=${month}&year=${year}`
-          );
+          const response = await fetch(`/api/salary?month=${month}&year=${year}`);
           if (!response.ok) {
-            throw new Error(
-              `Không thể lấy dữ liệu bảng lương. Mã lỗi: ${response.status}`
-            );
+            throw new Error(`Không thể lấy dữ liệu bảng lương. Mã lỗi: ${response.status}`);
           }
           const salaryData = await response.json();
 
-          // Check if salary data exists
           if (!salaryData || Object.keys(salaryData).length === 0) {
-            throw new Error(
-              "Không có dữ liệu bảng lương cho tháng/năm đã chọn."
-            );
+            throw new Error("Không có dữ liệu bảng lương cho tháng/năm đã chọn.");
           }
 
-          // Update the table with salary data
           document.getElementById("selectedMonth").textContent = month;
           document.getElementById("selectedYear").textContent = year;
-          document.getElementById("baseSalary").textContent =
-            salaryData.base_salary.toLocaleString() || "";
-          document.getElementById("bonus").textContent =
-            salaryData.bonus.toLocaleString() || "";
-          document.getElementById("present").textContent =
-            salaryData.present || "";
-          document.getElementById("absent").textContent =
-            salaryData.absent || "";
-          document.getElementById("leave").textContent = salaryData.leave || "";
-          document.getElementById("deductions").textContent =
-            salaryData.deductions.toLocaleString() || "";
-          document.getElementById("netSalary").innerHTML = `<b>${
-            salaryData.net_salary.toLocaleString() || ""
-          }</b>`;
+          document.getElementById("baseSalary").textContent = salaryData.base_salary;
+          document.getElementById("bonus").textContent = salaryData.bonus;
+          document.getElementById("present").textContent = salaryData.present;
+          document.getElementById("absent").textContent = salaryData.absent;
+          document.getElementById("leave").textContent = salaryData.leave;
+          document.getElementById("deductions").textContent = salaryData.deductions;
+          document.getElementById("netSalary").innerHTML = `<b>${salaryData.net_salary}</b>`;
 
-          // Show the salary table
           salaryTable.style.display = "block";
         } catch (error) {
           console.error("Lỗi khi lấy dữ liệu bảng lương:", error);
           errorMessage.textContent = error.message;
           errorMessage.style.display = "block";
-        } finally {
-          loadingMessage.style.display = "none";
         }
       }
 
       function getCurrentDate() {
         const today = new Date();
-        return today.toISOString().split("T")[0]; // Format YYYY-MM-DD
+        return today.toISOString().split("T")[0];
       }
 
       function checkIn() {
@@ -257,23 +229,17 @@
         const currentDate = getCurrentDate();
 
         if (checkinDate !== currentDate) {
-          // Reset trạng thái nếu đã qua ngày mới
           localStorage.removeItem("checkin_time");
           localStorage.removeItem("checkout_time");
           localStorage.setItem("checkin_date", currentDate);
           document.getElementById("status").textContent = "Chưa check-in";
         } else if (checkoutTime) {
-          document.getElementById(
-            "status"
-          ).textContent = `Đã check-out lúc ${checkoutTime}`;
+          document.getElementById("status").textContent = `Đã check-out lúc ${checkoutTime}`;
         } else if (checkinTime) {
-          document.getElementById(
-            "status"
-          ).textContent = `Đã check-in lúc ${checkinTime}`;
+          document.getElementById("status").textContent = `Đã check-in lúc ${checkinTime}`;
         }
       }
 
-      // Gọi hàm này khi trang load để cập nhật trạng thái
       updateStatus();
     </script>
   </body>
