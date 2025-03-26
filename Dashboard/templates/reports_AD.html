@@ -4,45 +4,55 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Báo Cáo Nhân Sự</title>
-    <link rel="stylesheet" href="../static/reports_HR.css" />
+    <link rel="stylesheet" href="../static/reports_AD.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <!-- Sidebar -->
     <div class="sidebar">
-      <h2>Trang Chủ HR<br /></h2>
+      <h2>Trang Chủ Admin<br /></h2>
+
       <div class="menu-group">
-        <h3>QUẢN LÝ</h3>
+        <h3>TỔNG QUAN</h3>
         <ul>
-          <li>
-            <a href="{{ url_for('employee_HR') }}"><i>👥</i> Nhân viên</a>
-          </li>
-          <li>
-            <a href="{{ url_for('depart_pos') }}" class="active">
-              <i>👔</i> Phòng ban và công việc
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('reports_HR') }}" class="active"><i>📈</i> Báo cáo nhân sự </a>
-          </li>
+            <li>
+                <a href="{{ url_for('dashboard_AD') }}" ><i>📊</i> Dashboard</a>
+            </li>
         </ul>
       </div>
+
       <div class="menu-group">
-        <h3>HỆ THỐNG</h3>
-        <ul>
-          <li>
-            <a href="{{ url_for('logout_hr') }}"><i>🚪</i> Đăng xuất</a>
-          </li>
-        </ul>
+          <h3>QUẢN LÝ</h3>
+          <ul>
+            <li><a href="{{ url_for('home_HR') }}"><i>👥</i> Nhân viên</a></li>
+            <li><a href="{{ url_for('home_AC') }}"><i>💰</i> Lương</a></li>
+            <li><a href="{{ url_for('shareholder') }}" ><i>🔑</i> Cổ Đông</a></li>
+            <li><a href="{{ url_for('user_roles') }}"><i>🏢</i> Phân quyền người dùng</a></li>
+            <li><a href="{{ url_for('notifications_AD') }}"><i>📢</i> Quản lý thông báo</a></li>
+          </ul>
+      </div>
+
+      <div class="menu-group">
+          <h3>BÁO CÁO</h3>
+          <ul>
+              <li><a href="{{ url_for('reports_AD') }}" class="active"><i>📈</i> Báo cáo nhân sự</a></li>
+              <li><a href="{{ url_for('activity_log_AD') }}"><i>📜</i> Lịch sử hoạt động</a></li>
+          </ul>
+      </div>
+
+      <div class="menu-group">
+          <h3>HỆ THỐNG</h3>
+          <ul>
+            <li><a href="{{ url_for('logout') }}" ><i>🚪</i> Đăng xuất</a></li>
+          </ul>
       </div>
     </div>
-
 
     <!-- Main Content -->
     <div class="main-content">
       <div class="header">
         <h1>Báo Cáo Nhân Sự</h1>
-        <div class="user-info">NGUYỄN VĂN A <br />HR</div>
+        <div class="user-info">NGUYỄN VĂN B<br />ADMIN</div>
       </div>
 
       <!-- Table -->

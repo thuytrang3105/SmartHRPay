@@ -9,39 +9,30 @@
   <body>
     <!-- Sidebar -->
     <div class="sidebar">
-      <h2>Trang Chủ HR<br /></h2>
       <div class="menu-group">
         <h3>QUẢN LÝ</h3>
         <ul>
           <li>
-            <a href="{{ url_for('employee_HR') }}"><i>👥</i> Nhân viên</a>
+            <a href="{{ url_for('home_HR') }}"><i>👥</i> Hiring</a>
           </li>
           <li>
-            <a href="{{ url_for('depart_pos') }}">
-              <i>👔</i> Phòng ban và công việc
-            </a>
+            <a href="{{ url_for('dashboard_AD') }}"><i>👔</i> Admin </a>
           </li>
           <li>
-            <a href="{{ url_for('reports_HR') }}"><i>📈</i> Báo cáo nhân sự </a>
+            <a href="{{ url_for('home_AC') }}"><i>📈</i> Accountant </a>
+          </li>
+          <li>
+            <a href="{{ url_for('home_nv') }}"><i>📈</i> Employee </a>
           </li>
         </ul>
       </div>
-      <div class="menu-group">
-        <h3>HỆ THỐNG</h3>
-        <ul>
-          <li>
-            <a href="{{ url_for('logout_hr') }}"><i>🚪</i> Đăng xuất</a>
-          </li>
-        </ul>
-      </div>
-</div>
+    </div>
 
 
     <!-- Main Content -->
     <div class="main-content">
       <div class="header">
         <h1>Dashboard</h1>
-        <div class="user-info">NGUYỄN VĂN A <br />HR </div>
       </div>
     </div>
   </body>

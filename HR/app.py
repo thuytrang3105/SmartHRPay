@@ -84,8 +84,13 @@ reports = [
     ]
 # Tuyến render template
 @app.route('/employee_HR')
-def employee_hr():
+def employee_HR():
     return render_template('employee_HR.html', employees=employees)
+
+#home hiring
+@app.route('/hiring')
+def employee_hr():
+    return render_template('home_HR.html')
 
 # Tuyến API để trả về dữ liệu JSON
 @app.route('/api/employees', methods=['GET'])
@@ -200,6 +205,11 @@ def delete_department(department_id):
 @app.route('/reports_HR')
 def reports_HR():
     return render_template("reports_HR.html",reports=reports)
+
+@app.route('/logout_hr')
+def logout_hr():
+    return render_template('home_HR.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
     

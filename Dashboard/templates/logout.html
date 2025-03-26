@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng xuất - Hệ thống Quản lý Lương</title>
+    <link rel="stylesheet" href="../static/common_AC.css" />
+    <link rel="stylesheet" href="../static/logout_AC.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Main Content -->
+        <div class="logout-container">
+          <div class="logout-icon">
+            <i class="fa fa-sign-out-alt"></i>
+          </div>
+          <h1 class="logout-title">Đăng xuất khỏi hệ thống</h1>
+          <p class="logout-message">
+            Bạn có chắc chắn muốn đăng xuất khỏi Hệ thốngthống?
+          </p>
+          <div class="logout-buttons">
+            <a href="index.html" class="btn btn-cancel">Hủy bỏ</a>
+            <button id="confirm-logout" class="btn btn-confirm">
+              Xác nhận đăng xuất
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Handle responsive sidebar
+      function handleResponsive() {
+        const sidebar = document.querySelector(".sidebar");
+        const mainContent = document.querySelector(".main-content");
+
+        if (window.innerWidth <= 768) {
+          sidebar.style.width = "70px";
+          mainContent.style.marginLeft = "70px";
+        } else {
+          sidebar.style.width = "250px";
+          mainContent.style.marginLeft = "250px";
+        }
+      }
+
+      // Initial check and on resize
+      handleResponsive();
+      window.addEventListener("resize", handleResponsive);
+
+      // Handle logout confirmation
+      document
+        .getElementById("confirm-logout")
+        .addEventListener("click", function () {
+          // In a real application, this would handle the logout process
+          // For now, we'll just redirect to a simulated login page
+          window.location.href = "home.html";
+
+          // Or show a confirmation
+          // alert("Bạn đã đăng xuất thành công!");
+        });
+    </script>
+  </body>
+</html>

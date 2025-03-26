@@ -7,31 +7,61 @@
     <link rel="stylesheet" href="../static/logout.css" />
   </head>
   <body>
-    <!-- Sidebar -->
     <div class="sidebar">
       <h2>Trang Chủ HR<br /></h2>
       <div class="menu-group">
         <h3>QUẢN LÝ</h3>
         <ul>
           <li>
-            <a href="employee_HR.html"><i>👥</i> Nhân viên</a>
+            <a href="{{ url_for('employee_HR') }}"><i>👥</i> Nhân viên</a>
           </li>
           <li>
-            <a href="depar_pos.html"><i>👔</i> Phòng ban và chức vụ</a>
+            <a href="{{ url_for('depart_pos') }}" >
+              <i>👔</i> Phòng ban và công việc
+            </a>
           </li>
           <li>
-            <a href="reports_HR.html"><i>📈</i> Báo cáo nhân sự </a>
+            <a href="{{ url_for('reports_HR') }}"><i>📈</i> Báo cáo nhân sự </a>
           </li>
+        </ul>
       </div>
-    <div class="menu-group">
-      <h3>HỆ THỐNG</h3>
-      <ul>
-        <li>
-          <a href="logout.html"><i>🚪</i> Đăng xuất</a>
-        </li>
-      </ul>
+      <div class="menu-group">
+        <h3>HỆ THỐNG</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('logout') }}" <div class="sidebar">
+      <h2>Trang Chủ HR<br /></h2>
+      <div class="menu-group">
+        <h3>QUẢN LÝ</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('employee_HR') }}"><i>👥</i> Nhân viên</a>
+          </li>
+          <li>
+            <a href="{{ url_for('depart_pos') }}" >
+              <i>👔</i> Phòng ban và công việc
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('reports_HR') }}"><i>📈</i> Báo cáo nhân sự </a>
+          </li>
+        </ul>
+      </div>
+      <div class="menu-group">
+        <h3>HỆ THỐNG</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('logout_hr') }}" class="active" ><i>🚪</i> Đăng xuất</a>
+          </li>
+        </ul>
+      </div>
+</div>
+><i>🚪</i> Đăng xuất</a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
+
     <!-- Main Content -->
     <div class="main-content">
         <div class="header">
