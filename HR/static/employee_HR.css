@@ -178,6 +178,40 @@ td {
 .delete-btn:hover {
   background-color: #c82333;
 }
+.modal-content {
+  width: 600px;
+  max-width: 90%;
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+/* Kiểu dáng cho bảng trong modal Xem */
+#employeeDetailsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+#employeeDetailsTable th,
+#employeeDetailsTable td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+#employeeDetailsTable th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
 
 /* Modal */
 .modal {

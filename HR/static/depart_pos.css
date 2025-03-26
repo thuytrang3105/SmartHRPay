@@ -76,7 +76,24 @@ body {
   font-size: 14px;
   color: #666;
 }
+.tab-container {
+  display: flex;
+  margin-bottom: 20px;
+}
 
+.tab-button {
+  padding: 10px 20px;
+  background-color: #f1f1f1;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+.tab-button.active {
+  background-color: #3498db;
+  color: white;
+}
 /* Table Section */
 .section {
   margin-bottom: 30px;

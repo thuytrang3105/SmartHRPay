@@ -1,5 +1,5 @@
-from flask import Flask, render_template
-
+from flask import Flask, render_template,request
+from flask import render_template
 app = Flask(__name__)
 
 @app.route("/")
@@ -9,39 +9,68 @@ def login():
 @app.route("/register")
 def register():
     return render_template('register.html')
-@app.route("/home-nv")
-def home_nv():
-    return render_template("home_nv.html")
+
 @app.route("/salary-nv")
 def salary_nv():
     return render_template("salary_nv.html")
 
-@app.route('/employees')
-def employee_list():
-    employees = [
-        {"id": "EMP001", "name": "Nguyễn Văn A", "position": "Nhân viên IT", "department": "Công nghệ", "email": "a@example.com", "status": "Đang làm việc"},
-        {"id": "EMP002", "name": "Trần Thị B", "position": "Kế toán", "department": "Tài chính", "email": "b@example.com", "status": "Đang làm việc"},
-        {"id": "EMP003", "name": "Lê Văn C", "position": "Nhân sự", "department": "Hành chính", "email": "c@example.com", "status": "Nghỉ việc"}
-    ]
-    return render_template('employee_list_detail.html', employees=employees)
+def get_salary_data(month, year):
+    return {
+        "base_salary": "10,000,000 VND",
+        "bonus": "2,000,000 VND",
+        "present": "22",
+        "absent": "2",
+        "leave": "1",
+        "deductions": "500,000 VND",
+        "net_salary": "11,500,000 VND"    }
 
-@app.route('/employees/<id>')
-def employee_detail(id):
-    employees = {
-        "EMP001": {"id": "EMP001", "name": "Nguyễn Văn A", "gender": "Nam", "dob": "10/05/1990", "address": "123 Đường ABC, TP. HCM",
-                    "position": "Nhân viên IT", "department": "Công nghệ", "hire_date": "01/01/2020", "work_shift": "Sáng", "contract_type": "Chính thức",
-                    "salary": 15000000, "bonus": 2000000, "deductions": 500000, "net_salary": 16500000},
-        "EMP002": {"id": "EMP002", "name": "Trần Thị B", "gender": "Nữ", "dob": "15/07/1995", "address": "456 Đường XYZ, TP. HCM",
-                    "position": "Kế toán", "department": "Tài chính", "hire_date": "15/03/2021", "work_shift": "Chiều", "contract_type": "Chính thức",
-                    "salary": 12000000, "bonus": 1500000, "deductions": 300000, "net_salary": 13200000},
-        "EMP003": {"id": "EMP003", "name": "Lê Văn C", "gender": "Nam", "dob": "22/11/1988", "address": "789 Đường LMN, Hà Nội",
-                    "position": "Nhân sự", "department": "Hành chính", "hire_date": "10/06/2018", "work_shift": "Sáng", "contract_type": "Hợp đồng",
-                    "salary": 10000000, "bonus": 1000000, "deductions": 200000, "net_salary": 10800000}
+@app.route('/home-nv', methods=['GET', 'POST'])
+def home_nv():
+    # Dữ liệu thông tin cá nhân của nhân viên (giả lập)
+    employee = {
+        "employee_id": "12345",
+        "last_name": "Nguyễn",
+        "first_name": "Văn A",
+        "email": "vana@example.com",
+        "phone": "0987654321",
+        "start_date": "01/01/2022",
+        "department_name": "IT",
+        "job_title": "Devloper",
+        "status": " "
     }
-    employee = employees.get(id)
-    if not employee:
-        return "Nhân viên không tồn tại", 404
-    return render_template('employee_detail.html', employee=employee)
+
+    # Dữ liệu thông báo cho nhân viên (giả lập, dựa trên mẫu /notifications_AD)
+    notifications = [
+        {
+            "title": "Thông báo lương tháng 3/2025",
+            "content": "Bảng lương tháng 3 đã được phát hành. Vui lòng kiểm tra và xác nhận.",
+            "timestamp": "28/03/2025 10:15"
+        },
+        {
+            "title": "Thông báo cập nhật chính sách lương",
+            "content": "Chính sách lương mới sẽ được áp dụng từ tháng 4/2025. Chi tiết vui lòng xem tại đây.",
+            "timestamp": "15/03/2025 14:30"
+        } ]
+    # Dữ liệu lương nhân viên
+    
+    salary = [{
+  "base_salary": 10000000,
+  "bonus": 2000000,
+  "present": 22,
+  "absent": 2,
+  "leave": 1,
+  "deductions": 500000,
+  "net_salary": 11500000
+}]
+    selected_month = {"month": 1}
+    selected_year = {"year":2020}
+
+    if request.method == 'POST':
+        selected_month = request.form.get('month')
+        selected_year = request.form.get('year')
+        salary = get_salary_data(selected_month, selected_year)
+    # Render template home_nv.html với dữ liệu employee và notifications,salarysalary
+    return render_template("home_nv.html", employee=employee, notifications=notifications,salary=salary,selected_month=selected_month, selected_year=selected_year)
 
 if __name__ == '__main__':
     app.run(debug=True)

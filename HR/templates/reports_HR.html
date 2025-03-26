@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Báo Cáo Nhân Sự</title>
     <link rel="stylesheet" href="../static/reports_HR.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <!-- Sidebar -->
@@ -17,7 +18,7 @@
             <a href="employee_HR.html"><i>👥</i> Nhân viên</a>
           </li>
           <li>
-            <a href="depar_pos.html"><i>👔</i> Phòng ban và chức vụ</a>
+            <a href="depart_pos.html"><i>👔</i> Phòng ban và Công việc fr</a>
           </li>
           <li>
             <a href="reports_HR.html" class="active"
@@ -39,138 +40,114 @@
     <!-- Main Content -->
     <div class="main-content">
       <div class="header">
-        <h1>Báo cáo chi tiết</h1>
+        <h1>Báo Cáo Nhân Sự</h1>
         <div class="user-info">NGUYỄN VĂN A <br />HR</div>
       </div>
 
-      <div class="report-table">
-        <div class="table-header">
-          <div class="filter-container">
-            <select id="timeFilter">
-              <option value="today">Hôm nay</option>
-              <option value="thisMonth">Quý này</option>
-              <option value="thisYear">Năm nay</option>
-            </select>
-          </div>
-        </div>
-        <table id="reportTable">
+      <!-- Table -->
+      <div class="table-container">
+        <table>
           <thead>
             <tr>
-              <th>Phòng ban</th>
+              <th>Vai trò</th>
               <th>Tổng nhân viên</th>
               <th>Nhân viên mới</th>
-              <th>Nghỉ việc</th>
-              <th>Tỷ lệ biến động</th>
+              <th>Nhân viên nghỉ việc</th>
+              <th>Phòng ban</th>
             </tr>
           </thead>
-          <tbody id="reportBody">
-            <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-          </tbody>
+          <tbody>
+            {% for report in reports %}
+            <tr>
+              <td>{{ report.role }}</td>
+              <td>{{ report.total }}</td>
+              <td>{{ report.newEmployees }}</td>
+              <td>{{ report.resignedEmployees }}</td>
+              <td>{{ report.departments }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>          
         </table>
       </div>
-    </div>
 
-    <script>
-      // Tải dữ liệu từ file JSON
-      async function loadEmployees() {
-        try {
-          const response = await fetch("../data/employee.json");
-          const data = await response.json();
-          return data;
-        } catch (error) {
-          console.error("Lỗi khi tải dữ liệu từ JSON:", error);
-          return [];
-        }
-      }
-
-      // Tải báo cáo khi trang được tải
-      window.onload = async function () {
-        const employees = await loadEmployees();
-        generateReport(employees);
-      };
-
-      // Hàm tạo báo cáo
-      function generateReport(employees) {
-        const timeFilter = document.getElementById("timeFilter").value;
-        const departments = ["IT", "HR", "Marketing", "Operations", "Finance"];
-        const reportBody = document.getElementById("reportBody");
-        reportBody.innerHTML = "";
-
-        let totalEmployees = 0;
-        let totalNewEmployees = 0;
-        let totalResigned = 0;
-
-        departments.forEach((dept) => {
-          // Lọc nhân viên theo phòng ban
-          const deptEmployees = employees.filter(
-            (emp) => emp.department === dept
-          );
-
-          // Tổng nhân viên
-          const total = deptEmployees.length;
-
-          // Nhân viên mới (giả sử nhân viên mới là những người vào làm trong năm nay)
-          const currentYear = new Date().getFullYear();
-          const newEmployees = deptEmployees.filter((emp) => {
-            const hireYear = new Date(emp.hireDate).getFullYear();
-            return hireYear === currentYear;
-          }).length;
-
-          // Nhân viên nghỉ việc
-          const resigned = deptEmployees.filter(
-            (emp) => emp.status === "Nghỉ việc"
-          ).length;
-
-          // Tỷ lệ biến động (giả sử tính bằng (nhân viên mới + nghỉ việc) / tổng nhân viên)
-          const turnoverRate =
-            total > 0
-              ? (((newEmployees + resigned) / total) * 100).toFixed(2) + "%"
-              : "0.00%";
-
-          // Thêm hàng vào bảng
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${dept}</td>
-            <td>${total}</td>
-            <td>${newEmployees}</td>
-            <td>${resigned}</td>
-            <td>${turnoverRate}</td>
-          `;
-          reportBody.appendChild(row);
-
-          // Cộng dồn tổng
-          totalEmployees += total;
-          totalNewEmployees += newEmployees;
-          totalResigned += resigned;
+      <div class="charts">
+        <div class="chart-box">
+          <h3>So sánh Tổng nhân viên</h3>
+          <canvas id="totalChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Tăng trưởng Nhân viên mới</h3>
+          <canvas id="newChart"></canvas>
+        </div>
+      </div>
+  
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          if (typeof Chart === "undefined") {
+            console.error("Chart.js chưa được tải.");
+            return;
+          }
+      
+          // Lấy dữ liệu từ Flask
+          const reports = {{ reports | tojson }};
+      
+          if (!Array.isArray(reports) || reports.length === 0) {
+            console.error("Không có dữ liệu báo cáo.");
+            return;
+          }
+      
+          // Dữ liệu cho biểu đồ
+          const labels = reports.map((report) => report.role);
+          const totalEmployees = reports.map((report) => report.total);
+          const newEmployees = reports.map((report) => report.newEmployees);
+      
+          // 🔹 Biểu đồ tròn - Tổng nhân viên
+          new Chart(document.getElementById("totalChart"), {
+            type: "pie",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Tổng nhân viên",
+                  data: totalEmployees,
+                  backgroundColor: ["#3498db", "#2ecc71", "#f1c40f"],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+            },
+          });
+      
+          // 🔹 Biểu đồ cột kép - Tăng trưởng nhân viên mới
+          new Chart(document.getElementById("newChart"), {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Nhân viên mới",
+                  data: newEmployees,
+                  backgroundColor: "#3498db",
+                  borderWidth: 1,
+                },
+                {
+                  label: "Tổng nhân viên",
+                  data: totalEmployees,
+                  backgroundColor: "#f1c40f",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
         });
-
-        // Thêm hàng "Tổng cộng"
-        const totalTurnoverRate =
-          totalEmployees > 0
-            ? (
-                ((totalNewEmployees + totalResigned) / totalEmployees) *
-                100
-              ).toFixed(2) + "%"
-            : "0.00%";
-        const totalRow = document.createElement("tr");
-        totalRow.classList.add("total-row");
-        totalRow.innerHTML = `
-          <td>Tổng cộng</td>
-          <td>${totalEmployees}</td>
-          <td>${totalNewEmployees}</td>
-          <td>${totalResigned}</td>
-          <td>${totalTurnoverRate}</td>
-        `;
-        reportBody.appendChild(totalRow);
-      }
-
-      // Lọc theo thời gian
-      document
-        .getElementById("timeFilter")
-        .addEventListener("change", async () => {
-          const employees = await loadEmployees();
-          generateReport(employees);
-        });
-    </script>
-  </body>
-</html>
+      </script>
+      
+    </body>
+  </html>

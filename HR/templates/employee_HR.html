@@ -5,25 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quản Lý Nhân Viên</title>
     <link rel="stylesheet" href="../static/employee_HR.css" />
-    <style>
-      .modal-content {
-        width: 600px;
-        max-width: 90%;
-      }
-      .modal-content input,
-      .modal-content select {
-        width: 100%;
-        padding: 8px;
-        margin-bottom: 15px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-      }
-      .modal-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-      }
-    </style>
   </head>
   <body>
     <!-- Sidebar -->
@@ -36,7 +17,7 @@
             <a href="employee_HR.html" class="active"><i>👥</i> Nhân viên</a>
           </li>
           <li>
-            <a href="depar_pos.html"><i>👔</i> Phòng ban và chức vụ</a>
+            <a href="depart_pos.html"><i>👔</i> Phòng ban và công việc</a>
           </li>
           <li>
             <a href="reports_HR.html"><i>📈</i> Báo cáo nhân sự </a>
@@ -52,7 +33,6 @@
         </ul>
       </div>
     </div>
-
     <!-- Main Content -->
     <div class="main-content">
       <div class="header">
@@ -81,8 +61,9 @@
           <thead>
             <tr>
               <th>Mã Nhân Viên</th>
-              <th>Họ Tên</th>
-              <th>Chức Vụ</th>
+              <th>Họ</th>
+              <th>Tên</th>
+              <th>Công việc</th>
               <th>Phòng Ban</th>
               <th>Email</th>
               <th>Ngày Vào Làm</th>
@@ -108,48 +89,29 @@
 
           <label for="lastName">Họ:</label>
           <input type="text" id="lastName" name="lastName" required />
+
           <label for="email">Email:</label>
           <input type="email" id="email" name="email" required />
 
           <label for="phone">Số điện thoại:</label>
           <input type="tel" id="phone" name="phone" required />
 
-          <label for="position">Chức vụ:</label>
-          <select id="position" name="position" required>
-            <option value="Nhân viên">Nhân viên</option>
-            <option value="Quản lý">Quản lý</option>
-          </select>
+          <label for="jobTitle">Công việc:</label>
+          <input type="text" id="jobTitle" name="jobTitle" required />
 
-          <label for="department">Phòng ban:</label>
-          <select id="department" name="department" required>
-            <option value="IT">IT</option>
-            <option value="HR">HR</option>
-          </select>
+          <label for="departmentName">Phòng ban:</label>
+          <input
+            type="text"
+            id="departmentName"
+            name="departmentName"
+            required
+          />
 
           <label for="hireDate">Ngày vào làm:</label>
           <input type="date" id="hireDate" name="hireDate" required />
 
-          <label for="workShift">Ca làm việc:</label>
-          <select id="workShift" name="workShift" required>
-            <option value="Sáng">Sáng</option>
-            <option value="Chiều">Chiều</option>
-            <option value="Tối">Tối</option>
-          </select>
-
-          <label for="contractType">Loại hợp đồng:</label>
-          <select id="contractType" name="contractType" required>
-            <option value="Toàn thời gian">Toàn thời gian</option>
-            <option value="Bán thời gian">Bán thời gian</option>
-          </select>
-
-          <label for="salary">Lương cơ bản (VNĐ):</label>
-          <input type="number" id="salary" name="salary" required />
-
-          <label for="bonus">Tiền thưởng (VNĐ):</label>
-          <input type="number" id="bonus" name="bonus" required />
-
-          <label for="deductions">Khoản khấu trừ (VNĐ):</label>
-          <input type="number" id="deductions" name="deductions" required />
+          <label for="baseSalary">Lương cơ bản (VNĐ):</label>
+          <input type="number" id="baseSalary" name="baseSalary" required />
 
           <div class="modal-buttons">
             <button type="button" class="cancel-btn" onclick="closeAddModal()">
@@ -161,140 +123,237 @@
       </div>
     </div>
 
-    <!-- Modal Chỉnh Sửa Nhân Viên -->
-    <div id="editEmployeeModal" class="modal">
+    <!-- Modal Xem và Chỉnh Sửa Nhân Viên -->
+    <div id="viewEmployeeModal" class="modal">
       <div class="modal-content">
-        <h2>Chỉnh Sửa Nhân Viên</h2>
-        <form id="editEmployeeForm">
-          <input type="hidden" id="editEmployeeId" name="employeeId" />
-          <label for="editFirstName">Tên:</label>
-          <input type="text" id="editFirstName" name="firstName" required />
-
-          <label for="editLastName">Họ:</label>
-          <input type="text" id="editLastName" name="lastName" required />
-
-          <label for="editEmail">Email:</label>
-          <input type="email" id="editEmail" name="email" required />
-
-          <label for="editPhone">Số điện thoại:</label>
-          <input type="tel" id="editPhone" name="phone" required />
-
-          <label for="editPosition">Chức vụ:</label>
-          <select id="editPosition" name="position" required>
-            <option value="Nhân viên">Nhân viên</option>
-            <option value="Quản lý">Quản lý</option>
-          </select>
-
-          <label for="editDepartment">Phòng ban:</label>
-          <select id="editDepartment" name="department" required>
-            <option value="IT">IT</option>
-            <option value="HR">HR</option>
-          </select>
-
-          <label for="editHireDate">Ngày vào làm:</label>
-          <input type="date" id="editHireDate" name="hireDate" required />
-
-          <label for="editWorkShift">Ca làm việc:</label>
-          <select id="editWorkShift" name="workShift" required>
-            <option value="Sáng">Sáng</option>
-            <option value="Chiều">Chiều</option>
-            <option value="Tối">Tối</option>
-          </select>
-
-          <label for="editContractType">Loại hợp đồng:</label>
-          <select id="editContractType" name="contractType" required>
-            <option value="Toàn thời gian">Toàn thời gian</option>
-            <option value="Bán thời gian">Bán thời gian</option>
-          </select>
-
-          <label for="editSalary">Lương cơ bản (VNĐ):</label>
-          <input type="number" id="editSalary" name="salary" required />
-
-          <label for="editBonus">Tiền thưởng (VNĐ):</label>
-          <input type="number" id="editBonus" name="bonus" required />
-
-          <label for="editDeductions">Khoản khấu trừ (VNĐ):</label>
-          <input type="number" id="editDeductions" name="deductions" required />
-
-          <div class="modal-buttons">
-            <button type="button" class="cancel-btn" onclick="closeEditModal()">
-              Hủy
-            </button>
-            <button type="submit" class="save-btn">Lưu</button>
-          </div>
-        </form>
+        <h2>Thông Tin Nhân Viên</h2>
+        <table id="employeeDetailsTable">
+          <tr>
+            <th>Mã Nhân Viên</th>
+            <td><input type="text" id="editEmployeeId" disabled /></td>
+          </tr>
+          <tr>
+            <th>Họ</th>
+            <td><input type="text" id="editLastName" /></td>
+          </tr>
+          <tr>
+            <th>Tên</th>
+            <td><input type="text" id="editFirstName" /></td>
+          </tr>
+          <tr>
+            <th>Email</th>
+            <td><input type="email" id="editEmail" /></td>
+          </tr>
+          <tr>
+            <th>Số điện thoại</th>
+            <td><input type="tel" id="editPhone" /></td>
+          </tr>
+          <tr>
+            <th>Ngày vào làm</th>
+            <td><input type="date" id="editHireDate" /></td>
+          </tr>
+          <tr>
+            <th>Phòng ban</th>
+            <td><input type="text" id="editDepartmentName" /></td>
+          </tr>
+          <tr>
+            <th>Công việc</th>
+            <td><input type="text" id="editJobTitle" /></td>
+          </tr>
+          <tr>
+            <th>Lương cơ bản</th>
+            <td><input type="number" id="editBaseSalary" /></td>
+          </tr>
+          <tr>
+            <th>Trạng thái</th>
+            <td>
+              <select id="editStatus">
+                <option value="Đang làm việc">Đang làm việc</option>
+                <option value="Nghỉ việc">Nghỉ việc</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+        <div class="modal-buttons">
+          <button
+            id="editButton"
+            class="action-btn edit-btn"
+            onclick="enableEditMode()"
+          >
+            Chỉnh sửa
+          </button>
+          <button class="action-btn close-btn" onclick="closeViewModal()">
+            Thoát
+          </button>
+        </div>
       </div>
     </div>
 
     <script>
-      // Dữ liệu nhân viên (mô phỏng)
-      let employees = JSON.parse(localStorage.getItem("employees")) || [
-        {
-          id: "NV001",
-          name: "Nguyễn Văn B",
-          position: "Nhân viên",
-          department: "IT",
-          email: "nvb@example.com",
-          hireDate: "2023-01-15",
-          salary: 10000000,
-          status: "Đang làm việc",
-          gender: "Nam",
-          dob: "1990-05-20",
-          address: "123 Đường A, Hà Nội",
-          workShift: "Sáng",
-          contractType: "Toàn thời gian",
-          bonus: 500000,
-          deductions: 200000,
-        },
-        {
-          id: "NV002",
-          name: "Trần Thị C",
-          position: "Quản lý",
-          department: "HR",
-          email: "ttc@example.com",
-          hireDate: "2022-06-10",
-          salary: 15000000,
-          status: "Đang làm việc",
-          gender: "Nữ",
-          dob: "1985-08-15",
-          address: "456 Đường B, TP.HCM",
-          workShift: "Chiều",
-          contractType: "Toàn thời gian",
-          bonus: 1000000,
-          deductions: 300000,
-        },
-      ];
+      // Sử dụng đường dẫn tương đối vì HTML và API cùng nguồn gốc
+      const API_URL = "/api/employees";
 
-      // Tải dữ liệu nhân viên vào bảng khi trang được tải
+      // Tải danh sách nhân viên từ API khi trang được tải
       window.onload = function () {
         loadEmployees();
       };
 
-      function loadEmployees() {
-        const tableBody = document.getElementById("employeeBody");
-        tableBody.innerHTML = "";
-        employees.forEach((employee) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-              <td>${employee.id}</td>
-              <td>${employee.name}</td>
-              <td>${employee.position}</td>
-              <td>${employee.department}</td>
+      async function loadEmployees() {
+        try {
+          const response = await fetch(API_URL);
+          if (!response.ok) {
+            throw new Error(
+              `Không thể tải dữ liệu từ API. Mã lỗi: ${response.status}`
+            );
+          }
+          const employees = await response.json();
+          console.log("Dữ liệu từ API:", employees); // Kiểm tra dữ liệu nhận được
+          const tableBody = document.getElementById("employeeBody");
+          tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+          employees.forEach((employee) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${employee.employee_id}</td>
+              <td>${employee.last_name}</td>
+              <td>${employee.first_name}</td>
+              <td>${employee.job_title}</td>
+              <td>${employee.department_name}</td>
               <td>${employee.email}</td>
-              <td>${employee.hireDate}</td>
-              <td>${employee.salary.toLocaleString()}</td>
+              <td>${employee.hire_date}</td>
+              <td>${employee.base_salary.toLocaleString()}</td>
               <td>${employee.status}</td>
               <td>
                 <button class="action-btn view-btn" onclick="viewEmployee('${
-                  employee.id
+                  employee.employee_id
                 }')">Xem</button>
                 <button class="action-btn delete-btn" onclick="deleteEmployee('${
-                  employee.id
+                  employee.employee_id
                 }')">Xóa</button>
               </td>
             `;
-          tableBody.appendChild(row);
+            tableBody.appendChild(row);
+          });
+        } catch (error) {
+          console.error("Lỗi khi tải danh sách nhân viên:", error);
+          alert(
+            "Không thể tải dữ liệu nhân viên. Vui lòng kiểm tra API hoặc kết nối."
+          );
+        }
+      }
+
+      // Xem thông tin nhân viên
+      async function viewEmployee(employeeId) {
+        try {
+          const response = await fetch(`${API_URL}/${employeeId}`);
+          if (!response.ok) {
+            throw new Error(
+              `Không thể lấy thông tin nhân viên. Mã lỗi: ${response.status}`
+            );
+          }
+          const employee = await response.json();
+          if (employee) {
+            document.getElementById("editEmployeeId").value =
+              employee.employee_id;
+            document.getElementById("editLastName").value = employee.last_name;
+            document.getElementById("editFirstName").value =
+              employee.first_name;
+            document.getElementById("editEmail").value = employee.email;
+            document.getElementById("editPhone").value = employee.phone;
+            document.getElementById("editHireDate").value = employee.hire_date;
+            document.getElementById("editDepartmentName").value =
+              employee.department_name;
+            document.getElementById("editJobTitle").value = employee.job_title;
+            document.getElementById("editBaseSalary").value =
+              employee.base_salary;
+            document.getElementById("editStatus").value = employee.status;
+
+            // Vô hiệu hóa các trường trong chế độ xem
+            const inputs = document.querySelectorAll(
+              "#employeeDetailsTable input, #employeeDetailsTable select"
+            );
+            inputs.forEach((input) => {
+              if (input.id !== "editEmployeeId") input.disabled = true;
+            });
+
+            document.querySelector(".modal-buttons").innerHTML = `
+              <button id="editButton" class="action-btn edit-btn" onclick="enableEditMode()">Chỉnh sửa</button>
+              <button class="action-btn close-btn" onclick="closeViewModal()">Thoát</button>
+            `;
+
+            document.getElementById("viewEmployeeModal").style.display = "flex";
+          }
+        } catch (error) {
+          console.error("Lỗi khi xem thông tin nhân viên:", error);
+          alert(
+            "Không thể xem thông tin nhân viên. Vui lòng kiểm tra API hoặc kết nối."
+          );
+        }
+      }
+
+      // Kích hoạt chế độ chỉnh sửa
+      function enableEditMode() {
+        const inputs = document.querySelectorAll(
+          "#employeeDetailsTable input, #employeeDetailsTable select"
+        );
+        inputs.forEach((input) => {
+          if (input.id !== "editEmployeeId") input.disabled = false;
         });
+
+        document.querySelector(".modal-buttons").innerHTML = `
+          <button class="action-btn save-btn" onclick="saveEmployee()">Lưu</button>
+          <button class="action-btn cancel-btn" onclick="cancelEdit()">Hủy</button>
+        `;
+      }
+
+      // Lưu thay đổi nhân viên
+      async function saveEmployee() {
+        const employeeId = document.getElementById("editEmployeeId").value;
+        const updatedEmployee = {
+          first_name: document.getElementById("editFirstName").value,
+          last_name: document.getElementById("editLastName").value,
+          email: document.getElementById("editEmail").value,
+          phone: document.getElementById("editPhone").value,
+          hire_date: document.getElementById("editHireDate").value,
+          department_name: document.getElementById("editDepartmentName").value,
+          job_title: document.getElementById("editJobTitle").value,
+          base_salary: parseInt(
+            document.getElementById("editBaseSalary").value
+          ),
+          status: document.getElementById("editStatus").value,
+        };
+
+        try {
+          const response = await fetch(`${API_URL}/${employeeId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedEmployee),
+          });
+          if (response.ok) {
+            loadEmployees();
+            viewEmployee(employeeId); // Tải lại chế độ xem
+          } else {
+            console.error("Lỗi khi cập nhật nhân viên");
+            alert("Không thể cập nhật nhân viên. Vui lòng thử lại.");
+          }
+        } catch (error) {
+          console.error("Lỗi khi cập nhật nhân viên:", error);
+          alert(
+            "Không thể cập nhật nhân viên. Vui lòng kiểm tra API hoặc kết nối."
+          );
+        }
+      }
+
+      // Hủy chỉnh sửa
+      function cancelEdit() {
+        const employeeId = document.getElementById("editEmployeeId").value;
+        viewEmployee(employeeId); // Quay lại chế độ xem
+      }
+
+      // Đóng modal xem
+      function closeViewModal() {
+        document.getElementById("viewEmployeeModal").style.display = "none";
       }
 
       // Mở modal thêm nhân viên
@@ -308,117 +367,67 @@
         document.getElementById("addEmployeeForm").reset();
       }
 
-      // Xử lý khi submit form thêm nhân viên
+      // Thêm nhân viên mới
       document
         .getElementById("addEmployeeForm")
-        .addEventListener("submit", function (e) {
+        .addEventListener("submit", async function (e) {
           e.preventDefault();
-
-          const employee = {
-            id:
-              "NV" + String(Math.floor(Math.random() * 1000)).padStart(3, "0"),
-            name:
-              document.getElementById("lastName").value +
-              " " +
-              document.getElementById("firstName").value,
-            gender: document.getElementById("gender").value,
-            dob: document.getElementById("dob").value,
-            address: document.getElementById("address").value,
+          const newEmployee = {
+            first_name: document.getElementById("firstName").value,
+            last_name: document.getElementById("lastName").value,
             email: document.getElementById("email").value,
             phone: document.getElementById("phone").value,
-            position: document.getElementById("position").value,
-            department: document.getElementById("department").value,
-            hireDate: document.getElementById("hireDate").value,
-            workShift: document.getElementById("workShift").value,
-            contractType: document.getElementById("contractType").value,
-            salary: parseInt(document.getElementById("salary").value),
-            bonus: parseInt(document.getElementById("bonus").value),
-            deductions: parseInt(document.getElementById("deductions").value),
+            hire_date: document.getElementById("hireDate").value,
+            department_name: document.getElementById("departmentName").value,
+            job_title: document.getElementById("jobTitle").value,
+            base_salary: parseInt(document.getElementById("baseSalary").value),
             status: "Đang làm việc",
           };
 
-          employees.push(employee);
-          localStorage.setItem("employees", JSON.stringify(employees));
-          loadEmployees();
-          closeAddModal();
-        });
-
-      // Mở modal chỉnh sửa nhân viên
-      function openEditModal(employeeId) {
-        const employee = employees.find((emp) => emp.id === employeeId);
-        if (employee) {
-          document.getElementById("editEmployeeId").value = employee.id;
-          document.getElementById("editFirstName").value = employee.name
-            .split(" ")
-            .slice(-1)[0];
-          document.getElementById("editLastName").value = employee.name
-            .split(" ")
-            .slice(0, -1)
-            .join(" ");
-          document.getElementById("editGender").value = employee.gender;
-          document.getElementById("editDob").value = employee.dob;
-          document.getElementById("editAddress").value = employee.address;
-          document.getElementById("editEmail").value = employee.email;
-          document.getElementById("editPhone").value = employee.phone;
-          document.getElementById("editPosition").value = employee.position;
-          document.getElementById("editDepartment").value = employee.department;
-          document.getElementById("editHireDate").value = employee.hireDate;
-          document.getElementById("editWorkShift").value = employee.workShift;
-          document.getElementById("editContractType").value =
-            employee.contractType;
-          document.getElementById("editSalary").value = employee.salary;
-          document.getElementById("editBonus").value = employee.bonus;
-          document.getElementById("editDeductions").value = employee.deductions;
-
-          document.getElementById("editEmployeeModal").style.display = "flex";
-        }
-      }
-
-      // Đóng modal chỉnh sửa nhân viên
-      function closeEditModal() {
-        document.getElementById("editEmployeeModal").style.display = "none";
-        document.getElementById("editEmployeeForm").reset();
-      }
-
-      // Xử lý khi submit form chỉnh sửa nhân viên
-      document
-        .getElementById("editEmployeeForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-
-          const employeeId = document.getElementById("editEmployeeId").value;
-          const updatedEmployee = {
-            id: employeeId,
-            name:
-              document.getElementById("editLastName").value +
-              " " +
-              document.getElementById("editFirstName").value,
-            gender: document.getElementById("editGender").value,
-            dob: document.getElementById("editDob").value,
-            address: document.getElementById("editAddress").value,
-            email: document.getElementById("editEmail").value,
-            phone: document.getElementById("editPhone").value,
-            position: document.getElementById("editPosition").value,
-            department: document.getElementById("editDepartment").value,
-            hireDate: document.getElementById("editHireDate").value,
-            workShift: document.getElementById("editWorkShift").value,
-            contractType: document.getElementById("editContractType").value,
-            salary: parseInt(document.getElementById("editSalary").value),
-            bonus: parseInt(document.getElementById("editBonus").value),
-            deductions: parseInt(
-              document.getElementById("editDeductions").value
-            ),
-            status: employees.find((emp) => emp.id === employeeId).status,
-          };
-
-          const index = employees.findIndex((emp) => emp.id === employeeId);
-          if (index !== -1) {
-            employees[index] = updatedEmployee;
-            localStorage.setItem("employees", JSON.stringify(employees));
-            loadEmployees();
-            closeEditModal();
+          try {
+            const response = await fetch(API_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(newEmployee),
+            });
+            if (response.ok) {
+              loadEmployees();
+              closeAddModal();
+            } else {
+              console.error("Lỗi khi thêm nhân viên");
+              alert("Không thể thêm nhân viên. Vui lòng thử lại.");
+            }
+          } catch (error) {
+            console.error("Lỗi khi thêm nhân viên:", error);
+            alert(
+              "Không thể thêm nhân viên. Vui lòng kiểm tra API hoặc kết nối."
+            );
           }
         });
+
+      // Xóa nhân viên
+      async function deleteEmployee(employeeId) {
+        if (confirm(`Bạn có chắc chắn muốn xóa nhân viên ${employeeId}?`)) {
+          try {
+            const response = await fetch(`${API_URL}/${employeeId}`, {
+              method: "DELETE",
+            });
+            if (response.ok) {
+              loadEmployees();
+            } else {
+              console.error("Lỗi khi xóa nhân viên");
+              alert("Không thể xóa nhân viên. Vui lòng thử lại.");
+            }
+          } catch (error) {
+            console.error("Lỗi khi xóa nhân viên:", error);
+            alert(
+              "Không thể xóa nhân viên. Vui lòng kiểm tra API hoặc kết nối."
+            );
+          }
+        }
+      }
 
       // Tìm kiếm nhân viên
       function searchEmployees() {
@@ -427,26 +436,9 @@
           .value.toLowerCase();
         const rows = document.querySelectorAll("#employeeBody tr");
         rows.forEach((row) => {
-          const cells = row.getElementsByTagName("td");
-          const text = Array.from(cells)
-            .map((cell) => cell.textContent.toLowerCase())
-            .join(" ");
+          const text = row.textContent.toLowerCase();
           row.style.display = text.includes(input) ? "" : "none";
         });
-      }
-
-      // Xem thông tin chi tiết nhân viên
-      function viewEmployee(employeeId) {
-        window.location.href = `employee_detail.html?id=${employeeId}`;
-      }
-
-      // Xóa nhân viên
-      function deleteEmployee(employeeId) {
-        if (confirm(`Bạn có chắc chắn muốn xóa nhân viên ${employeeId}?`)) {
-          employees = employees.filter((emp) => emp.id !== employeeId);
-          localStorage.setItem("employees", JSON.stringify(employees));
-          loadEmployees();
-        }
       }
     </script>
   </body>

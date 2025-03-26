@@ -6,7 +6,7 @@ app = Flask(__name__)
 @app.route('/')
 def Admin():
     return render_template('home_AD.html')
-@app.route('/HRHR')
+@app.route('/HR')
 def home_HR ():
     return render_template('home_HR.html')
 @app.route('/AC')
