@@ -14,11 +14,13 @@
         <h3>QUẢN LÝ</h3>
         <ul>
           <li>
-            <a href="{{ url_for('employee_HR') }}" class="active"><i>👥</i> Nhân viên</a>
+            <a href="{{ url_for('employee_HR') }}" class="active"
+              ><i>👥</i> Nhân viên</a
+            >
           </li>
           <li>
-            <a href="{{ url_for('depart_pos') }}" >
-              <i>👔</i> Phòng ban và công việc
+            <a href="{{ url_for('depart_pos') }}">
+              <i>👔</i> Phòng ban và Chức Vụ
             </a>
           </li>
           <li>
@@ -66,7 +68,7 @@
               <th>Mã Nhân Viên</th>
               <th>Họ</th>
               <th>Tên</th>
-              <th>Công việc</th>
+              <th>Chức Vụ</th>
               <th>Phòng Ban</th>
               <th>Email</th>
               <th>Ngày Vào Làm</th>
@@ -99,7 +101,7 @@
           <label for="phone">Số điện thoại:</label>
           <input type="tel" id="phone" name="phone" required />
 
-          <label for="jobTitle">Công việc:</label>
+          <label for="jobTitle">Chức Vụ:</label>
           <input type="text" id="jobTitle" name="jobTitle" required />
 
           <label for="departmentName">Phòng ban:</label>
@@ -160,7 +162,7 @@
             <td><input type="text" id="editDepartmentName" /></td>
           </tr>
           <tr>
-            <th>Công việc</th>
+            <th>Chức Vụ</th>
             <td><input type="text" id="editJobTitle" /></td>
           </tr>
           <tr>

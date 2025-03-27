@@ -53,27 +53,30 @@ body {
   padding: 0;
   margin: 0;
 }
+.sidebar-menu li {
+  padding: 10px 15px;
+  margin-bottom: 8px;
+}
 
 .sidebar-menu a {
-  text-decoration: none;
-  color: white;
+  text-decoration: none; /* Xóa gạch chân */
+  color: white; /* Màu chữ trắng */
   font-size: 18px;
   font-weight: normal;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 15px;
-  border-radius: 8px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  align-items: center; /* Căn icon với chữ */
+  gap: 10px; /* Khoảng cách giữa icon và chữ */
+  padding: 12px 15px; /* Tăng padding cho đẹp */
+  border-radius: 8px; /* Bo góc */
+  transition: background-color 0.3s ease, color 0.3s ease; /* Hiệu ứng mượt */
 }
 
 .sidebar-menu i {
-  font-size: 22px;
+  font-size: 22px; /* Tăng kích thước icon */
 }
-
 .sidebar-menu a:hover,
 .sidebar-menu .active {
-  background-color: #3498db;
+  background-color: #3498db; /* Màu xanh sáng khi hover hoặc chọn */
   color: white;
 }
 
@@ -92,10 +95,29 @@ body {
   margin-bottom: 30px;
 }
 
+.header-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2937;
+}
+
 .user-info {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e5e7eb;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #1f2937;
 }
 
 /* Panel */
@@ -104,11 +126,6 @@ body {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 20px;
-}
-
-#employee-history .panel-header {
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e5e7eb;
 }
 
 .panel-header {
@@ -126,72 +143,20 @@ body {
   color: #6b7280;
 }
 
-/* Filter Container */
-.filter-container {
-  margin-bottom: 20px;
+.panel-text {
+  margin-bottom: 15px;
 }
 
-.filter-container label {
-  font-weight: 500;
-  margin-right: 10px;
+.panel-list {
+  list-style: none;
+  margin-left: 20px;
 }
 
-.filter-container select {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #6b7280;
-  background-color: #f8f9fa;
-  cursor: pointer;
+.panel-list-item {
+  margin-bottom: 10px;
 }
 
-.filter-container h2 {
-  font-size: 18px;
-  margin: 15px 0;
-  color: #1f2937;
-}
-
-/* Button */
-.btn {
-  padding: 8px 15px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-}
-
-.btn:hover {
-  background-color: #2980b9;
-}
-
-/* Table */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-th,
-td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-th {
-  background-color: #f8f9fa;
+.panel-list-title {
   font-weight: bold;
   color: #1f2937;
-}
-
-td {
-  color: #6b7280;
-}
-
-tr:hover {
-  background-color: #f1f5f9;
 }

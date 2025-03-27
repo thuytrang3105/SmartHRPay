@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chấm Công Nhân Viên</title>
+    <link rel="stylesheet" href="../static/attendance_AC.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h3 class="sidebar-title">Payroll Manager</h3>
+          <p class="sidebar-subtitle">Hệ thống Quản lý Lương</p>
+        </div>
+        <div class="sidebar-menu">
+          <a href="{{ url_for('home_AC') }}"><i>🏠</i> Home </a>
+          <a href="{{ url_for('payroll') }}"><i>💰</i> Bảng lương nhân viên </a>
+          <a href="{{ url_for('department_report') }}"
+            ><i>📑</i> Báo cáo theo phòng ban</a
+          >
+          <a href="{{ url_for('history_payroll') }}"
+            ><i>📜</i> Lịch sử lương nhân viên</a
+          >
+          <a href="{{ url_for('get_notifications') }}"
+            ><i>🔔</i> Thông báo bảng lương</a
+          >
+          <a href="{{ url_for('attendance_AC') }}" class="active"
+            ><i>🕒</i> Chấm công
+          </a>
+          <a href="{{ url_for('logout') }}"><i>🚪</i> Đăng xuất</a>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="header header-flex">
+          <h2 class="header-title">Chấm Công Nhân Viên</h2>
+          <div class="user-info user-info-flex">
+            <img src="" alt="User avatar" class="user-avatar" />
+            <span class="user-name">Nguyễn Văn A | Quản lý</span>
+          </div>
+        </div>
+
+        <div class="panel panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">Bảng Chấm Công ({{ current_date }})</h3>
+          </div>
+          <div class="panel-body">
+            <table class="attendance-table">
+              <thead>
+                <tr>
+                  <th>ID Chấm Công</th>
+                  <th>ID Nhân Viên</th>
+                  <th>Tên nhân viên</th>
+                  <th>Ngày</th>
+                  <th>Trạng Thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="attendance-tbody">
+                {% for attendance in attendances %}
+                <tr>
+                  <td>{{ attendance.attendance_id }}</td>
+                  <td>{{ attendance.employee_id }}</td>
+                  <td>{{ attendance.employee_name}}</td>
+                  <td>{{ attendance.date }}</td>
+                  <td>{{ attendance.status }}</td>
+                  <td>
+                    <button class="detail-btn" data-employee-id="{{ attendance.employee_id }}">
+                      Chi tiết
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal cho chi tiết chấm công -->
+        <div id="detail-modal" class="modal" style="display: none;">
+          <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Chi tiết chấm công</h3>
+            <div class="date-filter">
+              <select id="month-select">
+                {% for i in range(1, 13) %}
+                  <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+              </select>
+              <select id="year-select">
+                {% for i in range(2020, 2026) %}
+                  <option value="{{ i }}" {% if i == current_year %}selected{% endif %}>
+                    {{ i }}
+                  </option>
+                {% endfor %}
+              </select>
+              <button id="filter-btn">Xem</button>
+            </div>
+            <table class="detail-table">
+              <thead>
+                <tr>
+                  <th>Ngày</th>
+                  <th>Trạng Thái</th>
+                </tr>
+              </thead>
+              <tbody id="detail-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const modal = document.getElementById("detail-modal");
+      const closeModal = document.querySelector(".close-modal");
+      let currentEmployeeId = null;
+
+      // Xử lý khi click nút Chi tiết
+      document.querySelectorAll(".detail-btn").forEach(button => {
+        button.addEventListener("click", (e) => {
+          currentEmployeeId = e.target.getAttribute("data-employee-id");
+          modal.style.display = "block";
+        });
+      });
+
+      // Đóng modal
+      closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
+      // Xử lý khi click nút Xem trong modal
+      document.getElementById("filter-btn").addEventListener("click", () => {
+        const month = document.getElementById("month-select").value;
+        const year = document.getElementById("year-select").value;
+        
+        fetch(`/api/attendance_detail?employee_id=${currentEmployeeId}&month=${month}&year=${year}`)
+          .then(response => response.json())
+          .then(data => {
+            const tbody = document.getElementById("detail-tbody");
+            tbody.innerHTML = "";
+            data.forEach(record => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${record.date}</td>
+                <td>${record.status}</td>
+              `;
+              tbody.appendChild(row);
+            });
+          })
+          .catch(error => console.error("Lỗi:", error));
+      });
+    </script>
+  </body>
+</html>

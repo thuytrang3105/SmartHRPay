@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quản Lý Công Việc và Phòng Ban</title>
+    <title>Quản Lý Phòng Ban và Chức Vụ</title>
     <link rel="stylesheet" href="../static/depart_pos.css" />
   </head>
   <body>
@@ -18,7 +18,7 @@
           </li>
           <li>
             <a href="{{ url_for('depart_pos') }}" class="active">
-              <i>👔</i> Phòng ban và công việc
+              <i>👔</i> Phòng ban và Chức vụ
             </a>
           </li>
           <li>
@@ -36,26 +36,25 @@
       </div>
     </div>
 
-
     <!-- Main Content -->
     <div class="main-content">
       <div class="header">
-        <h1>Quản Lý Công Việc và Phòng Ban</h1>
+        <h1>Quản Lý Phòng Ban và Chức Vụ</h1>
         <div class="user-info">NGUYỄN VĂN A <br />HR</div>
       </div>
       <!-- Thanh điều hướng tab -->
       <div class="tab-container">
         <button class="tab-button active" onclick="showSection('jobs')">
-          Công Việc
+          Chức VụVụ
         </button>
         <button class="tab-button" onclick="showSection('departments')">
           Phòng Ban
         </button>
       </div>
-      <!-- Phần Công Việc -->
+      <!-- Phần Chức Vụ -->
       <div id="jobs" class="section-tab" style="display: block">
         <div class="section">
-          <div class="section-title">Công Việc</div>
+          <div class="section-title">Chức Vụ</div>
           <div class="table-container">
             <div class="table-header">
               <div class="search-container">
@@ -63,21 +62,21 @@
                   type="text"
                   class="search-bar"
                   id="searchJobInput"
-                  placeholder="Tìm kiếm công việc..."
+                  placeholder="Tìm kiếm Chức Vụ..."
                 />
                 <button class="search-btn" onclick="searchJobs()">
                   Tìm kiếm
                 </button>
               </div>
               <button class="add-btn" onclick="openAddJobModal()">
-                Thêm Công Việc
+                Thêm Chức Vụ
               </button>
             </div>
             <table id="jobTable">
               <thead>
                 <tr>
-                  <th>Mã Công Việc</th>
-                  <th>Tên Công Việc</th>
+                  <th>Mã Chức Vụ</th>
+                  <th>Tên Chức Vụ</th>
                   <th>Hành Động</th>
                 </tr>
               </thead>
@@ -165,12 +164,12 @@
       </div>
     </div>
 
-    <!-- Modal Thêm Công Việc -->
+    <!-- Modal Thêm Chức Vụ -->
     <div id="addJobModal" class="modal">
       <div class="modal-content">
-        <h2>Thêm Công Việc</h2>
+        <h2>Thêm Chức vụ</h2>
         <form id="addJobForm">
-          <label for="jobTitle">Tên Công Việc:</label>
+          <label for="jobTitle">Tên Chức vụ:</label>
           <input type="text" id="jobTitle" name="job_title" required />
           <div class="modal-buttons">
             <button
@@ -212,11 +211,11 @@
       </div>
     </div>
 
-    <!-- Modal Xem Danh Sách Nhân Viên Theo Công Việc -->
+    <!-- Modal Xem Danh Sách Nhân Viên Theo chức vụ -->
     <div id="jobEmployeesModal" class="modal">
       <div class="modal-content">
         <h2>
-          Danh Sách Nhân Viên Theo Công Việc:
+          Danh Sách Nhân Viên Theo Chức Vụ:
           <span id="jobTitleDisplay"></span>
         </h2>
         <table id="jobEmployeesTable">
@@ -274,7 +273,7 @@
           .querySelector(`.tab-button[onclick="showSection('${sectionId}')"]`)
           .classList.add("active");
       }
-      // --- Công việc ---
+      // --- chức vụ ---
       function openAddJobModal() {
         document.getElementById("addJobModal").style.display = "block";
       }
@@ -310,8 +309,8 @@
               closeAddJobModal();
             })
             .catch((error) => {
-              console.error("Lỗi khi thêm công việc:", error);
-              alert("Đã xảy ra lỗi khi thêm công việc.");
+              console.error("Lỗi khi thêm chức vụ:", error);
+              alert("Đã xảy ra lỗi khi thêm chức vụ.");
             });
         });
 
@@ -335,7 +334,7 @@
             const tableBody = document.getElementById("jobEmployeesBody");
             tableBody.innerHTML = "";
             if (data.length === 0) {
-              tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc công việc này.</td></tr>`;
+              tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc chức vụ này.</td></tr>`;
             } else {
               data.forEach((emp) => {
                 const row = document.createElement("tr");
@@ -356,7 +355,7 @@
       }
 
       function deleteJob(jobId) {
-        if (confirm(`Bạn có chắc chắn muốn xóa công việc ${jobId}?`)) {
+        if (confirm(`Bạn có chắc chắn muốn xóa Chức Vụ ${jobId}?`)) {
           fetch(`/api/delete_jobjob/${jobId}`, { method: "DELETE" })
             .then((response) => response.json())
             .then((data) => {
@@ -368,8 +367,8 @@
               }
             })
             .catch((error) => {
-              console.error("Lỗi khi xóa công việc:", error);
-              alert("Đã xảy ra lỗi khi xóa công việc.");
+              console.error("Lỗi khi xóa chức vụ:", error);
+              alert("Đã xảy ra lỗi khi xóa chức vụ.");
             });
         }
       }

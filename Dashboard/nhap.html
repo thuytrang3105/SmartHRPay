@@ -134,7 +134,15 @@
             </tr>
             <tr>
               <td>Ngày công</td>
-              <td id="date">{{ salary.date }}</td>
+              <td id="present">{{ salary.present }}</td>
+            </tr>
+            <tr>
+              <td>Số ngày nghỉ phép</td>
+              <td id="absent">{{ salary.absent }}</td>
+            </tr>
+            <tr>
+              <td>Số ngày vắng</td>
+              <td id="leave">{{ salary.leave }}</td>
             </tr>
             <tr>
               <td>Khấu trừ</td>
@@ -148,43 +156,9 @@
           <p id="errorMessage" style="color: red; display: none"></p>
         </div>
       </div>
-    </div>
 
-    <div id="attendance" class="content-box" style="display: none">
-      <h3>Ngày công</h3>
-      <label><select id="attendanceMonth"></select></label>
-      <label><select id="attendanceYear"></select></label>
-      <script>
-        // Đợi trang tải xong rồi mới chạy script
-        document.addEventListener("DOMContentLoaded", function () {
-          // Điền dropdown tháng
-          const monthSelect = document.getElementById("attendanceMonth");
-          for (let i = 1; i <= 12; i++) {
-            const option = document.createElement("option");
-            option.value = i;
-            option.textContent = i;
-            monthSelect.appendChild(option);
-          }
-
-          // Điền dropdown năm
-          const yearSelect = document.getElementById("attendanceYear");
-          const currentYear = new Date().getFullYear();
-          for (let i = currentYear - 5; i <= currentYear; i++) {
-            const option = document.createElement("option");
-            option.value = i;
-            option.textContent = i;
-            yearSelect.appendChild(option);
-          }
-        });
-      </script>
-      <button onclick="showAttendance()">Xem ngày công</button>
-
-      <div id="attendanceTableContainer" style="display: none">
-        <h3>
-          Ngày công tháng <span id="selectedAttendanceMonth"></span>/<span
-            id="selectedAttendanceYear"
-          ></span>
-        </h3>
+      <div id="attendance" class="content-box" style="display: none">
+        <h3>Ngày công</h3>
         <table id="attendanceTable" border="1">
           <thead>
             <tr>
@@ -192,10 +166,12 @@
               <th>Trạng thái</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            <!-- Dữ liệu sẽ được thêm vào đây -->
+          </tbody>
         </table>
+        <p id="attendanceError" style="color: red; display: none"></p>
       </div>
-      <p id="attendanceError" style="color: red; display: none"></p>
     </div>
 
     <div class="timekeeping">
@@ -213,6 +189,10 @@
           tab === "salary" ? "block" : "none";
         document.getElementById("attendance").style.display =
           tab === "attendance" ? "block" : "none";
+
+        if (tab === "attendance") {
+          loadAttendanceData();
+        }
       }
 
       async function showSalary() {
@@ -247,7 +227,7 @@
           document.getElementById("baseSalary").textContent =
             salaryData.base_salary;
           document.getElementById("bonus").textContent = salaryData.bonus;
-          document.getElementById("date").textContent = salaryData.date;
+          document.getElementById("present").textContent = salaryData.present;
           document.getElementById("absent").textContent = salaryData.absent;
           document.getElementById("leave").textContent = salaryData.leave;
           document.getElementById("deductions").textContent =
@@ -264,32 +244,18 @@
         }
       }
 
-      async function showAttendance() {
-        const month = document.getElementById("attendanceMonth").value;
-        const year = document.getElementById("attendanceYear").value;
-        const attendanceTableContainer = document.getElementById(
-          "attendanceTableContainer"
-        );
+      async function loadAttendanceData() {
         const attendanceTableBody = document.querySelector(
           "#attendanceTable tbody"
         );
         const attendanceError = document.getElementById("attendanceError");
-        const selectedMonthSpan = document.getElementById(
-          "selectedAttendanceMonth"
-        );
-        const selectedYearSpan = document.getElementById(
-          "selectedAttendanceYear"
-        );
 
-        attendanceTableContainer.style.display = "none";
-        attendanceTableBody.innerHTML = ""; // Clear previous rows
+        attendanceTableBody.innerHTML = "";
         attendanceError.style.display = "none";
         attendanceError.textContent = "";
 
         try {
-          const response = await fetch(
-            `/api/attendance?month=${month}&year=${year}`
-          );
+          const response = await fetch("/api/attendance");
           if (!response.ok) {
             throw new Error(
               `Không thể lấy dữ liệu ngày công. Mã lỗi: ${response.status}`
@@ -297,31 +263,25 @@
           }
           const attendanceData = await response.json();
 
-          if (!attendanceData || attendanceData.length === 0) {
-            throw new Error(
-              "Không có dữ liệu ngày công cho tháng/năm đã chọn."
-            );
+          if (attendanceData.length === 0) {
+            throw new Error("Không có dữ liệu ngày công.");
           }
-
-          selectedMonthSpan.textContent = month;
-          selectedYearSpan.textContent = year;
 
           attendanceData.forEach((record) => {
             const row = document.createElement("tr");
             row.innerHTML = `
-                    <td>${record.date}</td>
-                    <td>${record.status}</td>
-                `;
+              <td>${record.date}</td>
+              <td>${record.status}</td>
+            `;
             attendanceTableBody.appendChild(row);
           });
-
-          attendanceTableContainer.style.display = "block";
         } catch (error) {
           console.error("Lỗi khi lấy dữ liệu ngày công:", error);
           attendanceError.textContent = error.message;
           attendanceError.style.display = "block";
         }
       }
+
       function getCurrentDate() {
         const today = new Date();
         return today.toISOString().split("T")[0];
@@ -350,15 +310,15 @@
           localStorage.removeItem("checkin_time");
           localStorage.removeItem("checkout_time");
           localStorage.setItem("checkin_date", currentDate);
-          document.getElementById("status").textContent = " Vắng ";
+          document.getElementById("status").textContent = "Chưa check-in";
         } else if (checkoutTime) {
           document.getElementById(
             "status"
-          ).textContent = `Nghỉ : ${checkoutTime}`;
+          ).textContent = `Đã check-out lúc ${checkoutTime}`;
         } else if (checkinTime) {
           document.getElementById(
             "status"
-          ).textContent = ` Có mặt : ${checkinTime}`;
+          ).textContent = `Đã check-in lúc ${checkinTime}`;
         }
       }
 

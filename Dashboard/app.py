@@ -1,7 +1,26 @@
 from flask import Flask, render_template, request, jsonify, redirect , url_for 
+from flask_sqlalchemy import SQLAlchemy
 import random
-
+import config
+import datetime
 app = Flask(__name__)
+
+app.config["SQLALCHEMY_BINDS"] = {
+"default": config.SQL_SERVER_CONN, # Thêm dòng này để tránh lỗi
+"mysql": config.MYSQL_CONN
+}
+db = SQLAlchemy(app)
+class LuongNhanVien(db.Model):
+    __tablename__ = "LuongNhanVien"
+    __bind_key__ = "mysql"
+    MaLuong = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    MaNV = db.Column(db.Integer, db.ForeignKey("HoSoNhanVien.MaNV"))
+    ThangNam = db.Column(db.Date)
+    LuongCoBan = db.Column(db.Float)
+    PhuCap = db.Column(db.Float)
+    Thuong = db.Column(db.Float)
+    KhauTru = db.Column(db.Float)
+    LuongThucNhan = db.Column(db.Float)
 
 @app.route("/")
 def home ():
@@ -9,9 +28,6 @@ def home ():
 
 ######################################################################################################################
 
-@app.route("/salary-nv")
-def salary_nv():
-    return render_template("salary_nv.html")
 
 def get_salary_data(month, year):
     # Giả lập dữ liệu lương, có thể thay bằng truy vấn DB thực tế
@@ -20,22 +36,59 @@ def get_salary_data(month, year):
         return {
             "base_salary": "12,000,000 VND",
             "bonus": "3,000,000 VND",
-            "present": "23",
-            "absent": "1",
-            "leave": "0",
+            "date": "23",
             "deductions": "400,000 VND",
             "net_salary": "14,600,000 VND"
         }
     return {
         "base_salary": "10,000,000 VND",
         "bonus": "2,000,000 VND",
-        "present": "22",
-        "absent": "2",
-        "leave": "1",
+        "date": "22",
         "deductions": "500,000 VND",
         "net_salary": "11,500,000 VND"
     }
 
+def get_attendance_data(month, year):
+    # Simulate attendance data based on month and year
+    attendance_data = {
+        "3/2025": [
+            {"date": "01/03/2025", "status": "Có mặt"},
+            {"date": "02/03/2025", "status": "Có mặt"},
+            {"date": "03/03/2025", "status": "Vắng"},
+            {"date": "04/03/2025", "status": "Nghỉ phép"},
+            {"date": "05/03/2025", "status": "Có mặt"}
+        ],
+        "1/2020": [
+            {"date": "01/01/2020", "status": "Có mặt"},
+            {"date": "02/01/2020", "status": "Có mặt"},
+            {"date": "03/01/2020", "status": "Vắng"},
+            {"date": "04/01/2020", "status": "Nghỉ phép"}
+        ],
+        "8/2020": [
+            {"date": "26/08/2020", "status": "Có mặt"},
+            {"date": "27/08/2020", "status": "Có mặt"},
+            {"date": "28/08/2020", "status": "Vắng"},
+            {"date": "29/08/2020", "status": "Nghỉ"}
+        ]
+    }
+    
+    # Convert month and year to a key format
+    key = f"{month}/{year}"
+    
+    # Return data for the specific month/year, or an empty list if not found
+    return attendance_data.get(key, [])
+
+@app.route('/api/attendance', methods=['GET'])
+def fetch_attendance_data():
+    month = request.args.get('month', '1')
+    year = request.args.get('year', '2020')
+    
+    try:
+        attendance_data = get_attendance_data(month, year)
+        return jsonify(attendance_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 @app.route('/home-nv', methods=['GET', 'POST'])
 def home_nv():
     # Dữ liệu thông tin cá nhân của nhân viên (giả lập)
@@ -48,7 +101,7 @@ def home_nv():
         "start_date": "01/01/2022",
         "department_name": "IT",
         "job_title": "Developer",
-        "status": "Đang làm việc"
+        "status": "Có mặt"
     }
 
     # Dữ liệu thông báo cho nhân viên (giả lập)
@@ -69,13 +122,12 @@ def home_nv():
     salary = get_salary_data("1", "2020")
     selected_month = "1"
     selected_year = "2020"
+    
+    selected_month = "1"
+    selected_year = "2020"
+    attendance = get_attendance_data("selected_month", "selected_year")
 
-    if request.method == 'POST':
-        selected_month = request.form.get('month')
-        selected_year = request.form.get('year')
-        salary = get_salary_data(selected_month, selected_year)
-
-    return render_template("home_nv.html", employee=employee, notifications=notifications, salary=salary, selected_month=selected_month, selected_year=selected_year)
+    return render_template("home_nv.html", employee=employee, notifications=notifications, salary=salary,attendance=attendance, selected_month=selected_month, selected_year=selected_year)
 
 # API để lấy dữ liệu lương theo tháng/năm
 @app.route('/api/salary', methods=['GET'])
@@ -109,20 +161,20 @@ def home_AC():
 def payroll():
     # Danh sách nhân viên với nhiều dữ liệu hơn
     payroll_data = [
-        {"id": "NV001", "name": "Nguyễn Văn B", "department": "Công nghệ thông tin", "position": "senior", "base_salary": 15000000, "bonus": 2000000, "deduction": 1500000},
-        {"id": "NV002", "name": "Trần Thị C", "department": "Nhân sự", "position": "manager", "base_salary": 12000000, "bonus": 1500000, "deduction": 800000},
-        {"id": "NV003", "name": "Lê Văn D", "department": "Kinh doanh", "position": "team_lead", "base_salary": 14000000, "bonus": 3000000, "deduction": 1200000},
-        {"id": "NV004", "name": "Phạm Thị E", "department": "Marketing", "position": "junior", "base_salary": 13000000, "bonus": 1800000, "deduction": 1000000},
-        {"id": "NV005", "name": "Hoàng Minh G", "department": "Công nghệ thông tin", "position": "team_lead", "base_salary": 17000000, "bonus": 2500000, "deduction": 1400000},
-        {"id": "NV006", "name": "Đặng Thị H", "department": "Nhân sự", "position": "junior", "base_salary": 11000000, "bonus": 1000000, "deduction": 500000},
-        {"id": "NV007", "name": "Ngô Văn K", "department": "Kinh doanh", "position": "manager", "base_salary": 20000000, "bonus": 5000000, "deduction": 2000000},
-        {"id": "NV008", "name": "Phan Văn M", "department": "Marketing", "position": "senior", "base_salary": 15500000, "bonus": 2200000, "deduction": 1100000},
-        {"id": "NV009", "name": "Lương Thị O", "department": "Công nghệ thông tin", "position": "junior", "base_salary": 14000000, "bonus": 1800000, "deduction": 900000},
-        {"id": "NV010", "name": "Bùi Văn P", "department": "Nhân sự", "position": "team_lead", "base_salary": 13500000, "bonus": 1700000, "deduction": 1000000},
+        ({"payroll_id":"B001"},{"employee_id": "NV001", "employee_name": "Nguyễn Văn B", "department_name": "Công nghệ thông tin", "job_title": "senior", "base_salary": 15000000, "bonus": 2000000, "deduction": 1500000},),
+        ({"payroll_id":"B002"},{"employee_id": "NV002", "employee_name": "Trần Thị C", "department_name": "Nhân sự", "job_title": "manager", "base_salary": 12000000, "bonus": 1500000, "deduction": 800000},),
+        ({"payroll_id":"B003"},{"employee_id": "NV003", "employee_name": "Lê Văn D", "department_name": "Kinh doanh", "job_title": "team_lead", "base_salary": 14000000, "bonus": 3000000, "deduction": 1200000},),
+        ({"payroll_id":"B004"},{"employee_id": "NV004", "employee_name": "Phạm Thị E", "department_name": "Marketing", "job_title": "junior", "base_salary": 13000000, "bonus": 1800000, "deduction": 1000000},),
+        ({"payroll_id":"B005"},{"employee_id": "NV005", "employee_name": "Hoàng Minh G", "department_name": "Công nghệ thông tin", "job_title": "team_lead", "base_salary": 17000000, "bonus": 2500000, "deduction": 1400000},),
+        ({"payroll_id":"B006"},{"employee_id": "NV006", "employee_name": "Đặng Thị H", "department_name": "Nhân sự", "job_title": "junior", "base_salary": 11000000, "bonus": 1000000, "deduction": 500000},),
+        ({"payroll_id":"B007"},{"employee_id": "NV007", "employee_name": "Ngô Văn K", "department_name": "Kinh doanh", "job_title": "manager", "base_salary": 20000000, "bonus": 5000000, "deduction": 2000000},),
+        ({"payroll_id":"B008"},{"employee_id": "NV008", "employee_name": "Phan Văn M", "department_name": "Marketing", "job_title": "senior", "base_salary": 15500000, "bonus": 2200000, "deduction": 1100000},),
+        ({"payroll_id":"B009"},{"employee_id": "NV009", "employee_name": "Lương Thị O", "department_name": "Công nghệ thông tin", "job_title": "junior", "base_salary": 14000000, "bonus": 1800000, "deduction": 900000},),
+        ({"payroll_id":"B010"},{"employee_id": "NV010", "employee_name": "Bùi Văn P", "department_name": "Nhân sự", "job_title": "team_lead", "base_salary": 13500000, "bonus": 1700000, "deduction": 1000000},),
     ]
     
     # Tính tổng lương
-    for employee in payroll_data:
+    for payroll, employee in payroll_data:
         employee["total_salary"] = employee["base_salary"] + employee["bonus"] - employee["deduction"]
 
     # Nhận giá trị lọc từ request
@@ -214,7 +266,49 @@ def get_notifications():
         "timestamp": "20/03/2025 09:45"
     }]
     return render_template("notifications_AC.html",notifications=notifications)
+@app.route('/attendance_AC')
+def attendance_AC():
+    # Dữ liệu mẫu
+    attendances = [
+        {"attendance_id": "CC001", "employee_id": "NV001", "employee_name": "Nguyễn Văn A", "date": "2025-03-27", "status": "Có mặt"},
+        {"attendance_id": "CC002", "employee_id": "NV002", "employee_name": "Nguyễn Văn B", "date": "2025-03-27", "status": "Vắng"},
+        {"attendance_id": "CC003", "employee_id": "NV003", "employee_name": "Nguyễn Văn C", "date": "2025-03-27", "status": "Nghỉ"}
+    ]
+    
+    current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+    
 
+    return render_template(
+        'attendance_AC.html',
+        attendances=attendances,
+        current_date=current_date,
+        current_year=datetime.datetime.now().year
+    )
+
+@app.route('/api/attendance_detail')
+def attendance_detail():
+    employee_id = request.args.get('employee_id')
+    month = request.args.get('month')
+    year = request.args.get('year')
+    sample_details = {
+        "NV001": [
+            {"date": f"{year}-{month.zfill(2)}-01", "status": "Có mặt"},
+            {"date": f"{year}-{month.zfill(2)}-02", "status": "Có mặt"},
+            {"date": f"{year}-{month.zfill(2)}-03", "status": "Nghỉ"}
+        ],
+        "NV002": [
+            {"date": f"{year}-{month.zfill(2)}-01", "status": "Vắng"},
+            {"date": f"{year}-{month.zfill(2)}-02", "status": "Có mặt"},
+            {"date": f"{year}-{month.zfill(2)}-03", "status": "Vắng"}
+        ],
+        "NV003": [
+            {"date": f"{year}-{month.zfill(2)}-01", "status": "Nghỉ"},
+            {"date": f"{year}-{month.zfill(2)}-02", "status": "Nghỉ"},
+            {"date": f"{year}-{month.zfill(2)}-03", "status": "Có mặt"}
+        ]
+    }
+    return jsonify(sample_details.get(employee_id, []))
+    
 
 ##################################################################################################################
 # Dữ liệu mẫu (có thể thay bằng database thực tế)
