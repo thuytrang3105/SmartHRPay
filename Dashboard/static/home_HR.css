@@ -59,18 +59,24 @@ body {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  background: url('../static/2708.jpg') no-repeat center center;
+  background-size: cover;
 }
 
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  justify-content: center;  /* Căn giữa theo chiều ngang */
+  align-items: center;  /* Căn giữa theo chiều dọc */
+  text-align: center;
+  height: 100px; /* Điều chỉnh chiều cao */
 }
 
 .header h1 {
-  font-size: 24px;
+  font-size: 40px; /* Tăng kích thước chữ */
+  font-weight: bold;
+  margin: 0;
 }
+
 
 .user-info {
   font-size: 14px;
