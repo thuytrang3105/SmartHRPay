@@ -71,88 +71,68 @@
               <div class="search-box">
                 <i class="fa fa-search"></i>
                 <input type="text" placeholder="Tìm kiếm nhân viên..." />
-              
+              </div>
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Mã NV</th>
-                  <th>Họ và tên</th>
-                  <th>Phòng ban</th>
-                  <th>Lương cơ bản</th>
-                  <th>Thưởng</th>
-                  <th>Khấu trừ</th>
-                  <th>Tổng lương</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for employee in payroll_data %}
-                {% if (not selected_department or employee.department|lower == selected_department) and (not selected_position or employee.position|lower == selected_position) %}
-                <tr>
-                  <td>{{ employee.id }}</td>
-                  <td>{{ employee.name }}</td>
-                  <td>{{ employee.department }}</td>
-                  <td>{{ "{:,.0f}".format(employee.base_salary) }} đ</td>
-                  <td>{{ "{:,.0f}".format(employee.bonus) }} đ</td>
-                  <td>{{ "{:,.0f}".format(employee.deduction) }} đ</td>
-                  <td>{{ "{:,.0f}".format(employee.total_salary) }} đ</td>
-                  <td class="table-actions">
-                    <button class="btn btn-sm btn-warning edit-payroll">Sửa</button>
-                    <button class="btn btn-sm btn-success">Chi tiết</button>
-                  </td>
-                </tr>
-                {% endif %}
-                {% endfor %}
-                {% if payroll_data|length == 0 %}
-                <tr>
-                  <td colspan="8" class="text-center">Không có dữ liệu nhân viên nào phù hợp.</td>
-                </tr>
-                {% endif %}
-              </tbody>
-              
-              <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                  const departmentSelect = document.getElementById("department-filter");
-                  const positionSelect = document.getElementById("position-filter");
-              
-                  function applyFilters() {
-                    const selectedDepartment = departmentSelect.value;
-                    const selectedPosition = positionSelect.value;
-                    
-                    let url = "/payroll";
-                    let params = [];
-                    if (selectedDepartment) params.push(`department=${selectedDepartment}`);
-                    if (selectedPosition) params.push(`position=${selectedPosition}`);
-                    if (params.length) url += "?" + params.join("&");
-                    
-                    window.location.href = url;
-                  }
-              
-                  departmentSelect.addEventListener("change", applyFilters);
-                  positionSelect.addEventListener("change", applyFilters);
-                });
-              </script>
-              
               <label>Phòng ban</label>
               <select id="department-filter">
                 <option value="">Chọn phòng ban</option>
-                <option value="it">Công nghệ thông tin</option>
-                <option value="hr">Nhân sự</option>
-                <option value="sales">Kinh doanh</option>
-                <option value="marketing">Marketing</option>
+                {% for dept in departments %}
+                <option value="{{ dept|lower }}" {% if selected_department == dept|lower %}selected{% endif %}>{{ dept }}</option>
+                {% endfor %}
               </select>
-              
+
               <label>Chức vụ</label>
               <select id="position-filter">
                 <option value="">Chọn chức vụ</option>
-                <option value="manager">Trưởng phòng</option>
-                <option value="team_lead">Trưởng nhóm</option>
-                <option value="senior">Nhân viên cao cấp</option>
-                <option value="junior">Nhân viên</option>
+                {% for pos in positions %}
+                <option value="{{ pos|lower }}" {% if selected_position == pos|lower %}selected{% endif %}>{{ pos }}</option>
+                {% endfor %}
               </select>
-              
-            </table>
+
+              <!-- Nút Bỏ lọc: Chỉ hiển thị khi có bộ lọc được áp dụng -->
+              {% if selected_department or selected_position %}
+              <button id="clear-filter" class="btn" style="background-color: #f5f5f5; color: #333; border: 1px solid #ddd; margin-left: 10px;">
+                Bỏ lọc
+              </button>
+              {% endif %}
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mã NV</th>
+                    <th>Họ và tên</th>
+                    <th>Phòng ban</th>
+                    <th>Lương cơ bản</th>
+                    <th>Thưởng</th>
+                    <th>Khấu trừ</th>
+                    <th>Tổng lương</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for employee in payroll_data %}
+                  <tr>
+                    <td>{{ employee.id_dp }}</td>
+                    <td>{{ employee.name }}</td>
+                    <td>{{ employee.department }}</td>
+                    <td>{{ "{:,.0f}".format(employee.base_salary) }} đ</td>
+                    <td>{{ "{:,.0f}".format(employee.bonus) }} đ</td>
+                    <td>{{ "{:,.0f}".format(employee.deduction) }} đ</td>
+                    <td>{{ "{:,.0f}".format(employee.total_salary) }} đ</td>
+                    <td class="table-actions">
+                      <button class="btn btn-sm btn-warning edit-payroll" data-id="{{ employee.id }}">Sửa</button>
+                      <a href="{{ url_for('payroll_detail', employee_id=employee.id) }}" class="btn btn-sm btn-success" >Chi tiết </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  {% if payroll_data|length == 0 %}
+                  <tr>
+                    <td colspan="8" class="text-center">Không có dữ liệu nhân viên nào phù hợp.</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -162,82 +142,72 @@
     <div id="employee-modal" class="modal-backdrop" style="display: none">
       <div class="modal">
         <div class="modal-header">
-          <h3>Thêm nhân viên mới</h3>
-          <button
-            id="close-modal"
-            style="background: none; border: none; cursor: pointer"
-          >
+          <h3 id="modal-title">Thêm nhân viên mới</h3>
+          <button id="close-modal" style="background: none; border: none; cursor: pointer">
             <i class="fa fa-times"></i>
           </button>
         </div>
         <div class="modal-body">
-          <div class="grid-cols-2 mb-4">
-            <div>
-              <label>Mã nhân viên</label>
-              <input type="text" placeholder="Nhập mã nhân viên" />
+          <form id="employee-form">
+            <input type="hidden" id="employee-id" name="employee_id">
+            <div class="grid-cols-2 mb-4">
+              <div>
+                <label>Mã nhân viên</label>
+                <input type="text" id="employee-id-dp" name="id_dp" readonly />
+              </div>
+              <div>
+                <label>Họ và tên</label>
+                <input type="text" id="employee-name" name="name" placeholder="Nhập họ và tên" />
+              </div>
             </div>
-            <div>
-              <label>Họ và tên</label>
-              <input type="text" placeholder="Nhập họ và tên" />
-            </div>
-          </div>
 
-          <div class="grid-cols-2 mb-4">
-            <div>
-              <label>Phòng ban</label>
-              <select>
-                <option value="">Chọn phòng ban</option>
-                <option value="it">Công nghệ thông tin</option>
-                <option value="hr">Nhân sự</option>
-                <option value="sales">Kinh doanh</option>
-                <option value="marketing">Marketing</option>
-              </select>
+            <div class="grid-cols-2 mb-4">
+              <div>
+                <label>Phòng ban</label>
+                <select id="employee-department" name="department">
+                  <option value="">Chọn phòng ban</option>
+                  {% for dept in departments %}
+                  <option value="{{ dept }}">{{ dept }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label>Chức vụ</label>
+                <select id="employee-position" name="position">
+                  <option value="">Chọn chức vụ</option>
+                  {% for pos in positions %}
+                  <option value="{{ pos }}">{{ pos }}</option>
+                  {% endfor %}
+                </select>
+              </div>
             </div>
-            <div>
-              <label>Chức vụ</label>
-              <select>
-                <option value="">Chọn chức vụ</option>
-                <option value="manager">Trưởng phòng</option>
-                <option value="team_lead">Trưởng nhóm</option>
-                <option value="senior">Nhân viên cao cấp</option>
-                <option value="junior">Nhân viên</option>
-              </select>
-            </div>
-          </div>
 
-          <div class="grid-cols-3 mb-4">
-            <div>
-              <label>Lương cơ bản</label>
-              <input type="text" placeholder="Nhập lương cơ bản" />
+            <div class="grid-cols-3 mb-4">
+              <div>
+                <label>Lương cơ bản</label>
+                <input type="number" id="base-salary" name="base_salary" placeholder="Nhập lương cơ bản" />
+              </div>
+              <div>
+                <label>Thưởng</label>
+                <input type="number" id="bonus" name="bonus" placeholder="Nhập thưởng" />
+              </div>
+              <div>
+                <label>Khấu trừ</label>
+                <input type="number" id="deduction" name="deduction" placeholder="Nhập khấu trừ" />
+              </div>
             </div>
-            <div>
-              <label>Thưởng</label>
-              <input type="text" placeholder="Nhập thưởng" />
-            </div>
-            <div>
-              <label>Khấu trừ</label>
-              <input type="text" placeholder="Nhập khấu trừ" />
-            </div>
-          </div>
 
-          <div class="mb-4">
-            <label>Ghi chú</label>
-            <textarea rows="3" placeholder="Nhập ghi chú (nếu có)"></textarea>
-          </div>
+            <div class="mb-4">
+              <label>Ghi chú</label>
+              <textarea id="note" name="note" rows="3" placeholder="Nhập ghi chú (nếu có)"></textarea>
+            </div>
+          </form>
         </div>
         <div class="modal-footer">
-          <button
-            id="cancel-modal"
-            class="btn"
-            style="
-              background-color: #f5f5f5;
-              color: #333;
-              border: 1px solid #ddd;
-            "
-          >
+          <button id="cancel-modal" class="btn" style="background-color: #f5f5f5; color: #333; border: 1px solid #ddd;">
             Hủy bỏ
           </button>
-          <button class="btn">Lưu</button>
+          <button id="save-employee" class="btn">Lưu</button>
         </div>
       </div>
     </div>
@@ -257,7 +227,6 @@
         }
       }
 
-      // Initial check and on resize
       handleResponsive();
       window.addEventListener("resize", handleResponsive);
 
@@ -266,16 +235,23 @@
       const showModalBtn = document.getElementById("show-modal");
       const closeModalBtn = document.getElementById("close-modal");
       const cancelModalBtn = document.getElementById("cancel-modal");
+      const saveBtn = document.getElementById("save-employee");
+      const modalTitle = document.getElementById("modal-title");
 
       function toggleModal() {
         modal.style.display = modal.style.display === "none" ? "flex" : "none";
       }
 
-      showModalBtn.addEventListener("click", toggleModal);
+      showModalBtn.addEventListener("click", () => {
+        modalTitle.textContent = "Thêm nhân viên mới";
+        document.getElementById("employee-form").reset();
+        document.getElementById("employee-id").value = "";
+        toggleModal();
+      });
+
       closeModalBtn.addEventListener("click", toggleModal);
       cancelModalBtn.addEventListener("click", toggleModal);
 
-      // Close modal when clicking outside
       modal.addEventListener("click", function (e) {
         if (e.target === this) {
           toggleModal();
@@ -286,11 +262,93 @@
       const editButtons = document.querySelectorAll(".edit-payroll");
       editButtons.forEach((button) => {
         button.addEventListener("click", function () {
-          // In a real application, this would load employee data into the modal
-          document.querySelector(".modal-header h3").textContent =
-            "Chỉnh sửa nhân viên";
-          toggleModal();
+          const employeeId = this.getAttribute("data-id");
+          fetch(`/get_employee/${employeeId}`)
+            .then(response => response.json())
+            .then(data => {
+              if (data.error) {
+                alert(data.error);
+                return;
+              }
+
+              // Điền thông tin cũ vào form
+              modalTitle.textContent = "Chỉnh sửa nhân viên";
+              document.getElementById("employee-id").value = data.employee_id;
+              document.getElementById("employee-id-dp").value = data.id_dp;
+              document.getElementById("employee-name").value = data.name;
+              document.getElementById("employee-department").value = data.department;
+              document.getElementById("employee-position").value = data.position;
+              document.getElementById("base-salary").value = data.base_salary;
+              document.getElementById("bonus").value = data.bonus;
+              document.getElementById("deduction").value = data.deduction;
+              document.getElementById("note").value = data.note || "";
+              toggleModal();
+            })
+            .catch(error => {
+              console.error("Lỗi:", error);
+              alert("Đã có lỗi xảy ra khi lấy thông tin nhân viên.");
+            });
         });
+      });
+
+      // Handle save button
+      saveBtn.addEventListener("click", function () {
+        const employeeId = document.getElementById("employee-id").value;
+        const formData = new FormData(document.getElementById("employee-form"));
+
+        if (employeeId) {
+          // Cập nhật nhân viên
+          fetch(`/update_employee/${employeeId}`, {
+            method: "POST",
+            body: formData
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.error) {
+                alert(data.error);
+                return;
+              }
+              alert(data.message);
+              toggleModal();
+              window.location.reload(); // Tải lại trang để cập nhật bảng
+            })
+            .catch(error => {
+              console.error("Lỗi:", error);
+              alert("Đã có lỗi xảy ra khi cập nhật nhân viên.");
+            });
+        } else {
+          // Thêm nhân viên mới (logic này cần được triển khai nếu bạn muốn hỗ trợ thêm nhân viên)
+          alert("Chức năng thêm nhân viên chưa được triển khai.");
+        }
+      });
+
+      // Handle filter dropdowns
+      document.addEventListener("DOMContentLoaded", function() {
+        const departmentSelect = document.getElementById("department-filter");
+        const positionSelect = document.getElementById("position-filter");
+        const clearFilterBtn = document.getElementById("clear-filter");
+
+        function applyFilters() {
+          const selectedDepartment = departmentSelect.value;
+          const selectedPosition = positionSelect.value;
+
+          let url = "/payroll_AC";
+          let params = [];
+          if (selectedDepartment) params.push(`department=${selectedDepartment}`);
+          if (selectedPosition) params.push(`position=${selectedPosition}`);
+          if (params.length) url += "?" + params.join("&");
+
+          window.location.href = url;
+        }
+
+        departmentSelect.addEventListener("change", applyFilters);
+        positionSelect.addEventListener("change", applyFilters);
+
+        if (clearFilterBtn) {
+          clearFilterBtn.addEventListener("click", function() {
+            window.location.href = "/payroll_AC";
+          });
+        }
       });
     </script>
   </body>

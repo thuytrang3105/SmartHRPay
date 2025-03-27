@@ -1,7 +1,20 @@
 from flask import Flask, render_template, request, jsonify, redirect , url_for 
+from module  import db, UserAccount ,Employee, Department, Job, Payroll , HumanEmployee, HumanPayroll, HumanDepartment, HumanJob, Shareholder
 import random
 
 app = Flask(__name__)
+
+# Cấu hình database (đảm bảo đã cấu hình đúng trong ứng dụng Flask của bạn)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://@HUMAN_SERVER/HUMAN_2025?driver=ODBC+Driver+17+for+SQL+Server'
+app.config['SQLALCHEMY_BINDS'] = {
+    'user': 'mysql+pymysql://root:123456123456@localhost/user',  # MySQL schema user
+    'payroll': 'mysql+pymysql://root:123456123456@localhost/payroll',  # MySQL schema payroll
+    'human': 'mssql+pyodbc://@HUMAN_SERVER/HUMAN_2025?driver=ODBC+Driver+17+for+SQL+Server'  # SQL Server database human
+}
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Khởi tạo db với ứng dụng Flask
+db.init_app(app)
 
 @app.route("/")
 def home ():
@@ -107,41 +120,245 @@ def home_AC():
 
 @app.route('/payroll_AC')
 def payroll():
-    # Danh sách nhân viên với nhiều dữ liệu hơn
-    payroll_data = [
-        {"id": "NV001", "name": "Nguyễn Văn B", "department": "Công nghệ thông tin", "position": "senior", "base_salary": 15000000, "bonus": 2000000, "deduction": 1500000},
-        {"id": "NV002", "name": "Trần Thị C", "department": "Nhân sự", "position": "manager", "base_salary": 12000000, "bonus": 1500000, "deduction": 800000},
-        {"id": "NV003", "name": "Lê Văn D", "department": "Kinh doanh", "position": "team_lead", "base_salary": 14000000, "bonus": 3000000, "deduction": 1200000},
-        {"id": "NV004", "name": "Phạm Thị E", "department": "Marketing", "position": "junior", "base_salary": 13000000, "bonus": 1800000, "deduction": 1000000},
-        {"id": "NV005", "name": "Hoàng Minh G", "department": "Công nghệ thông tin", "position": "team_lead", "base_salary": 17000000, "bonus": 2500000, "deduction": 1400000},
-        {"id": "NV006", "name": "Đặng Thị H", "department": "Nhân sự", "position": "junior", "base_salary": 11000000, "bonus": 1000000, "deduction": 500000},
-        {"id": "NV007", "name": "Ngô Văn K", "department": "Kinh doanh", "position": "manager", "base_salary": 20000000, "bonus": 5000000, "deduction": 2000000},
-        {"id": "NV008", "name": "Phan Văn M", "department": "Marketing", "position": "senior", "base_salary": 15500000, "bonus": 2200000, "deduction": 1100000},
-        {"id": "NV009", "name": "Lương Thị O", "department": "Công nghệ thông tin", "position": "junior", "base_salary": 14000000, "bonus": 1800000, "deduction": 900000},
-        {"id": "NV010", "name": "Bùi Văn P", "department": "Nhân sự", "position": "team_lead", "base_salary": 13500000, "bonus": 1700000, "deduction": 1000000},
-    ]
-    
-    # Tính tổng lương
-    for employee in payroll_data:
-        employee["total_salary"] = employee["base_salary"] + employee["bonus"] - employee["deduction"]
+    with app.app_context():
+        # Truy vấn dữ liệu từ các bảng liên quan
+        payroll_query = db.session.query(
+            Employee.employee_id.label('id'),
+            db.func.concat(Employee.first_name, ' ', Employee.last_name).label('name'),
+            Department.department_name.label('department'),
+            Job.job_title.label('position'),
+            Payroll.base_salary,
+            Payroll.bonus,
+            Payroll.deductions
+        ).join(
+            Department, Employee.department_id == Department.department_id
+        ).join(
+            Job, Employee.job_id == Job.job_id
+        ).join(
+            Payroll, Employee.employee_id == Payroll.employee_id
+        ).all()
 
-    # Nhận giá trị lọc từ request
-    selected_department = request.args.get("department", "").lower()
-    selected_position = request.args.get("position", "").lower()
+        # Chuyển đổi dữ liệu từ truy vấn thành danh sách dictionary
+        payroll_data = [
+            {
+                "id": row.id,
+                "id_dp": f"NV{str(row.id).zfill(3)}",  # Định dạng ID thành NV001, NV002,...
+                "name": row.name,
+                "department": row.department,
+                "position": row.position,
+                "base_salary": float(row.base_salary or 0),
+                "bonus": float(row.bonus or 0),
+                "deduction": float(row.deductions or 0)
+            }
+            for row in payroll_query
+        ]
 
-    # Lọc dữ liệu
-    filtered_data = [
-        emp for emp in payroll_data
-        if (not selected_department or emp["department"].lower() == selected_department)
-        and (not selected_position or emp["position"].lower() == selected_position)
-    ]
+        # Tính tổng lương (net_salary)
+        for employee in payroll_data:
+            employee["total_salary"] = employee["base_salary"] + employee["bonus"] - employee["deduction"]
+            
+        # Lấy danh sách phòng ban từ database
+        departments = Department.query.all()
+        department_list = [dept.department_name for dept in departments]
 
-    return render_template(
-        'payroll_AC.html', 
-        payroll_data=filtered_data, 
-        selected_department=selected_department, 
-        selected_position=selected_position
+        # Lấy danh sách chức vụ từ database
+        jobs = Job.query.all()
+        position_list = [job.job_title for job in jobs]
+
+        # Nhận giá trị lọc từ request
+        selected_department = request.args.get("department", "").lower()
+        selected_position = request.args.get("position", "").lower()
+
+        # Lọc dữ liệu
+        filtered_data = [
+            emp for emp in payroll_data
+            if (not selected_department or emp["department"].lower() == selected_department)
+            and (not selected_position or emp["position"].lower() == selected_position)
+        ]
+
+    return render_template (
+        'payroll_AC.html',
+        payroll_data=filtered_data, #truyền data
+        selected_department=selected_department, #phòng ban được lọc
+        selected_position=selected_position, #chức vụ được lọc 
+        departments=department_list,  # Truyền danh sách phòng ban
+        positions=position_list      # Truyền danh sách chức vụ
     )
+    
+# Route để xem chi tiết nhân viên
+@app.route('/payroll_detail/<int:employee_id>')
+def payroll_detail(employee_id):
+    with app.app_context():
+        # Truy vấn thông tin chi tiết của nhân viên
+        employee_detail = db.session.query(
+            Employee.employee_id.label('id'),
+            db.func.concat(Employee.first_name, ' ', Employee.last_name).label('name'),
+            Employee.email,
+            Employee.phone,
+            Employee.hire_date,
+            Employee.status,
+            Department.department_name.label('department'),
+            Job.job_title.label('position'),
+            Payroll.base_salary,
+            Payroll.bonus,
+            Payroll.deductions,
+            Payroll.pay_date
+        ).join(
+            Department, Employee.department_id == Department.department_id
+        ).join(
+            Job, Employee.job_id == Job.job_id
+        ).join(
+            Payroll, Employee.employee_id == Payroll.employee_id
+        ).filter(
+            Employee.employee_id == employee_id
+        ).first()
+
+        if not employee_detail:
+            return "Nhân viên không tồn tại", 404
+
+        # Chuyển đổi dữ liệu chi tiết
+        detail_data = {
+            "id": f"NV{str(employee_detail.id).zfill(3)}",
+            "name": employee_detail.name,
+            "email": employee_detail.email,
+            "phone": employee_detail.phone,
+            "hire_date": employee_detail.hire_date,
+            "status": employee_detail.status,
+            "department": employee_detail.department,
+            "position": employee_detail.position,
+            "base_salary": float(employee_detail.base_salary or 0),
+            "bonus": float(employee_detail.bonus or 0),
+            "deduction": float(employee_detail.deductions or 0),
+            "total_salary": float(employee_detail.base_salary or 0) + float(employee_detail.bonus or 0) - float(employee_detail.deductions or 0),
+            "pay_date": employee_detail.pay_date
+        }
+
+    return render_template('payroll_detail.html', employee=detail_data)
+
+# Route để lấy thông tin chi tiết nhân viên (dùng cho nút Sửa)
+@app.route('/get_employee/<int:employee_id>', methods=['GET'])
+def get_employee(employee_id):
+    with app.app_context():
+        # Truy vấn thông tin chi tiết nhân viên từ database payroll
+        employee = db.session.query(
+            Employee.employee_id,
+            db.func.concat(Employee.first_name, ' ', Employee.last_name).label('name'),
+            Department.department_name.label('department'),
+            Job.job_title.label('position'),
+            Payroll.base_salary,
+            Payroll.bonus,
+            Payroll.deductions,
+            Payroll.note
+        ).join(
+            Department, Employee.department_id == Department.department_id
+        ).join(
+            Job, Employee.job_id == Job.job_id
+        ).join(
+            Payroll, Employee.employee_id == Payroll.employee_id
+        ).filter(
+            Employee.employee_id == employee_id
+        ).first()
+
+        if not employee:
+            return jsonify({'error': 'Nhân viên không tồn tại'}), 404
+
+        employee_data = {
+            'employee_id': employee.employee_id,
+            'id_dp': f"NV{str(employee.employee_id).zfill(3)}",
+            'name': employee.name,
+            'department': employee.department,
+            'position': employee.position,
+            'base_salary': float(employee.base_salary or 0),
+            'bonus': float(employee.bonus or 0),
+            'deduction': float(employee.deductions or 0),
+            'note': employee.note or '',
+            'total_salary': float(employee.base_salary or 0) + float(employee.bonus or 0) - float(employee.deductions or 0)
+        }
+
+        return jsonify(employee_data)
+
+# Route để cập nhật thông tin nhân viên
+@app.route('/update_employee/<int:employee_id>', methods=['POST'])
+def update_employee(employee_id):
+    with app.app_context():
+        data = request.form
+
+        # Lấy thông tin từ form
+        name = data.get('name')
+        department_name = data.get('department')
+        position_name = data.get('position')
+        base_salary = float(data.get('base_salary', 0))
+        bonus = float(data.get('bonus', 0))
+        deduction = float(data.get('deduction', 0))
+        note = data.get('note', '')
+
+        # Tách first_name và last_name từ name
+        name_parts = name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+
+        # Lấy department_id và job_id từ tên phòng ban và chức vụ
+        department = Department.query.filter_by(department_name=department_name).first()
+        job = Job.query.filter_by(job_title=position_name).first()
+
+        if not department or not job:
+            return jsonify({'error': 'Phòng ban hoặc chức vụ không tồn tại'}), 400
+
+        # Cập nhật trong database payroll
+        employee = Employee.query.filter_by(employee_id=employee_id).first()
+        if employee:
+            employee.first_name = first_name
+            employee.last_name = last_name
+            employee.department_id = department.department_id
+            employee.job_id = job.job_id
+            employee.salary = base_salary  # Cập nhật salary trong bảng Employee
+
+        payroll = Payroll.query.filter_by(employee_id=employee_id).first()
+        if payroll:
+            payroll.base_salary = base_salary
+            payroll.bonus = bonus
+            payroll.deductions = deduction
+            payroll.net_salary = base_salary + bonus - deduction
+            payroll.note = note
+
+        # Cập nhật trong database human
+        with db.session.bind('human') as human_session:
+            # Cập nhật bảng HumanEmployee
+            human_employee = human_session.query(HumanEmployee).filter_by(employee_id=employee_id).first()
+            if human_employee:
+                human_department = human_session.query(HumanDepartment).filter_by(department_name=department_name).first()
+                human_job = human_session.query(HumanJob).filter_by(job_title=position_name).first()
+                if human_department and human_job:
+                    human_employee.department_id = human_department.department_id
+                    human_employee.salary = base_salary
+                    human_employee.status = employee.status  # Đồng bộ trạng thái
+
+            # Cập nhật bảng HumanPayroll
+            human_payroll = human_session.query(HumanPayroll).filter_by(EmployeeID=employee_id).first()
+            if human_payroll:
+                human_payroll.BaseSalary = base_salary
+                human_payroll.Bonus = bonus
+                human_payroll.Deductions = deduction
+
+            # Cập nhật bảng Shareholders (nếu nhân viên là cổ đông)
+            shareholder = human_session.query(Shareholder).filter_by(employee_id=employee_id).first()
+            if shareholder:
+                shareholder.first_name = first_name
+                shareholder.last_name = last_name
+
+            human_session.commit()
+
+        # Cập nhật trong database user
+        with db.session.bind('user') as user_session:
+            user_account = user_session.query(UserAccount).filter_by(employee_id=employee_id).first()
+            if user_account:
+                user_account.employee_name = f"{first_name} {last_name}"
+                user_session.commit()
+
+        # Commit thay đổi trong database payroll
+        db.session.commit()
+
+        return jsonify({'message': 'Cập nhật nhân viên thành công'})
 
 @app.route('/department_report_AC')
 def department_report():
@@ -487,14 +704,22 @@ def update_user_role():
 #Trang hiển thị phân quyền người dùng 
 @app.route('/user-roles')
 def user_roles():
-    # Dữ liệu giả (mock data)
-    users = [
-        {"user_id": 1, "username": "Nguyễn Văn A", "role": "Admin"},
-        {"user_id": 2, "username": "Trần Thị B", "role": "Nhân viên"},
-        {"user_id": 3, "username": "Lê Văn C", "role": "Quản lý"},
+    # Lấy tất cả dữ liệu từ bảng UserAccount trong database 'user'
+    users = UserAccount.query.all()
+    
+    # Chuyển đổi dữ liệu thành định dạng phù hợp để hiển thị
+    user_list = [
+        {
+            "user_id": user.account_id,
+            "username": user.username,
+            "role": user.role_name,
+            "employee_name": user.employee_name  # Thêm tên nhân viên nếu cần
+        }
+        for user in users
     ]
     
-    return render_template('user_roles_AD.html', users=users) 
+    # Trả về template với dữ liệu thực tế
+    return render_template('user_roles_AD.html', users=user_list)
 
 
 # Route render trang báo cáo và truyền dữ liệu vào template

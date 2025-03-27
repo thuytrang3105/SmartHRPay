@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết nhân viên - Hệ thống Quản lý Lương</title>
+    <link rel="stylesheet" href="../static/common_AC.css" />
+    <link rel="stylesheet" href="../static/payroll_detail.css" /> <!-- Liên kết CSS mới -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h3>Payroll Manager</h3>
+          <p>Hệ thống Quản lý Lương</p>
+        </div>
+        <div class="sidebar-menu">
+          <a href="{{ url_for('home_AC') }}" class="menu-item">
+            <i class="fa fa-money-bill"></i>
+            <span>Home </span>
+          </a>
+          <a href="{{ url_for('payroll') }}" class="menu-item">
+            <i class="fa fa-money-bill"></i>
+            <span>Bảng lương nhân viên</span>
+          </a>
+          <a href="{{ url_for('department_report') }}" class="menu-item">
+            <i class="fa fa-building"></i>
+            <span>Báo cáo theo phòng ban</span>
+          </a>
+          <a href="{{ url_for('history_payroll') }}" class="menu-item">
+            <i class="fa fa-history"></i>
+            <span>Lịch sử lương nhân viên</span>
+          </a>
+          <a href="{{ url_for('get_notifications') }}" class="menu-item">
+            <i class="fa fa-bell"></i>
+            <span>Thông báo bảng lương</span>
+          </a>
+          <a href="{{ url_for('logout') }}" class="menu-item">
+            <i class="fa fa-sign-out-alt"></i>
+            <span>Đăng xuất</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="header">
+          <h2>Hệ thống Quản lý Lương</h2>
+          <div class="user-info">
+            <img
+              src="https://ui-avatars.com/api/?name=Nguyen+Van+A&size=40&background=random"
+              alt="User avatar"
+            />
+            <span>Nguyễn Văn A | Quản lý Lương</span>
+          </div>
+        </div>
+
+        <!-- Chi tiết nhân viên -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Chi tiết nhân viên: {{ employee.name }}</h3>
+            <a href="{{ url_for('payroll') }}" class="btn">Quay lại</a>
+          </div>
+          <div class="panel-body">
+            <div class="employee-detail">
+              <div class="grid-cols-2 mb-4">
+                <div>
+                  <label>Mã nhân viên:</label>
+                  <p>{{ employee.id }}</p>
+                </div>
+                <div>
+                  <label>Họ và tên:</label>
+                  <p>{{ employee.name }}</p>
+                </div>
+              </div>
+              <div class="grid-cols-2 mb-4">
+                <div>
+                  <label>Email:</label>
+                  <p>{{ employee.email }}</p>
+                </div>
+                <div>
+                  <label>Số điện thoại:</label>
+                  <p>{{ employee.phone or 'Không có' }}</p>
+                </div>
+              </div>
+              <div class="grid-cols-2 mb-4">
+                <div>
+                  <label>Phòng ban:</label>
+                  <p>{{ employee.department }}</p>
+                </div>
+                <div>
+                  <label>Chức vụ:</label>
+                  <p>{{ employee.position }}</p>
+                </div>
+              </div>
+              <div class="grid-cols-2 mb-4">
+                <div>
+                  <label>Ngày vào làm:</label>
+                  <p>{{ employee.hire_date or 'Không có' }}</p>
+                </div>
+                <div>
+                  <label>Trạng thái:</label>
+                  <p>{{ employee.status }}</p>
+                </div>
+              </div>
+              <div class="grid-cols-3 mb-4">
+                <div>
+                  <label>Lương cơ bản:</label>
+                  <p>{{ "{:,.0f}".format(employee.base_salary) }} đ</p>
+                </div>
+                <div>
+                  <label>Thưởng:</label>
+                  <p>{{ "{:,.0f}".format(employee.bonus) }} đ</p>
+                </div>
+                <div>
+                  <label>Khấu trừ:</label>
+                  <p>{{ "{:,.0f}".format(employee.deduction) }} đ</p>
+                </div>
+              </div>
+              <div class="grid-cols-2 mb-4">
+                <div>
+                  <label>Tổng lương:</label>
+                  <p>{{ "{:,.0f}".format(employee.total_salary) }} đ</p>
+                </div>
+                <div>
+                  <label>Ngày trả lương:</label>
+                  <p>{{ employee.pay_date or 'Không có' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Handle responsive sidebar
+      function handleResponsive() {
+        const sidebar = document.querySelector(".sidebar");
+        const mainContent = document.querySelector(".main-content");
+
+        if (window.innerWidth <= 768) {
+          sidebar.style.width = "70px";
+          mainContent.style.marginLeft = "70px";
+        } else {
+          sidebar.style.width = "250px";
+          mainContent.style.marginLeft = "250px";
+        }
+      }
+
+      handleResponsive();
+      window.addEventListener("resize", handleResponsive);
+    </script>
+  </body>
+</html>

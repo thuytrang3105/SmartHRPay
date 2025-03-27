@@ -59,8 +59,9 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tên người dùng</th>
+              <th>Tên tài khoản </th>
               <th>Quyền</th>
+              <th>Tên người dùng </th>
               <th>Hành động</th>
             </tr>
           </thead>
@@ -68,8 +69,9 @@
             {% for user in users %}
             <tr>
               <td>{{ user.user_id }}</td>
-              <td>{{ user.username }}</td>
-              <td>{{ user.role }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.employee_name }}</td>
+                <td>{{ user.role }}</td>
               <td>
                 <a href="{{ url_for('update_user_role', user_id=user.user_id) }}" class="action-btn">Chỉnh sửa</a>
               </td>
