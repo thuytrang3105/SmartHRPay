@@ -1,165 +1,196 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tổng quan</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="../static/dashboard_AD.css" />
     <link rel="stylesheet" href="../static/index_AD.css" />
-</head>
-<body>
+  </head>
+  <body>
     <!-- Sidebar -->
     <div class="sidebar">
-        <h2>Trang Chủ Admin<br /></h2>
+      <h2>Trang Chủ Admin<br /></h2>
 
-        <div class="menu-group">
-            <h3>TỔNG QUAN</h3>
-            <ul>
-                <li>
-                    <a href="{{ url_for('dashboard_AD') }}" class="active"><i>📊</i> Dashboard</a>
-                </li>
-            </ul>
-        </div>
+      <div class="menu-group">
+        <h3>TỔNG QUAN</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('dashboard_AD') }}" class="active"
+              ><i>📊</i> Dashboard</a
+            >
+          </li>
+        </ul>
+      </div>
 
-        <div class="menu-group">
-            <h3>QUẢN LÝ</h3>
-            <ul>
-                <li><a href="{{ url_for('home_HR') }}"><i>👥</i> Nhân viên</a></li>
-                <li><a href="{{ url_for('home_AC') }}"><i>💰</i> Lương</a></li>
-                <li><a href="{{ url_for('shareholder') }}" ><i>🔑</i> Cổ Đông</a></li>
-                <li><a href="{{ url_for('user_roles') }}"><i>🏢</i> Phân quyền người dùng</a></li>
-                <li><a href="{{ url_for('notifications_AD') }}"><i>📢</i> Quản lý thông báo</a></li>
-            </ul>
-        </div>
+      <div class="menu-group">
+        <h3>QUẢN LÝ</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('employee_AD') }}"><i>👥</i> Nhân viên</a>
+          </li>
+          <li>
+            <a href="{{ url_for('payroll_AD') }}"><i>💰</i> Lương</a>
+          </li>
+          <li>
+            <a href="{{ url_for('shareholder') }}"><i>🔑</i> Cổ Đông</a>
+          </li>
+          <li>
+            <a href="{{ url_for('user_roles') }}"
+              ><i>🏢</i> Phân quyền người dùng</a
+            >
+          </li>
+          <li>
+            <a href="{{ url_for('notifications_AD') }}"
+              ><i>📢</i> Quản lý thông báo</a
+            >
+          </li>
+        </ul>
+      </div>
 
-        <div class="menu-group">
-            <h3>BÁO CÁO</h3>
-            <ul>
-                <li><a href="{{ url_for('reports_AD') }}"><i>📈</i> Báo cáo nhân sự</a></li>
-                <li><a href="{{ url_for('activity_log_AD') }}"><i>📜</i> Lịch sử hoạt động</a></li>
-            </ul>
-        </div>
+      <div class="menu-group">
+        <h3>BÁO CÁO</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('reports_AD') }}"><i>📈</i> Báo cáo nhân sự</a>
+          </li>
+          <li>
+            <a href="{{ url_for('activity_log_AD') }}"
+              ><i>📜</i> Lịch sử hoạt động</a
+            >
+          </li>
+        </ul>
+      </div>
 
-        <div class="menu-group">
-            <h3>HỆ THỐNG</h3>
-            <ul>
-              <li><a href="{{ url_for('logout') }}" ><i>🚪</i> Đăng xuất</a></li>
-            </ul>
-        </div>
+      <div class="menu-group">
+        <h3>HỆ THỐNG</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('logout') }}"><i>🚪</i> Đăng xuất</a>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="header">
-            <h1>Dashboard</h1>
-            <div class="user-info">NGUYỄN VĂN B<br />ADMIN</div>
+      <div class="header">
+        <h1>Dashboard</h1>
+        <div class="user-info">NGUYỄN VĂN B<br />ADMIN</div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats">
+        <div class="card">
+          <h3 id="totalEmployees">{{ data.totalEmployees }}</h3>
+          <p>Tổng nhân viên</p>
+          <p class="change" id="totalChange">
+            +{{ data.newEmployees - data.resignedEmployees }} trong tháng này
+          </p>
         </div>
-
-        <!-- Stats Cards -->
-          <div class="stats">
-            <div class="card">
-                <h3 id="totalEmployees">{{ data.totalEmployees }}</h3>
-                <p>Tổng nhân viên</p>
-                <p class="change" id="totalChange">+{{ data.newEmployees - data.resignedEmployees }} trong tháng này</p>
-            </div>
-            <div class="card">
-                <h3 id="newEmployees">{{ data.newEmployees }}</h3>
-                <p>Nhân viên mới</p>
-                <p class="change" id="newChange">+{{ data.newEmployees }} so với tháng trước</p>
-            </div>
-            <div class="card">
-                <h3 id="departments">{{ data.departments }}</h3>
-                <p>Phòng ban</p>
-                <p class="change" id="deptChange">+{{ data.departments - 7 }} trong tháng này</p>
-            </div>
-            <div class="card">
-                <h3 id="resignedEmployees">{{ data.resignedEmployees }}</h3>
-                <p>Nhân viên nghỉ việc</p>
-                <p class="decrease" id="resignedChange">-{{ data.resignedEmployees }} so với tháng trước</p>
-            </div>
-          </div>
-
-
-        <!-- Charts -->
-        <div class="charts">
-            <div class="chart-box">
-                <h3>Phân bổ nhân viên theo phòng ban</h3>
-                <canvas id="deptChart"></canvas>
-            </div>
-            <div class="chart-box">
-                <h3>Tăng trưởng nhân viên</h3>
-                <canvas id="growthChart"></canvas>
-            </div>
+        <div class="card">
+          <h3 id="newEmployees">{{ data.newEmployees }}</h3>
+          <p>Nhân viên mới</p>
+          <p class="change" id="newChange">
+            +{{ data.newEmployees }} so với tháng trước
+          </p>
         </div>
+        <div class="card">
+          <h3 id="departments">{{ data.departments }}</h3>
+          <p>Phòng ban</p>
+          <p class="change" id="deptChange">
+            +{{ data.departments - 7 }} trong tháng này
+          </p>
+        </div>
+        <div class="card">
+          <h3 id="resignedEmployees">{{ data.resignedEmployees }}</h3>
+          <p>Nhân viên nghỉ việc</p>
+          <p class="decrease" id="resignedChange">
+            -{{ data.resignedEmployees }} so với tháng trước
+          </p>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts">
+        <div class="chart-box">
+          <h3>Phân bổ nhân viên theo phòng ban</h3>
+          <canvas id="deptChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Tăng trưởng nhân viên</h3>
+          <canvas id="growthChart"></canvas>
+        </div>
+      </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let data = {{ data | tojson | safe }};
-            console.log("Dữ liệu từ Flask:", data); // Kiểm tra dữ liệu trong console
+      document.addEventListener("DOMContentLoaded", function () {
+          let data = {{ data | tojson | safe }};
+          console.log("Dữ liệu từ Flask:", data); // Kiểm tra dữ liệu trong console
 
-            function setTextContent(id, value) {
-                let element = document.getElementById(id);
-                if (element) {
-                    element.textContent = value;
-                }
-            }
+          function setTextContent(id, value) {
+              let element = document.getElementById(id);
+              if (element) {
+                  element.textContent = value;
+              }
+          }
 
-            setTextContent("totalEmployees", data.totalEmployees);
-            setTextContent("totalChange", `+${data.newEmployees - data.resignedEmployees} trong tháng này`);
+          setTextContent("totalEmployees", data.totalEmployees);
+          setTextContent("totalChange", `+${data.newEmployees - data.resignedEmployees} trong tháng này`);
 
-            // Kiểm tra nếu có dữ liệu về phân bổ nhân viên theo phòng ban
-            if (data.deptDistribution) {
-                new Chart(document.getElementById("deptChart"), {
-                    type: "doughnut",
-                    data: {
-                        labels: ["IT", "HR", "Marketing", "Operations", "Finance"],
-                        datasets: [{
-                            data: [
-                                data.deptDistribution.IT || 0,
-                                data.deptDistribution.HR || 0,
-                                data.deptDistribution.Marketing || 0,
-                                data.deptDistribution.Operations || 0,
-                                data.deptDistribution.Finance || 0
-                            ],
-                            backgroundColor: ["#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e74c3c"]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { position: "bottom" }
-                        }
-                    }
-                });
-            }
+          // Kiểm tra nếu có dữ liệu về phân bổ nhân viên theo phòng ban
+          if (data.deptDistribution) {
+              new Chart(document.getElementById("deptChart"), {
+                  type: "doughnut",
+                  data: {
+                      labels: ["IT", "HR", "Marketing", "Operations", "Finance"],
+                      datasets: [{
+                          data: [
+                              data.deptDistribution.IT || 0,
+                              data.deptDistribution.HR || 0,
+                              data.deptDistribution.Marketing || 0,
+                              data.deptDistribution.Operations || 0,
+                              data.deptDistribution.Finance || 0
+                          ],
+                          backgroundColor: ["#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e74c3c"]
+                      }]
+                  },
+                  options: {
+                      responsive: true,
+                      plugins: {
+                          legend: { position: "bottom" }
+                      }
+                  }
+              });
+          }
 
-            // Kiểm tra nếu có dữ liệu tăng trưởng nhân viên
-            if (data.growthData) {
-                new Chart(document.getElementById("growthChart"), {
-                    type: "line",
-                    data: {
-                        labels: ["Jan", "Feb", "Mar", "Apr", "May"],
-                        datasets: [{
-                            label: "Employees",
-                            data: data.growthData,
-                            borderColor: "#3498db",
-                            fill: false,
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: false
-                            }
-                        }
-                    }
-                });
-            }
-        });
+          // Kiểm tra nếu có dữ liệu tăng trưởng nhân viên
+          if (data.growthData) {
+              new Chart(document.getElementById("growthChart"), {
+                  type: "line",
+                  data: {
+                      labels: ["Jan", "Feb", "Mar", "Apr", "May"],
+                      datasets: [{
+                          label: "Employees",
+                          data: data.growthData,
+                          borderColor: "#3498db",
+                          fill: false,
+                          tension: 0.1
+                      }]
+                  },
+                  options: {
+                      responsive: true,
+                      scales: {
+                          y: {
+                              beginAtZero: false
+                          }
+                      }
+                  }
+              });
+          }
+      });
     </script>
-</body>
+  </body>
 </html>

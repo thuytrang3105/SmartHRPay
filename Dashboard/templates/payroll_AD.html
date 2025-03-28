@@ -14,24 +14,47 @@
     <div class="container">
       <!-- Sidebar -->
       <div class="sidebar">
-        <div class="sidebar-header">
-          <h3 class="sidebar-title">Payroll Manager</h3>
-          <p class="sidebar-subtitle">Hệ thống Quản lý Lương</p>
+        <h2>Trang Chủ Admin<br /></h2>
+  
+        <div class="menu-group">
+          <h3>TỔNG QUAN</h3>
+          <ul>
+            <li>
+              <a href="{{ url_for('dashboard_AD') }}"><i>📊</i> Dashboard</a>
+            </li>
+          </ul>
         </div>
-        <div class="sidebar-menu">
-          <a href="{{ url_for('home_AC') }}" class="active"><i>🏠</i> Home </a>
-          <a href="{{ url_for('payroll') }}"><i>💰</i> Bảng lương nhân viên </a>
-          <a href="{{ url_for('department_report') }}"
-            ><i>📑</i> Báo cáo theo phòng ban</a
-          >
-          <a href="{{ url_for('history_payroll') }}"
-            ><i>📜</i> Lịch sử lương nhân viên</a
-          >
-          <a href="{{ url_for('get_notifications') }}"
-            ><i>🔔</i> Thông báo bảng lương</a
-          >
-          <a href="{{ url_for('attendance_AC') }}"><i>🕒</i> Chấm công </a>
-          <a href="{{ url_for('logout') }}"><i>🚪</i> Đăng xuất</a>
+  
+        <div class="menu-group">
+          <h3>QUẢN LÝ</h3>
+          <ul>
+            <li><a href="{{ url_for('employee_AD') }}"><i>👥</i> Nhân viên</a></li>
+            <li><a href="{{ url_for('payroll_AD') }}"><i>💰</i> Lương</a></li>
+            <li><a href="{{ url_for('shareholder') }}" ><i>🔑</i> Cổ Đông</a></li>
+            <li><a href="{{ url_for('user_roles') }}"><i>🏢</i> Phân quyền người dùng</a></li>
+            <li><a href="{{ url_for('notifications_AD') }}"><i>📢</i> Quản lý thông báo</a></li>
+          </ul>
+        </div>
+  
+        <div class="menu-group">
+          <h3>BÁO CÁO</h3>
+          <ul>
+            <li>
+              <a href="{{ url_for('reports_AD') }}"><i>📈</i> Báo cáo nhân sự</a>
+            </li>
+            <li>
+              <a href="{{ url_for('activity_log_AD') }}"><i>📜</i> Lịch sử hoạt động</a>
+            </li>
+          </ul>
+        </div>
+  
+        <div class="menu-group">
+          <h3>HỆ THỐNG</h3>
+          <ul>
+            <li>
+              <li><a href="{{ url_for('logout') }}" ><i>🚪</i> Đăng xuất</a></li>
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -48,7 +71,7 @@
           </div>
         </div>
 
-        <!-- Bảng lương nhân viên -->
+        <!--  Bảng lương nhân viên -->
         <div class="panel" id="payroll-editor">
           <div class="panel-header">
             <h3>Bảng lương nhân viên</h3>
@@ -63,51 +86,52 @@
             <button id="search-btn" class="btn">Tìm kiếm</button>
           </div>
           <div class="panel-body">
-            <table id="payroll-table">
-              <thead>
-                <tr>
-                  <th>Mã Lương</th>
-                  <th>Mã NV</th>
-                  <th>Họ và tên</th>
-                  <th>Phòng ban</th>
-                  <th>Chức vụ</th>
-                  <th>Lương cơ bản</th>
-                  <th>Thưởng</th>
-                  <th>Khấu trừ</th>
-                  <th>Tổng lương</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for payroll, employee in payroll_data %}
-                <tr>
-                  <td>{{payroll.payroll_id}}</td>
-                  <td>{{ employee.employee_id }}</td>
-                  <td>{{ employee.employee_name }}</td>
-                  <td>{{ employee.department_name }}</td>
-                  <td>{{ employee.job_title }}</td>
-                  <td>{{ "{:,.0f}".format(employee.base_salary) }} đ</td>
-                  <td>{{ "{:,.0f}".format(employee.bonus) }} đ</td>
-                  <td>{{ "{:,.0f}".format(employee.deduction) }} đ</td>
-                  <td>{{ "{:,.0f}".format(employee.total_salary) }} đ</td>
-                  <td class="table-actions">
-                    <button
-                      class="btn btn-sm btn-warning edit-payroll"
-                      data-id="{{ employee.employee_id }}"
-                    >
-                      Sửa
-                    </button>
-                  </td>
-                </tr>
-                {% endfor %} {% if payroll_data|length == 0 %}
-                <tr>
-                  <td colspan="10" class="text-center">
-                    Không có dữ liệu nhân viên nào phù hợp.
-                  </td>
-                </tr>
-                {% endif %}
-              </tbody>
-            </table>
+              <table id="payroll-table">
+                <thead>
+                  <tr>
+                    <th>Mã Lương</th>
+                    <th>Mã NV</th>
+                    <th>Họ và tên</th>
+                    <th>Phòng ban</th>
+                    <th>Chức vụ</th>
+                    <th>Lương cơ bản</th>
+                    <th>Thưởng</th>
+                    <th>Khấu trừ</th>
+                    <th>Tổng lương</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for payroll, employee in payroll_data %}
+                  <tr>
+                    <td>{{payroll.payroll_id}}</td>
+                    <td>{{ employee.employee_id }}</td>
+                    <td>{{ employee.employee_name }}</td>
+                    <td>{{ employee.department_name }}</td>
+                    <td>{{ employee.job_title }}</td>
+                    <td>{{ "{:,.0f}".format(employee.base_salary) }} đ</td>
+                    <td>{{ "{:,.0f}".format(employee.bonus) }} đ</td>
+                    <td>{{ "{:,.0f}".format(employee.deduction) }} đ</td>
+                    <td>{{ "{:,.0f}".format(employee.total_salary) }} đ</td>
+                    <td class="table-actions">
+                      <button
+                        class="btn btn-sm btn-warning edit-payroll"
+                        data-id="{{ employee.employee_id }}"
+                      >
+                        Sửa
+                      </button>
+                    </td>
+                  </tr>
+                  {% endfor %} {% if payroll_data|length == 0 %}
+                  <tr>
+                    <td colspan="9" class="text-center">
+                      Không có dữ liệu nhân viên nào phù hợp.
+                    </td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -128,6 +152,7 @@
         <form id="edit-employee-form">
           <div class="modal-body">
             <input type="hidden" id="edit-employee-id" name="id" />
+
             <div class="grid-cols-2 mb-4">
               <div>
                 <label>Mã nhân viên</label>
@@ -148,6 +173,7 @@
                 />
               </div>
             </div>
+
             <div class="grid-cols-2 mb-4">
               <div>
                 <label>Phòng ban</label>
@@ -172,6 +198,7 @@
                 </select>
               </div>
             </div>
+
             <div class="grid-cols-3 mb-4">
               <div>
                 <label>Lương cơ bản</label>
@@ -201,6 +228,7 @@
                 />
               </div>
             </div>
+
             <div class="mb-4">
               <label>Ghi chú</label>
               <textarea
@@ -231,10 +259,11 @@
     </div>
 
     <script>
-      // JavaScript giữ nguyên như trong tài liệu gốc
+      // Handle responsive sidebar
       function handleResponsive() {
         const sidebar = document.querySelector(".sidebar");
         const mainContent = document.querySelector(".main-content");
+
         if (window.innerWidth <= 768) {
           sidebar.style.width = "70px";
           mainContent.style.marginLeft = "70px";
@@ -243,9 +272,12 @@
           mainContent.style.marginLeft = "250px";
         }
       }
+
+      // Initial check and on resize
       handleResponsive();
       window.addEventListener("resize", handleResponsive);
 
+      // Modal handling
       const modal = document.getElementById("employee-modal");
       const editButtons = document.querySelectorAll(".edit-payroll");
       const closeModalBtn = document.getElementById("close-modal");
@@ -258,12 +290,16 @@
         modal.style.display = modal.style.display === "none" ? "flex" : "none";
       }
 
+      // Edit employee functionality
       editButtons.forEach((button) => {
         button.addEventListener("click", function () {
           const employeeId = this.getAttribute("data-id");
+
+          // Fetch employee details via AJAX
           fetch(`/get_employee_details/${employeeId}`)
             .then((response) => response.json())
             .then((employee) => {
+              // Populate modal with employee details
               document.getElementById("edit-employee-code").value =
                 employee.employee_id;
               document.getElementById("edit-employee-name").value =
@@ -280,6 +316,7 @@
                 employee.deduction;
               document.getElementById("edit-employee-notes").value =
                 employee.notes || "";
+
               toggleModal();
             })
             .catch((error) => {
@@ -291,13 +328,20 @@
 
       closeModalBtn.addEventListener("click", toggleModal);
       cancelModalBtn.addEventListener("click", toggleModal);
+
+      // Close modal when clicking outside
       modal.addEventListener("click", function (e) {
-        if (e.target === this) toggleModal();
+        if (e.target === this) {
+          toggleModal();
+        }
       });
 
+      // Form submission
       editForm.addEventListener("submit", function (e) {
         e.preventDefault();
+
         const formData = new FormData(this);
+
         fetch("/update_employee", {
           method: "POST",
           body: formData,
@@ -306,7 +350,7 @@
           .then((result) => {
             if (result.success) {
               alert("Cập nhật thành công");
-              location.reload();
+              location.reload(); // Reload page to reflect changes
             } else {
               alert("Cập nhật thất bại: " + result.message);
             }
@@ -317,21 +361,27 @@
           });
       });
 
+      // Search functionality
       searchBtn.addEventListener("click", function () {
         const searchTerm = searchInput.value.toLowerCase().trim();
         const rows = document.querySelectorAll("#payroll-table tbody tr");
+
         rows.forEach((row) => {
           const cells = row.querySelectorAll("td");
           const rowText = Array.from(cells)
-            .slice(0, -1)
+            .slice(0, -1) // Exclude action column
             .map((cell) => cell.textContent.toLowerCase())
             .join(" ");
+
           row.style.display = rowText.includes(searchTerm) ? "" : "none";
         });
       });
 
+      // Allow search on Enter key
       searchInput.addEventListener("keypress", function (e) {
-        if (e.key === "Enter") searchBtn.click();
+        if (e.key === "Enter") {
+          searchBtn.click();
+        }
       });
     </script>
   </body>

@@ -4,45 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Báo cáo theo phòng ban - Hệ thống Quản lý Lương</title>
-    <link rel="stylesheet" href="../static/common_AC.css" />
     <link rel="stylesheet" href="../static/department_AC.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <h3>Payroll Manager</h3>
-        <p>Hệ thống Quản lý Lương</p>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h3 class="sidebar-title">Payroll Manager</h3>
+          <p class="sidebar-subtitle">Hệ thống Quản lý Lương</p>
+        </div>
+        <div class="sidebar-menu">
+          <a href="{{ url_for('home_AC') }}"><i>🏠</i> Home </a>
+          <a href="{{ url_for('payroll') }}"><i>💰</i> Bảng lương nhân viên </a>
+          <a href="{{ url_for('department_report') }}" class="active"
+            ><i>📑</i> Báo cáo theo phòng ban</a
+          >
+          <a href="{{ url_for('history_payroll') }}"
+            ><i>📜</i> Lịch sử lương nhân viên</a
+          >
+          <a href="{{ url_for('get_notifications') }}"
+            ><i>🔔</i> Thông báo bảng lương</a
+          >
+          <a href="{{ url_for('attendance_AC') }}"><i>🕒</i> Chấm công </a>
+          <a href="{{ url_for('logout') }}"><i>🚪</i> Đăng xuất</a>
+        </div>
       </div>
-      <div class="sidebar-menu">
-        <a href="{{ url_for('home_AC') }}" class="menu-item">
-          <i class="fa fa-money-bill"></i>
-          <span>Home </span>
-        </a>
-        <a href="{{ url_for('payroll') }}" class="menu-item">
-          <i class="fa fa-money-bill"></i>
-          <span>Bảng lương nhân viên</span>
-        </a>
-        <a href="{{ url_for('department_report') }}" class="menu-item">
-          <i class="fa fa-building"></i>
-          <span>Báo cáo theo phòng ban</span>
-        </a>
-        <a href="{{ url_for('history_payroll') }}" class="menu-item">
-          <i class="fa fa-history"></i>
-          <span>Lịch sử lương nhân viên</span>
-        </a>
-        <a href="{{ url_for('get_notifications') }}" class="menu-item">
-          <i class="fa fa-bell"></i>
-          <span>Thông báo bảng lương</span>
-        </a>
-        <a href="{{ url_for('logout') }}" class="menu-item">
-          <i class="fa fa-sign-out-alt"></i>
-          <span>Đăng xuất</span>
-        </a>
-      </div>
-    </div>
-
       <div class="main-content">
         <div class="header">
           <h2>Hệ thống Quản lý Lương</h2>

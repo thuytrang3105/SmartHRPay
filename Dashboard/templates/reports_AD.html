@@ -15,36 +15,42 @@
       <div class="menu-group">
         <h3>TỔNG QUAN</h3>
         <ul>
-            <li>
-                <a href="{{ url_for('dashboard_AD') }}" ><i>📊</i> Dashboard</a>
-            </li>
+          <li>
+            <a href="{{ url_for('dashboard_AD') }}"><i>📊</i> Dashboard</a>
+          </li>
         </ul>
       </div>
 
       <div class="menu-group">
-          <h3>QUẢN LÝ</h3>
-          <ul>
-            <li><a href="{{ url_for('home_HR') }}"><i>👥</i> Nhân viên</a></li>
-            <li><a href="{{ url_for('home_AC') }}"><i>💰</i> Lương</a></li>
-            <li><a href="{{ url_for('shareholder') }}" ><i>🔑</i> Cổ Đông</a></li>
-            <li><a href="{{ url_for('user_roles') }}"><i>🏢</i> Phân quyền người dùng</a></li>
-            <li><a href="{{ url_for('notifications_AD') }}"><i>📢</i> Quản lý thông báo</a></li>
-          </ul>
+        <h3>QUẢN LÝ</h3>
+        <ul>
+          <li><a href="{{ url_for('employee_AD') }}"><i>👥</i> Nhân viên</a></li>
+          <li><a href="{{ url_for('payroll_AD') }}"><i>💰</i> Lương</a></li>
+          <li><a href="{{ url_for('shareholder') }}" ><i>🔑</i> Cổ Đông</a></li>
+          <li><a href="{{ url_for('user_roles') }}"><i>🏢</i> Phân quyền người dùng</a></li>
+          <li><a href="{{ url_for('notifications_AD') }}"><i>📢</i> Quản lý thông báo</a></li>
+        </ul>
       </div>
 
       <div class="menu-group">
-          <h3>BÁO CÁO</h3>
-          <ul>
-              <li><a href="{{ url_for('reports_AD') }}" class="active"><i>📈</i> Báo cáo nhân sự</a></li>
-              <li><a href="{{ url_for('activity_log_AD') }}"><i>📜</i> Lịch sử hoạt động</a></li>
-          </ul>
+        <h3>BÁO CÁO</h3>
+        <ul>
+          <li>
+            <a href="{{ url_for('reports_AD') }}"><i>📈</i> Báo cáo nhân sự</a>
+          </li>
+          <li>
+            <a href="{{ url_for('activity_log_AD') }}"><i>📜</i> Lịch sử hoạt động</a>
+          </li>
+        </ul>
       </div>
 
       <div class="menu-group">
-          <h3>HỆ THỐNG</h3>
-          <ul>
+        <h3>HỆ THỐNG</h3>
+        <ul>
+          <li>
             <li><a href="{{ url_for('logout') }}" ><i>🚪</i> Đăng xuất</a></li>
-          </ul>
+          </li>
+        </ul>
       </div>
     </div>
 
