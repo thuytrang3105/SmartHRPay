@@ -81,8 +81,9 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tên người dùng</th>
+              <th>Tên đăng nhập </th>
               <th>Quyền</th>
+              <th> Tên người dùng </th>
               <th>Hành động</th>
             </tr>
           </thead>
@@ -92,6 +93,7 @@
               <td>{{ user.user_id }}</td>
               <td>{{ user.username }}</td>
               <td>{{ user.role }}</td>
+              <td>{{ user.employee_name }}</td>
               <td>
                 <a
                   href="{{ url_for('update_user_role', user_id=user.user_id) }}"

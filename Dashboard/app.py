@@ -1,15 +1,16 @@
 from flask import Flask, render_template, request, jsonify, redirect , url_for 
 from module  import db, UserAccount ,Employee, Department, Job, Payroll , HumanEmployee, HumanPayroll, HumanDepartment, HumanJob, Shareholder
 import random
+import config
+import datetime
 
 app = Flask(__name__)
 
 # Cấu hình database (đảm bảo đã cấu hình đúng trong ứng dụng Flask của bạn)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://@HUMAN_SERVER/HUMAN_2025?driver=ODBC+Driver+17+for+SQL+Server'
-app.config['SQLALCHEMY_BINDS'] = {
-    'user': 'mysql+pymysql://root:123456123456@localhost/user',  # MySQL schema user
-    'payroll': 'mysql+pymysql://root:123456123456@localhost/payroll',  # MySQL schema payroll
-    'human': 'mssql+pyodbc://@HUMAN_SERVER/HUMAN_2025?driver=ODBC+Driver+17+for+SQL+Server'  # SQL Server database human
+app.config["SQLALCHEMY_BINDS"] = {
+"human": config.SQL_SERVER_CONN, # Thêm dòng này để tránh lỗi
+"payroll": config.MYSQL_CONN_PAYROLL,
+"user":config.MYSQL_CONN_USER
 }
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -22,9 +23,6 @@ def home ():
 
 ######################################################################################################################
 
-@app.route("/salary-nv")
-def salary_nv():
-    return render_template("salary_nv.html")
 
 def get_salary_data(month, year):
     # Giả lập dữ liệu lương, có thể thay bằng truy vấn DB thực tế
@@ -33,22 +31,59 @@ def get_salary_data(month, year):
         return {
             "base_salary": "12,000,000 VND",
             "bonus": "3,000,000 VND",
-            "present": "23",
-            "absent": "1",
-            "leave": "0",
+            "date": "23",
             "deductions": "400,000 VND",
             "net_salary": "14,600,000 VND"
         }
     return {
         "base_salary": "10,000,000 VND",
         "bonus": "2,000,000 VND",
-        "present": "22",
-        "absent": "2",
-        "leave": "1",
+        "date": "22",
         "deductions": "500,000 VND",
         "net_salary": "11,500,000 VND"
     }
 
+def get_attendance_data(month, year):
+    # Simulate attendance data based on month and year
+    attendance_data = {
+        "3/2025": [
+            {"date": "01/03/2025", "status": "Có mặt"},
+            {"date": "02/03/2025", "status": "Có mặt"},
+            {"date": "03/03/2025", "status": "Vắng"},
+            {"date": "04/03/2025", "status": "Nghỉ phép"},
+            {"date": "05/03/2025", "status": "Có mặt"}
+        ],
+        "1/2020": [
+            {"date": "01/01/2020", "status": "Có mặt"},
+            {"date": "02/01/2020", "status": "Có mặt"},
+            {"date": "03/01/2020", "status": "Vắng"},
+            {"date": "04/01/2020", "status": "Nghỉ phép"}
+        ],
+        "8/2020": [
+            {"date": "26/08/2020", "status": "Có mặt"},
+            {"date": "27/08/2020", "status": "Có mặt"},
+            {"date": "28/08/2020", "status": "Vắng"},
+            {"date": "29/08/2020", "status": "Nghỉ"}
+        ]
+    }
+    
+    # Convert month and year to a key format
+    key = f"{month}/{year}"
+    
+    # Return data for the specific month/year, or an empty list if not found
+    return attendance_data.get(key, [])
+
+@app.route('/api/attendance', methods=['GET'])
+def fetch_attendance_data():
+    month = request.args.get('month', '1')
+    year = request.args.get('year', '2020')
+    
+    try:
+        attendance_data = get_attendance_data(month, year)
+        return jsonify(attendance_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 @app.route('/home-nv', methods=['GET', 'POST'])
 def home_nv():
     # Dữ liệu thông tin cá nhân của nhân viên (giả lập)
@@ -61,7 +96,7 @@ def home_nv():
         "start_date": "01/01/2022",
         "department_name": "IT",
         "job_title": "Developer",
-        "status": "Đang làm việc"
+        "status": "Có mặt"
     }
 
     # Dữ liệu thông báo cho nhân viên (giả lập)
@@ -82,13 +117,12 @@ def home_nv():
     salary = get_salary_data("1", "2020")
     selected_month = "1"
     selected_year = "2020"
+    
+    selected_month = "1"
+    selected_year = "2020"
+    attendance = get_attendance_data("selected_month", "selected_year")
 
-    if request.method == 'POST':
-        selected_month = request.form.get('month')
-        selected_year = request.form.get('year')
-        salary = get_salary_data(selected_month, selected_year)
-
-    return render_template("home_nv.html", employee=employee, notifications=notifications, salary=salary, selected_month=selected_month, selected_year=selected_year)
+    return render_template("home_nv.html", employee=employee, notifications=notifications, salary=salary,attendance=attendance, selected_month=selected_month, selected_year=selected_year)
 
 # API để lấy dữ liệu lương theo tháng/năm
 @app.route('/api/salary', methods=['GET'])
@@ -103,7 +137,7 @@ templates = [
     "department_AC.html", "employee_detail.html", "employee_list_detail.html",
     "history_AC.html", "home_AC.html", "home_HR.html", "home_nv.html",
     "home.html", "login.html", "logout_AC.html", "manager_employee.html",
-    "notifications_AC.html", "payroll_AC.html", "register.html", "salary_nv.html"
+    "notifications_AC.html", "payroll.html", "register.html", "salary_nv.html"
 ]
 
 # Tạo route động để render template theo tên file
@@ -121,244 +155,56 @@ def home_AC():
 @app.route('/payroll_AC')
 def payroll():
     with app.app_context():
-        # Truy vấn dữ liệu từ các bảng liên quan
+        latest_payroll_subquery = db.session.query(
+            Payroll.employee_id, db.func.max(Payroll.pay_date).label('latest_date')
+        ).group_by(Payroll.employee_id).subquery()
+
         payroll_query = db.session.query(
-            Employee.employee_id.label('id'),
-            db.func.concat(Employee.first_name, ' ', Employee.last_name).label('name'),
-            Department.department_name.label('department'),
-            Job.job_title.label('position'),
-            Payroll.base_salary,
-            Payroll.bonus,
-            Payroll.deductions
-        ).join(
-            Department, Employee.department_id == Department.department_id
-        ).join(
-            Job, Employee.job_id == Job.job_id
-        ).join(
-            Payroll, Employee.employee_id == Payroll.employee_id
-        ).all()
-
-        # Chuyển đổi dữ liệu từ truy vấn thành danh sách dictionary
-        payroll_data = [
-            {
-                "id": row.id,
-                "id_dp": f"NV{str(row.id).zfill(3)}",  # Định dạng ID thành NV001, NV002,...
-                "name": row.name,
-                "department": row.department,
-                "position": row.position,
-                "base_salary": float(row.base_salary or 0),
-                "bonus": float(row.bonus or 0),
-                "deduction": float(row.deductions or 0)
-            }
-            for row in payroll_query
-        ]
-
-        # Tính tổng lương (net_salary)
-        for employee in payroll_data:
-            employee["total_salary"] = employee["base_salary"] + employee["bonus"] - employee["deduction"]
-            
-        # Lấy danh sách phòng ban từ database
-        departments = Department.query.all()
-        department_list = [dept.department_name for dept in departments]
-
-        # Lấy danh sách chức vụ từ database
-        jobs = Job.query.all()
-        position_list = [job.job_title for job in jobs]
-
-        # Nhận giá trị lọc từ request
-        selected_department = request.args.get("department", "").lower()
-        selected_position = request.args.get("position", "").lower()
-
-        # Lọc dữ liệu
-        filtered_data = [
-            emp for emp in payroll_data
-            if (not selected_department or emp["department"].lower() == selected_department)
-            and (not selected_position or emp["position"].lower() == selected_position)
-        ]
-
-    return render_template (
-        'payroll_AC.html',
-        payroll_data=filtered_data, #truyền data
-        selected_department=selected_department, #phòng ban được lọc
-        selected_position=selected_position, #chức vụ được lọc 
-        departments=department_list,  # Truyền danh sách phòng ban
-        positions=position_list      # Truyền danh sách chức vụ
-    )
-    
-# Route để xem chi tiết nhân viên
-@app.route('/payroll_detail/<int:employee_id>')
-def payroll_detail(employee_id):
-    with app.app_context():
-        # Truy vấn thông tin chi tiết của nhân viên
-        employee_detail = db.session.query(
-            Employee.employee_id.label('id'),
-            db.func.concat(Employee.first_name, ' ', Employee.last_name).label('name'),
-            Employee.email,
-            Employee.phone,
-            Employee.hire_date,
-            Employee.status,
-            Department.department_name.label('department'),
-            Job.job_title.label('position'),
+            Payroll.payroll_id,
+            Employee.employee_id,
+            db.func.concat(Employee.first_name, ' ', Employee.last_name).label('employee_name'),
+            Department.department_name,
+            Job.job_title,
             Payroll.base_salary,
             Payroll.bonus,
             Payroll.deductions,
             Payroll.pay_date
         ).join(
-            Department, Employee.department_id == Department.department_id
-        ).join(
-            Job, Employee.job_id == Job.job_id
-        ).join(
-            Payroll, Employee.employee_id == Payroll.employee_id
-        ).filter(
-            Employee.employee_id == employee_id
-        ).first()
-
-        if not employee_detail:
-            return "Nhân viên không tồn tại", 404
-
-        # Chuyển đổi dữ liệu chi tiết
-        detail_data = {
-            "id": f"NV{str(employee_detail.id).zfill(3)}",
-            "name": employee_detail.name,
-            "email": employee_detail.email,
-            "phone": employee_detail.phone,
-            "hire_date": employee_detail.hire_date,
-            "status": employee_detail.status,
-            "department": employee_detail.department,
-            "position": employee_detail.position,
-            "base_salary": float(employee_detail.base_salary or 0),
-            "bonus": float(employee_detail.bonus or 0),
-            "deduction": float(employee_detail.deductions or 0),
-            "total_salary": float(employee_detail.base_salary or 0) + float(employee_detail.bonus or 0) - float(employee_detail.deductions or 0),
-            "pay_date": employee_detail.pay_date
-        }
-
-    return render_template('payroll_detail.html', employee=detail_data)
-
-# Route để lấy thông tin chi tiết nhân viên (dùng cho nút Sửa)
-@app.route('/get_employee/<int:employee_id>', methods=['GET'])
-def get_employee(employee_id):
-    with app.app_context():
-        # Truy vấn thông tin chi tiết nhân viên từ database payroll
-        employee = db.session.query(
-            Employee.employee_id,
-            db.func.concat(Employee.first_name, ' ', Employee.last_name).label('name'),
-            Department.department_name.label('department'),
-            Job.job_title.label('position'),
-            Payroll.base_salary,
-            Payroll.bonus,
-            Payroll.deductions,
-            Payroll.note
+            Employee, Payroll.employee_id == Employee.employee_id
         ).join(
             Department, Employee.department_id == Department.department_id
         ).join(
             Job, Employee.job_id == Job.job_id
         ).join(
-            Payroll, Employee.employee_id == Payroll.employee_id
-        ).filter(
-            Employee.employee_id == employee_id
-        ).first()
+            latest_payroll_subquery,
+            db.and_(
+                Payroll.employee_id == latest_payroll_subquery.c.employee_id,
+                Payroll.pay_date == latest_payroll_subquery.c.latest_date
+            )
+        ).all()
 
-        if not employee:
-            return jsonify({'error': 'Nhân viên không tồn tại'}), 404
+        payroll_data = [
+            (
+                {"payroll_id": row.payroll_id, "pay_date": row.pay_date},
+                {
+                    "employee_id": row.employee_id,
+                    "id_display": f"NV{row.employee_id:02d}" if isinstance(row.employee_id, int) else "NV" + str(int(row.employee_id.replace("NV", ""))),  
+                    "employee_name": row.employee_name,
+                    "department_name": row.department_name,
+                    "job_title": row.job_title,
+                    "base_salary": float(row.base_salary or 0),
+                    "bonus": float(row.bonus or 0),
+                    "deduction": float(row.deductions or 0),
+                    "total_salary": float(row.base_salary or 0) + float(row.bonus or 0) - float(row.deductions or 0)
+                }
+            )
+            for row in payroll_query
+        ]
 
-        employee_data = {
-            'employee_id': employee.employee_id,
-            'id_dp': f"NV{str(employee.employee_id).zfill(3)}",
-            'name': employee.name,
-            'department': employee.department,
-            'position': employee.position,
-            'base_salary': float(employee.base_salary or 0),
-            'bonus': float(employee.bonus or 0),
-            'deduction': float(employee.deductions or 0),
-            'note': employee.note or '',
-            'total_salary': float(employee.base_salary or 0) + float(employee.bonus or 0) - float(employee.deductions or 0)
-        }
-
-        return jsonify(employee_data)
-
-# Route để cập nhật thông tin nhân viên
-@app.route('/update_employee/<int:employee_id>', methods=['POST'])
-def update_employee(employee_id):
-    with app.app_context():
-        data = request.form
-
-        # Lấy thông tin từ form
-        name = data.get('name')
-        department_name = data.get('department')
-        position_name = data.get('position')
-        base_salary = float(data.get('base_salary', 0))
-        bonus = float(data.get('bonus', 0))
-        deduction = float(data.get('deduction', 0))
-        note = data.get('note', '')
-
-        # Tách first_name và last_name từ name
-        name_parts = name.split(' ', 1)
-        first_name = name_parts[0]
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-
-        # Lấy department_id và job_id từ tên phòng ban và chức vụ
-        department = Department.query.filter_by(department_name=department_name).first()
-        job = Job.query.filter_by(job_title=position_name).first()
-
-        if not department or not job:
-            return jsonify({'error': 'Phòng ban hoặc chức vụ không tồn tại'}), 400
-
-        # Cập nhật trong database payroll
-        employee = Employee.query.filter_by(employee_id=employee_id).first()
-        if employee:
-            employee.first_name = first_name
-            employee.last_name = last_name
-            employee.department_id = department.department_id
-            employee.job_id = job.job_id
-            employee.salary = base_salary  # Cập nhật salary trong bảng Employee
-
-        payroll = Payroll.query.filter_by(employee_id=employee_id).first()
-        if payroll:
-            payroll.base_salary = base_salary
-            payroll.bonus = bonus
-            payroll.deductions = deduction
-            payroll.net_salary = base_salary + bonus - deduction
-            payroll.note = note
-
-        # Cập nhật trong database human
-        with db.session.bind('human') as human_session:
-            # Cập nhật bảng HumanEmployee
-            human_employee = human_session.query(HumanEmployee).filter_by(employee_id=employee_id).first()
-            if human_employee:
-                human_department = human_session.query(HumanDepartment).filter_by(department_name=department_name).first()
-                human_job = human_session.query(HumanJob).filter_by(job_title=position_name).first()
-                if human_department and human_job:
-                    human_employee.department_id = human_department.department_id
-                    human_employee.salary = base_salary
-                    human_employee.status = employee.status  # Đồng bộ trạng thái
-
-            # Cập nhật bảng HumanPayroll
-            human_payroll = human_session.query(HumanPayroll).filter_by(EmployeeID=employee_id).first()
-            if human_payroll:
-                human_payroll.BaseSalary = base_salary
-                human_payroll.Bonus = bonus
-                human_payroll.Deductions = deduction
-
-            # Cập nhật bảng Shareholders (nếu nhân viên là cổ đông)
-            shareholder = human_session.query(Shareholder).filter_by(employee_id=employee_id).first()
-            if shareholder:
-                shareholder.first_name = first_name
-                shareholder.last_name = last_name
-
-            human_session.commit()
-
-        # Cập nhật trong database user
-        with db.session.bind('user') as user_session:
-            user_account = user_session.query(UserAccount).filter_by(employee_id=employee_id).first()
-            if user_account:
-                user_account.employee_name = f"{first_name} {last_name}"
-                user_session.commit()
-
-        # Commit thay đổi trong database payroll
-        db.session.commit()
-
-        return jsonify({'message': 'Cập nhật nhân viên thành công'})
+    return render_template(
+        'payroll_AC.html',
+        payroll_data=payroll_data
+    )
 
 @app.route('/department_report_AC')
 def department_report():
@@ -431,7 +277,49 @@ def get_notifications():
         "timestamp": "20/03/2025 09:45"
     }]
     return render_template("notifications_AC.html",notifications=notifications)
+@app.route('/attendance_AC')
+def attendance_AC():
+    # Dữ liệu mẫu
+    attendances = [
+        {"attendance_id": "CC001", "employee_id": "NV001", "employee_name": "Nguyễn Văn A", "date": "2025-03-27", "status": "Có mặt"},
+        {"attendance_id": "CC002", "employee_id": "NV002", "employee_name": "Nguyễn Văn B", "date": "2025-03-27", "status": "Vắng"},
+        {"attendance_id": "CC003", "employee_id": "NV003", "employee_name": "Nguyễn Văn C", "date": "2025-03-27", "status": "Nghỉ"}
+    ]
+    
+    current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+    
 
+    return render_template(
+        'attendance_AC.html',
+        attendances=attendances,
+        current_date=current_date,
+        current_year=datetime.datetime.now().year
+    )
+
+@app.route('/api/attendance_detail')
+def attendance_detail():
+    employee_id = request.args.get('employee_id')
+    month = request.args.get('month')
+    year = request.args.get('year')
+    sample_details = {
+        "NV001": [
+            {"date": f"{year}-{month.zfill(2)}-01", "status": "Có mặt"},
+            {"date": f"{year}-{month.zfill(2)}-02", "status": "Có mặt"},
+            {"date": f"{year}-{month.zfill(2)}-03", "status": "Nghỉ"}
+        ],
+        "NV002": [
+            {"date": f"{year}-{month.zfill(2)}-01", "status": "Vắng"},
+            {"date": f"{year}-{month.zfill(2)}-02", "status": "Có mặt"},
+            {"date": f"{year}-{month.zfill(2)}-03", "status": "Vắng"}
+        ],
+        "NV003": [
+            {"date": f"{year}-{month.zfill(2)}-01", "status": "Nghỉ"},
+            {"date": f"{year}-{month.zfill(2)}-02", "status": "Nghỉ"},
+            {"date": f"{year}-{month.zfill(2)}-03", "status": "Có mặt"}
+        ]
+    }
+    return jsonify(sample_details.get(employee_id, []))
+    
 
 ##################################################################################################################
 # Dữ liệu mẫu (có thể thay bằng database thực tế)
@@ -640,7 +528,7 @@ def reports_HR():
  ############################################################################################################################################
 
 
-@app.route('/home_AD')
+@app.route('/dashboard_AD')
 def dashboard_AD():
     data = {
         "totalEmployees": 152,
@@ -657,6 +545,166 @@ def dashboard_AD():
         "growthData": [120, 125, 130, 140, 152]  # Dữ liệu tăng trưởng qua các tháng
     }
     return render_template('dashboard_AD.html', data=data)
+
+@app.route('/payroll_AD')
+def payroll_AD():
+    with app.app_context():
+        # Lấy tham số tháng từ query string (ví dụ: ?month=2025-02)
+        selected_month = request.args.get('month', None)
+
+        # Truy vấn tất cả dữ liệu lương (không lọc theo ngày gần nhất để hiển thị tất cả tháng)
+        payroll_query = db.session.query(
+            Payroll.payroll_id,
+            Employee.employee_id,
+            db.func.concat(Employee.first_name, ' ', Employee.last_name).label('employee_name'),
+            Department.department_name,
+            Job.job_title,
+            Payroll.base_salary,
+            Payroll.bonus,
+            Payroll.deductions,
+            Payroll.pay_date
+        ).join(
+            Employee, Payroll.employee_id == Employee.employee_id
+        ).join(
+            Department, Employee.department_id == Department.department_id
+        ).join(
+            Job, Employee.job_id == Job.job_id
+        ).order_by(
+            Payroll.pay_date.desc()  # Sắp xếp theo tháng, mới nhất trước
+        ).all()
+
+        # Chuyển đổi dữ liệu
+        payroll_data = [
+            (
+                {"payroll_id": row.payroll_id, "pay_date": row.pay_date},
+                {
+                    "employee_id": row.employee_id,
+                    "id_display": f"NV{row.employee_id:02d}" if isinstance(row.employee_id, int) else "NV" + str(int(row.employee_id.replace("NV", ""))),
+                    "employee_name": row.employee_name,
+                    "department_name": row.department_name,
+                    "job_title": row.job_title,
+                    "base_salary": float(row.base_salary or 0),
+                    "bonus": float(row.bonus or 0),
+                    "deduction": float(row.deductions or 0),
+                    "total_salary": float(row.base_salary or 0) + float(row.bonus or 0) - float(row.deductions or 0)
+                }
+            )
+            for row in payroll_query
+        ]
+
+        available_months = sorted(set(
+            row[0]["pay_date"].strftime("%Y-%m") for row in payroll_data
+        ), reverse=True)
+        # Nếu không có selected_month, mặc định hiển thị tháng gần nhất
+        if not selected_month and available_months:
+            selected_month = available_months[0]  # Lấy tháng gần nhất từ available_months
+            payroll_data = [
+                (payroll, employee) for payroll, employee in payroll_data
+                if payroll["pay_date"].strftime("%Y-%m") == selected_month
+            ]
+        elif selected_month:
+            payroll_data = [
+                (payroll, employee) for payroll, employee in payroll_data
+                if payroll["pay_date"].strftime("%Y-%m") == selected_month
+            ]
+            
+        # Lấy danh sách phòng ban và chức vụ để truyền vào modal
+        departments = [dept.department_name for dept in Department.query.all()]
+        jobs = [job.job_title for job in Job.query.all()]
+
+    return render_template(
+        'payroll_AD.html',
+        payroll_data=payroll_data,
+        available_months=available_months,  # Truyền danh sách tháng để hiển thị trong dropdown
+        selected_month=selected_month,      # Truyền tháng được chọn để đánh dấu trong giao diện
+        departments=departments,
+        jobs=jobs
+    )
+    
+@app.route('/get_employee_detail/<int:employee_id>', methods=['GET'])
+def get_employee_AD(employee_id):
+    with app.app_context():
+        employee = db.session.query(
+            Employee.employee_id,
+            db.func.concat(Employee.first_name, ' ', Employee.last_name).label('employee_name'),
+            Department.department_name,
+            Job.job_title,
+            Payroll.base_salary,
+            Payroll.bonus,
+            Payroll.deductions,
+            Payroll.note
+        ).join(
+            Department, Employee.department_id == Department.department_id
+        ).join(
+            Job, Employee.job_id == Job.job_id
+        ).join(
+            Payroll, Employee.employee_id == Payroll.employee_id
+        ).filter(
+            Employee.employee_id == employee_id
+        ).first()
+
+        if not employee:
+            return jsonify({'error': 'Nhân viên không tồn tại'}), 404
+
+        employee_data = {
+            'employee_id': employee.employee_id,
+            'id_display': f"NV{employee.employee_id:02d}" if isinstance(employee.employee_id, int) else "NV" + str(int(employee.employee_id.replace("NV", ""))),
+            'employee_name': employee.employee_name,
+            'department_name': employee.department_name,
+            'job_title': employee.job_title,
+            'base_salary': float(employee.base_salary or 0),
+            'bonus': float(employee.bonus or 0),
+            'deduction': float(employee.deductions or 0),
+            'note': employee.note or ''
+        }
+
+        return jsonify(employee_data)
+
+@app.route('/update_employee/<int:employee_id>', methods=['POST'])
+def update_employee_AD(employee_id):
+    with app.app_context():
+        data = request.form
+
+        name = data.get('employee_name')
+        department_name = data.get('department_name')
+        job_title = data.get('job_title')
+        base_salary = float(data.get('base_salary', 0))
+        bonus = float(data.get('bonus', 0))
+        deduction = float(data.get('deduction', 0))
+        note = data.get('notes', '')
+
+        name_parts = name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+
+        department = Department.query.filter_by(department_name=department_name).first()
+        job = Job.query.filter_by(job_title=job_title).first()
+
+        if not department or not job:
+            return jsonify({'error': 'Phòng ban hoặc chức vụ không tồn tại'}), 400
+
+        employee = Employee.query.filter_by(employee_id=employee_id).first()
+        if employee:
+            employee.first_name = first_name
+            employee.last_name = last_name
+            employee.department_id = department.department_id
+            employee.job_id = job.job_id
+
+        payroll = Payroll.query.filter_by(employee_id=employee_id).first()
+        if payroll:
+            payroll.base_salary = base_salary
+            payroll.bonus = bonus
+            payroll.deductions = deduction
+            payroll.note = note
+            payroll.net_salary = base_salary + bonus - deduction
+
+        db.session.commit()
+
+        return jsonify({'message': 'Cập nhật nhân viên thành công'})
+    
+@app.route('/employee_AD')
+def employee_AD():
+    return render_template('employee_AD.html', employees=employees)
     
 
 @app.route('/activity-log_AD')

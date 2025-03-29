@@ -19,8 +19,8 @@
           <p class="sidebar-subtitle">Hệ thống Quản lý Lương</p>
         </div>
         <div class="sidebar-menu">
-          <a href="{{ url_for('home_AC') }}" class="active"><i>🏠</i> Home </a>
-          <a href="{{ url_for('payroll') }}"><i>💰</i> Bảng lương nhân viên </a>
+          <a href="{{ url_for('home_AC') }}"><i>🏠</i> Home </a>
+          <a href="{{ url_for('payroll') }}" class="active"><i>💰</i> Bảng lương nhân viên </a>
           <a href="{{ url_for('department_report') }}"
             ><i>📑</i> Báo cáo theo phòng ban</a
           >
@@ -82,7 +82,7 @@
                 {% for payroll, employee in payroll_data %}
                 <tr>
                   <td>{{payroll.payroll_id}}</td>
-                  <td>{{ employee.employee_id }}</td>
+                  <td>{{ employee.id_display }}</td>
                   <td>{{ employee.employee_name }}</td>
                   <td>{{ employee.department_name }}</td>
                   <td>{{ employee.job_title }}</td>
