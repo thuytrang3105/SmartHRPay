@@ -1,0 +1,23 @@
+[
+    {
+        "title": "Thông báo lương tháng 3/2025",
+        "status": "sent",
+        "recipients": "Tất cả nhân viên (120)",
+        "content": "Bảng lương tháng 3 đã được phát hành. Vui lòng kiểm tra và xác nhận.",
+        "timestamp": "28/03/2025 10:15"
+    },
+    {
+        "title": "Thông báo cập nhật chính sách lương",
+        "status": "sent",
+        "recipients": "Phòng IT, Phòng Marketing (60)",
+        "content": "Chính sách lương mới sẽ được áp dụng từ tháng 4/2025. Chi tiết vui lòng xem tại đây.",
+        "timestamp": "15/03/2025 14:30"
+    },
+    {
+        "title": "Thông báo điều chỉnh lương cho nhân viên kinh doanh",
+        "status": "draft",
+        "recipients": "Phòng Kinh doanh (45)",
+        "content": "Điều chỉnh chế độ thưởng doanh số cho nhân viên kinh doanh từ tháng 4/2025.",
+        "timestamp": "20/03/2025 09:45"
+    }
+]
