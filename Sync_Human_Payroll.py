@@ -6,26 +6,58 @@ import mysql.connector
 
 fake = Faker()
 
-# Thông tin kết nối database
+# # Thông tin kết nối database
+# DB_HUMAN = {
+#     'server': '.', 
+#     'database': 'HUMAN_2025'
+# }
+
+# DB_PAYROLL = {
+#     'host': 'localhost',
+#     'database': 'payroll',
+#     'user': 'root',
+#     'password': '123456123456'
+# }
+
+# # Kết nối database
+# conn_human = pyodbc.connect(
+#     f"DRIVER={{SQL Server}};"
+#     f"SERVER={DB_HUMAN['server']};"
+#     f"DATABASE={DB_HUMAN['database']};"
+#     "Trusted_Connection=yes;"
+# )
+#  tương tự để kết nối mysql máy Quang Anh
+
+# Thông tin kết nối database MySQL
 DB_HUMAN = {
-    'server': '.', 
-    'database': 'HUMAN_2025'
+    'host': 'localhost',
+    'database': 'human',
+    'user': 'root',
+    'password': 'Lovecode@05'
 }
 
 DB_PAYROLL = {
     'host': 'localhost',
     'database': 'payroll',
     'user': 'root',
-    'password': '123456123456'
+    'password': 'Lovecode@05'
 }
 
-# Kết nối database
-conn_human = pyodbc.connect(
-    f"DRIVER={{SQL Server}};"
-    f"SERVER={DB_HUMAN['server']};"
-    f"DATABASE={DB_HUMAN['database']};"
-    "Trusted_Connection=yes;"
+DB_USER = {
+    'host': 'localhost',
+    'database': 'user',
+    'user': 'root',
+    'password': 'Lovecode@05'
+}
+
+# Kết nối database MySQL
+conn_human = pymysql.connect(
+    host=DB_HUMAN['host'],
+    user=DB_HUMAN['user'],
+    password=DB_HUMAN['password'],
+    database=DB_HUMAN['database']
 )
+
 cursor_human = conn_human.cursor()
 
 conn_payroll = mysql.connector.connect(**DB_PAYROLL)

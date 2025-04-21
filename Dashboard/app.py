@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Cấu hình database (đảm bảo đã cấu hình đúng trong ứng dụng Flask của bạn)
 app.config["SQLALCHEMY_BINDS"] = {
-"human": config.SQL_SERVER_CONN, # Thêm dòng này để tránh lỗi
+# "human": config.SQL_SERVER_CONN, # Thêm dòng này để tránh lỗi
 "payroll": config.MYSQL_CONN_PAYROLL,
 "user":config.MYSQL_CONN_USER
 }
@@ -396,6 +396,20 @@ employees = [
         "status": "Nghỉ việc",
     },
 ]
+recruitments = [
+    {
+        "position": "Lập trình viên Backend",
+        "department": "CNTT",
+        "post_date": "2025-04-10",
+        "quantity": 2
+    },
+    {
+        "position": "Chuyên viên Nhân sự",
+        "department": "HR",
+        "post_date": "2025-04-15",
+        "quantity": 1
+    }
+]
 reports = [
         {"role": "Nhân viên", "total": 50, "newEmployees": 10, "resignedEmployees": 2, "departments": "Kinh doanh"},
         {"role": "Quản lý", "total": 15, "newEmployees": 3, "resignedEmployees": 1, "departments": "Nhân sự"},
@@ -471,7 +485,10 @@ def delete_employee(employee_id):
     global employees
     employees = [emp for emp in employees if emp['employee_id'] != employee_id]
     return jsonify({"success": True})
-
+#API để quản lí tuyển dụng 
+@app.route('/hiring')
+def hiring_detail():
+    return render_template('hiring_detail.html', recruitments==recruitments)
 # Route để render trang VC va PB
 @app.route('/depart_pos')
 def depart_pos():

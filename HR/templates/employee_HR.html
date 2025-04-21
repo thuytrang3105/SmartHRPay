@@ -5,6 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quản Lý Nhân Viên</title>
     <link rel="stylesheet" href="../static/employee_HR.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* CSS bổ sung cho modal chi tiết nhân viên */
+      #employeeDetailModal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        padding-top: 20px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      #employeeDetailModal .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .employee-detail-section {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .detail-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .action-btn {
+        margin-right: 5px;
+      }
+      
+      .detail-btn {
+        background-color: #4CAF50;
+        color: white;
+      }
+    </style>
   </head>
   <body>
     <!-- Sidebar -->
@@ -21,6 +74,12 @@
               <i>👔</i> Phòng ban và công việc
             </a>
           </li>
+          <li>
+            <a href="{{ url_for('recruitment_HR') }}">
+              <i>📝</i> Quản Lí Tuyển Dụng
+            </a>
+          </li>
+          
           <li>
             <a href="{{ url_for('reports_HR') }}"><i>📈</i> Báo cáo nhân sự </a>
           </li>
@@ -192,9 +251,53 @@
       </div>
     </div>
 
+    <!-- Modal Chi Tiết Nhân Viên -->
+    <div id="employeeDetailModal" class="modal">
+      <div class="modal-content">
+        <h2>Chi tiết nhân viên</h2>
+        
+        <div class="employee-detail-section">
+          <h4>Thông tin cá nhân</h4>
+          <p><strong>Mã nhân viên:</strong> <span id="detailEmployeeId"></span></p>
+          <p><strong>Họ tên:</strong> <span id="detailFullName"></span></p>
+          <p><strong>Giới tính:</strong> <span id="detailGender"></span></p>
+          <p><strong>Ngày sinh:</strong> <span id="detailDOB"></span></p>
+          <p><strong>Địa chỉ:</strong> <span id="detailAddress"></span></p>
+          <p><strong>Email:</strong> <span id="detailEmail"></span></p>
+          <p><strong>Số điện thoại:</strong> <span id="detailPhone"></span></p>
+        </div>
+        
+        <div class="employee-detail-section">
+          <h4>Thông tin công việc</h4>
+          <p><strong>Chức vụ:</strong> <span id="detailPosition"></span></p>
+          <p><strong>Phòng ban:</strong> <span id="detailDepartment"></span></p>
+          <p><strong>Ngày vào làm:</strong> <span id="detailHireDate"></span></p>
+          <p><strong>Ca làm việc:</strong> <span id="detailWorkShift"></span></p>
+          <p><strong>Loại hợp đồng:</strong> <span id="detailContractType"></span></p>
+          <p><strong>Trạng thái:</strong> <span id="detailStatus"></span></p>
+        </div>
+        
+        <div class="employee-detail-section">
+          <h4>Lương và phụ cấp</h4>
+          <p><strong>Lương cơ bản:</strong> <span id="detailBaseSalary"></span> VNĐ</p>
+          <p><strong>Tiền thưởng:</strong> <span id="detailBonus"></span> VNĐ</p>
+          <p><strong>Khoản khấu trừ:</strong> <span id="detailDeductions"></span> VNĐ</p>
+          <p><strong>Lương thực lĩnh:</strong> <span id="detailNetSalary"></span> VNĐ</p>
+        </div>
+        
+        <div class="detail-actions">
+          <button class="btn btn-warning" onclick="viewEmployee(currentEmployeeId)">Chỉnh sửa thông tin</button>
+          <button class="btn btn-danger" onclick="confirmDeleteEmployee()">Xóa nhân viên</button>
+          <button class="btn btn-secondary" onclick="closeDetailModal()">Đóng</button>
+        </div>
+      </div>
+    </div>
+
     <script>
       // Sử dụng đường dẫn tương đối vì HTML và API cùng nguồn gốc
       const API_URL = "/api/employees";
+      const DETAIL_API_URL = "/api/employees/detail";
+      let currentEmployeeId = null;
 
       // Tải danh sách nhân viên từ API khi trang được tải
       window.onload = function () {
@@ -229,6 +332,9 @@
                 <button class="action-btn view-btn" onclick="viewEmployee('${
                   employee.employee_id
                 }')">Xem</button>
+                <button class="action-btn detail-btn" onclick="showEmployeeDetail('${
+                  employee.employee_id
+                }')">Chi tiết</button>
                 <button class="action-btn delete-btn" onclick="deleteEmployee('${
                   employee.employee_id
                 }')">Xóa</button>
@@ -283,6 +389,9 @@
               <button class="action-btn close-btn" onclick="closeViewModal()">Thoát</button>
             `;
 
+            // Đóng modal chi tiết nếu đang mở
+            closeDetailModal();
+            
             document.getElementById("viewEmployeeModal").style.display = "flex";
           }
         } catch (error) {
@@ -290,6 +399,78 @@
           alert(
             "Không thể xem thông tin nhân viên. Vui lòng kiểm tra API hoặc kết nối."
           );
+        }
+      }
+
+      // Xem chi tiết nhân viên
+      async function showEmployeeDetail(employeeId) {
+        try {
+          const response = await fetch(`${DETAIL_API_URL}/${employeeId}`);
+          if (!response.ok) {
+            throw new Error(
+              `Không thể lấy chi tiết nhân viên. Mã lỗi: ${response.status}`
+            );
+          }
+          const employee = await response.json();
+          if (employee) {
+            currentEmployeeId = employeeId;
+            
+            // Cập nhật thông tin cá nhân
+            document.getElementById("detailEmployeeId").textContent = employee.employee_id;
+            document.getElementById("detailFullName").textContent = 
+              `${employee.last_name} ${employee.first_name}`;
+            document.getElementById("detailGender").textContent = employee.gender || "Chưa cập nhật";
+            document.getElementById("detailDOB").textContent = employee.dob || "Chưa cập nhật";
+            document.getElementById("detailAddress").textContent = employee.address || "Chưa cập nhật";
+            document.getElementById("detailEmail").textContent = employee.email;
+            document.getElementById("detailPhone").textContent = employee.phone;
+            
+            // Cập nhật thông tin công việc
+            document.getElementById("detailPosition").textContent = employee.job_title;
+            document.getElementById("detailDepartment").textContent = employee.department_name;
+            document.getElementById("detailHireDate").textContent = employee.hire_date;
+            document.getElementById("detailWorkShift").textContent = employee.work_shift || "Giờ hành chính";
+            document.getElementById("detailContractType").textContent = employee.contract_type || "Hợp đồng dài hạn";
+            document.getElementById("detailStatus").textContent = employee.status;
+            
+            // Cập nhật thông tin lương
+            document.getElementById("detailBaseSalary").textContent = employee.base_salary.toLocaleString();
+            document.getElementById("detailBonus").textContent = 
+              employee.bonus ? employee.bonus.toLocaleString() : "0";
+            document.getElementById("detailDeductions").textContent = 
+              employee.deductions ? employee.deductions.toLocaleString() : "0";
+              
+            // Tính lương thực lĩnh
+            const bonus = employee.bonus || 0;
+            const deductions = employee.deductions || 0;
+            const netSalary = employee.base_salary + bonus - deductions;
+            document.getElementById("detailNetSalary").textContent = netSalary.toLocaleString();
+            
+            // Đóng modal xem nếu đang mở
+            closeViewModal();
+            
+            // Hiển thị modal chi tiết
+            document.getElementById("employeeDetailModal").style.display = "flex";
+          }
+        } catch (error) {
+          console.error("Lỗi khi xem chi tiết nhân viên:", error);
+          alert(
+            "Không thể xem chi tiết nhân viên. Vui lòng kiểm tra API hoặc kết nối."
+          );
+        }
+      }
+
+      // Đóng modal chi tiết
+      function closeDetailModal() {
+        document.getElementById("employeeDetailModal").style.display = "none";
+        currentEmployeeId = null;
+      }
+
+      // Xác nhận xóa nhân viên từ modal chi tiết
+      function confirmDeleteEmployee() {
+        if (currentEmployeeId) {
+          deleteEmployee(currentEmployeeId);
+          closeDetailModal();
         }
       }
 
@@ -419,6 +600,8 @@
             });
             if (response.ok) {
               loadEmployees();
+              // Đóng modal chi tiết nếu đang mở
+              closeDetailModal();
             } else {
               console.error("Lỗi khi xóa nhân viên");
               alert("Không thể xóa nhân viên. Vui lòng thử lại.");

@@ -22,6 +22,9 @@
             </a>
           </li>
           <li>
+            <a href="{{ url_for('recruitment_HR') }}"><i>📝</i> Quản Lí Tuyển Dụng </a>
+          </li>
+          <li>
             <a href="{{ url_for('reports_HR') }}"><i>📈</i> Báo cáo nhân sự </a>
           </li>
         </ul>
@@ -35,7 +38,6 @@
         </ul>
       </div>
     </div>
-
 
     <!-- Main Content -->
     <div class="main-content">
@@ -83,7 +85,7 @@
               </thead>
               <tbody id="jobBody">
                 {% for job in jobs %}
-                <tr>
+                <tr data-job-id="{{ job.job_id }}">
                   <td>{{ job.job_id }}</td>
                   <td>{{ job.job_title }}</td>
                   <td>
@@ -92,6 +94,12 @@
                       onclick="viewJobEmployees('{{ job.job_id }}', '{{ job.job_title }}')"
                     >
                       Xem
+                    </button>
+                    <button 
+                      class="action-btn edit-btn" 
+                      onclick="openEditJobModal('{{ job.job_id }}', '{{ job.job_title }}')"
+                    >
+                      Sửa
                     </button>
                     <button
                       class="action-btn delete-btn"
@@ -139,7 +147,7 @@
               </thead>
               <tbody id="departmentBody">
                 {% for department in departments %}
-                <tr>
+                <tr data-department-id="{{ department.department_id }}">
                   <td>{{ department.department_id }}</td>
                   <td>{{ department.department_name }}</td>
                   <td>
@@ -148,6 +156,12 @@
                       onclick="viewDepartmentEmployees('{{ department.department_id }}', '{{ department.department_name }}')"
                     >
                       Xem
+                    </button>
+                    <button 
+                      class="action-btn edit-btn" 
+                      onclick="openEditDepartmentModal('{{ department.department_id }}', '{{ department.department_name }}')"
+                    >
+                      Sửa
                     </button>
                     <button
                       class="action-btn delete-btn"
@@ -186,6 +200,28 @@
       </div>
     </div>
 
+    <!-- Modal Sửa Công Việc -->
+    <div id="editJobModal" class="modal">
+      <div class="modal-content">
+        <h2>Sửa Công Việc</h2>
+        <form id="editJobForm">
+          <input type="hidden" id="editJobId" name="job_id" />
+          <label for="editJobTitle">Tên Công Việc:</label>
+          <input type="text" id="editJobTitle" name="job_title" required />
+          <div class="modal-buttons">
+            <button
+              type="button"
+              class="cancel-btn"
+              onclick="closeEditJobModal()"
+            >
+              Hủy
+            </button>
+            <button type="submit" class="save-btn">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal Thêm Phòng Ban -->
     <div id="addDepartmentModal" class="modal">
       <div class="modal-content">
@@ -203,6 +239,33 @@
               type="button"
               class="cancel-btn"
               onclick="closeAddDepartmentModal()"
+            >
+              Hủy
+            </button>
+            <button type="submit" class="save-btn">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Sửa Phòng Ban -->
+    <div id="editDepartmentModal" class="modal">
+      <div class="modal-content">
+        <h2>Sửa Phòng Ban</h2>
+        <form id="editDepartmentForm">
+          <input type="hidden" id="editDepartmentId" name="department_id" />
+          <label for="editDepartmentName">Tên Phòng Ban:</label>
+          <input
+            type="text"
+            id="editDepartmentName"
+            name="department_name"
+            required
+          />
+          <div class="modal-buttons">
+            <button
+              type="button"
+              class="cancel-btn"
+              onclick="closeEditDepartmentModal()"
             >
               Hủy
             </button>
@@ -261,231 +324,387 @@
         </div>
       </div>
     </div>
-
-    <script>
-      function showSection(sectionId) {
-        document.getElementById("jobs").style.display = "none";
-        document.getElementById("departments").style.display = "none";
-        document.getElementById(sectionId).style.display = "block";
-        document.querySelectorAll(".tab-button").forEach((button) => {
-          button.classList.remove("active");
-        });
-        document
-          .querySelector(`.tab-button[onclick="showSection('${sectionId}')"]`)
-          .classList.add("active");
-      }
-      // --- Công việc ---
-      function openAddJobModal() {
-        document.getElementById("addJobModal").style.display = "block";
-      }
-
-      function closeAddJobModal() {
-        document.getElementById("addJobModal").style.display = "none";
-        document.getElementById("addJobForm").reset();
-      }
-
-      document
-        .getElementById("addJobForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          const jobTitle = document.getElementById("jobTitle").value;
-          fetch("/api/add_job", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `job_title=${jobTitle}`,
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              const tableBody = document.getElementById("jobBody");
-              const newRow = document.createElement("tr");
-              newRow.innerHTML = `
-                    <td>${data.job_id}</td>
-                    <td>${data.job_tile}</td>
-                    <td>
-                        <button class="action-btn view-btn" onclick="viewJobEmployees('${data.job_id}', '${data.job_title}')">Xem</button>
-                        <button class="action-btn delete-btn" onclick="deleteJob('${data.job_id}')">Xóa</button>
-                    </td>
-                `;
-              tableBody.appendChild(newRow);
-              closeAddJobModal();
-            })
-            .catch((error) => {
-              console.error("Lỗi khi thêm công việc:", error);
-              alert("Đã xảy ra lỗi khi thêm công việc.");
-            });
-        });
-
-      function searchJobs() {
-        const input = document
-          .querySelector("#searchJobInput")
-          .value.toLowerCase();
-        const rows = document.querySelectorAll("#jobBody tr");
-        rows.forEach((row) => {
-          const text = row.textContent.toLowerCase();
-          row.style.display = text.includes(input) ? "" : "none";
-        });
-      }
-
-      function viewJobEmployees(jobId, jobTitle) {
-        document.getElementById("jobEmployeesModal").style.display = "block";
-        document.getElementById("jobTitleDisplay").textContent = jobTitle;
-        fetch(`/api/employees_by_jobjob/${jobId}`)
-          .then((response) => response.json())
-          .then((data) => {
-            const tableBody = document.getElementById("jobEmployeesBody");
-            tableBody.innerHTML = "";
-            if (data.length === 0) {
-              tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc công việc này.</td></tr>`;
-            } else {
-              data.forEach((emp) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${emp.employee_id}</td><td>${emp.full_name}</td><td>${emp.email}</td>`;
-                tableBody.appendChild(row);
-              });
-            }
-          })
-          .catch((error) => {
-            console.error("Lỗi khi lấy dữ liệu từ API:", error);
-            const tableBody = document.getElementById("jobEmployeesBody");
-            tableBody.innerHTML = `<tr><td colspan="3">Đã xảy ra lỗi khi tải dữ liệu.</td></tr>`;
-          });
-      }
-
-      function closeJobEmployeesModal() {
-        document.getElementById("jobEmployeesModal").style.display = "none";
-      }
-
-      function deleteJob(jobId) {
-        if (confirm(`Bạn có chắc chắn muốn xóa công việc ${jobId}?`)) {
-          fetch(`/api/delete_jobjob/${jobId}`, { method: "DELETE" })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                const row = document.querySelector(
-                  `#jobBody tr td:first-child:contains('${jobId}')`
-                ).parentElement;
-                row.remove();
-              }
-            })
-            .catch((error) => {
-              console.error("Lỗi khi xóa công việc:", error);
-              alert("Đã xảy ra lỗi khi xóa công việc.");
-            });
-        }
-      }
-
-      // --- Phòng Ban ---
-      function openAddDepartmentModal() {
-        document.getElementById("addDepartmentModal").style.display = "block";
-      }
-
-      function closeAddDepartmentModal() {
-        document.getElementById("addDepartmentModal").style.display = "none";
-        document.getElementById("addDepartmentForm").reset();
-      }
-
-      document
-        .getElementById("addDepartmentForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          const departmentName =
-            document.getElementById("departmentName").value;
-          fetch("/api/add_department", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `department_name=${departmentName}`,
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              const tableBody = document.getElementById("departmentBody");
-              const newRow = document.createElement("tr");
-              newRow.innerHTML = `
-                    <td>${data.department_id}</td>
-                    <td>${data.department_name}</td>
-                    <td>
-                        <button class="action-btn view-btn" onclick="viewDepartmentEmployees('${data.department_id}', '${data.department_name}')">Xem</button>
-                        <button class="action-btn delete-btn" onclick="deleteDepartment('${data.department_id}')">Xóa</button>
-                    </td>
-                `;
-              tableBody.appendChild(newRow);
-              closeAddDepartmentModal();
-            })
-            .catch((error) => {
-              console.error("Lỗi khi thêm phòng ban:", error);
-              alert("Đã xảy ra lỗi khi thêm phòng ban.");
-            });
-        });
-
-      function searchDepartments() {
-        const input = document
-          .querySelector("#searchDepartmentInput")
-          .value.toLowerCase();
-        const rows = document.querySelectorAll("#departmentBody tr");
-        rows.forEach((row) => {
-          const text = row.textContent.toLowerCase();
-          row.style.display = text.includes(input) ? "" : "none";
-        });
-      }
-
-      function viewDepartmentEmployees(departmentId, departmentName) {
-        document.getElementById("departmentEmployeesModal").style.display =
-          "block";
-        document.getElementById("departmentNameDisplay").textContent =
-          departmentName;
-        fetch(`/api/employees_by_department/${departmentId}`)
-          .then((response) => response.json())
-          .then((data) => {
-            const tableBody = document.getElementById(
-              "departmentEmployeesBody"
-            );
-            tableBody.innerHTML = "";
-            if (data.length === 0) {
-              tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc phòng ban này.</td></tr>`;
-            } else {
-              data.forEach((emp) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${emp.employee_id}</td><td>${emp.full_name}</td><td>${emp.email}</td>`;
-                tableBody.appendChild(row);
-              });
-            }
-          })
-          .catch((error) => {
-            console.error("Lỗi khi lấy dữ liệu từ API:", error);
-            const tableBody = document.getElementById(
-              "departmentEmployeesBody"
-            );
-            tableBody.innerHTML = `<tr><td colspan="3">Đã xảy ra lỗi khi tải dữ liệu.</td></tr>`;
-          });
-      }
-
-      function closeDepartmentEmployeesModal() {
-        document.getElementById("departmentEmployeesModal").style.display =
-          "none";
-      }
-
-      function deleteDepartment(departmentId) {
-        if (confirm(`Bạn có chắc chắn muốn xóa phòng ban ${departmentId}?`)) {
-          fetch(`/api/delete_department/${departmentId}`, { method: "DELETE" })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                const row = document.querySelector(
-                  `#departmentBody tr td:first-child:contains('${departmentId}')`
-                ).parentElement;
-                row.remove();
-              }
-            })
-            .catch((error) => {
-              console.error("Lỗi khi xóa phòng ban:", error);
-              alert("Đã xảy ra lỗi khi xóa phòng ban.");
-            });
-        }
-      }
-
-      // Hàm hỗ trợ tìm kiếm
-      HTMLElement.prototype.contains = function (text) {
-        return this.textContent.includes(text);
-      };
-    </script>
   </body>
 </html>
+<script>
+  // --- Hiển thị tab ---
+function showSection(sectionId) {
+    document.getElementById("jobs").style.display = "none";
+    document.getElementById("departments").style.display = "none";
+    document.getElementById(sectionId).style.display = "block";
+    document.querySelectorAll(".tab-button").forEach((button) => {
+        button.classList.remove("active");
+    });
+    document.querySelector(`.tab-button[onclick="showSection('${sectionId}')"]`).classList.add("active");
+}
+
+// --- Quản lý công việc ---
+function openAddJobModal() {
+    document.getElementById("addJobModal").style.display = "block";
+}
+
+function closeAddJobModal() {
+    document.getElementById("addJobModal").style.display = "none";
+    document.getElementById("addJobForm").reset();
+}
+
+// Thêm công việc mới
+function addJob() {
+    const jobTitle = document.getElementById("jobTitle").value;
+    
+    fetch("/api/add_job", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ job_title: jobTitle })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Lỗi khi thêm công việc");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const tableBody = document.getElementById("jobBody");
+        const newRow = document.createElement("tr");
+        newRow.dataset.jobId = data.job_id;
+        newRow.innerHTML = `
+            <td>${data.job_id}</td>
+            <td>${data.job_title}</td>
+            <td>
+                <button class="action-btn view-btn" onclick="viewJobEmployees('${data.job_id}', '${data.job_title}')">Xem</button>
+                <button class="action-btn edit-btn" onclick="openEditJobModal('${data.job_id}', '${data.job_title}')">Sửa</button>
+                <button class="action-btn delete-btn" onclick="deleteJob('${data.job_id}')">Xóa</button>
+            </td>
+        `;
+        tableBody.appendChild(newRow);
+        closeAddJobModal();
+    })
+    .catch(error => {
+        console.error("Lỗi:", error);
+        alert("Đã xảy ra lỗi khi thêm công việc.");
+    });
+}
+
+// Xóa công việc
+function deleteJob(jobId) {
+    if (confirm(`Bạn có chắc chắn muốn xóa công việc có ID ${jobId}?`)) {
+        fetch(`/api/delete_job/${jobId}`, { 
+            method: "DELETE" 
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Lỗi khi xóa công việc");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const row = document.querySelector(`tr[data-job-id="${jobId}"]`);
+                if (row) {
+                    row.remove();
+                }
+            }
+        })
+        .catch(error => {
+            console.error("Lỗi:", error);
+            alert("Đã xảy ra lỗi khi xóa công việc.");
+        });
+    }
+}
+
+// Modal chỉnh sửa công việc
+function openEditJobModal(jobId, jobTitle) {
+    document.getElementById("editJobId").value = jobId;
+    document.getElementById("editJobTitle").value = jobTitle;
+    document.getElementById("editJobModal").style.display = "block";
+}
+
+function closeEditJobModal() {
+    document.getElementById("editJobModal").style.display = "none";
+    document.getElementById("editJobForm").reset();
+}
+
+// Cập nhật công việc
+function updateJob() {
+    const jobId = document.getElementById("editJobId").value;
+    const jobTitle = document.getElementById("editJobTitle").value;
+    
+    fetch(`/api/update_job/${jobId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ job_title: jobTitle })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Lỗi khi cập nhật công việc");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const row = document.querySelector(`tr[data-job-id="${jobId}"]`);
+        if (row) {
+            row.querySelector("td:nth-child(2)").textContent = jobTitle;
+            // Cập nhật nút "Xem" với title mới
+            const viewButton = row.querySelector(".view-btn");
+            viewButton.setAttribute("onclick", `viewJobEmployees('${jobId}', '${jobTitle}')`);
+        }
+        closeEditJobModal();
+    })
+    .catch(error => {
+        console.error("Lỗi:", error);
+        alert("Đã xảy ra lỗi khi cập nhật công việc.");
+    });
+}
+
+// Tìm kiếm công việc
+function searchJobs() {
+    const input = document.getElementById("searchJobInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#jobBody tr");
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+
+// Xem nhân viên theo công việc
+function viewJobEmployees(jobId, jobTitle) {
+    document.getElementById("jobEmployeesModal").style.display = "block";
+    document.getElementById("jobTitleDisplay").textContent = jobTitle;
+    
+    fetch(`/api/employees_by_job/${jobId}`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Lỗi khi lấy dữ liệu nhân viên");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const tableBody = document.getElementById("jobEmployeesBody");
+        tableBody.innerHTML = "";
+        if (data.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc công việc này.</td></tr>`;
+        } else {
+            data.forEach(emp => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${emp.employee_id}</td><td>${emp.full_name}</td><td>${emp.email}</td>`;
+                tableBody.appendChild(row);
+            });
+        }
+    })
+    .catch(error => {
+        console.error("Lỗi:", error);
+        const tableBody = document.getElementById("jobEmployeesBody");
+        tableBody.innerHTML = `<tr><td colspan="3">Đã xảy ra lỗi khi tải dữ liệu.</td></tr>`;
+    });
+}
+
+function closeJobEmployeesModal() {
+    document.getElementById("jobEmployeesModal").style.display = "none";
+}
+
+// --- Quản lý phòng ban ---
+function openAddDepartmentModal() {
+    document.getElementById("addDepartmentModal").style.display = "block";
+}
+
+function closeAddDepartmentModal() {
+    document.getElementById("addDepartmentModal").style.display = "none";
+    document.getElementById("addDepartmentForm").reset();
+}
+
+// Thêm phòng ban mới
+function addDepartment() {
+    const departmentName = document.getElementById("departmentName").value;
+    
+    fetch("/api/add_department", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ department_name: departmentName })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Lỗi khi thêm phòng ban");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const tableBody = document.getElementById("departmentBody");
+        const newRow = document.createElement("tr");
+        newRow.dataset.departmentId = data.department_id;
+        newRow.innerHTML = `
+            <td>${data.department_id}</td>
+            <td>${data.department_name}</td>
+            <td>
+                <button class="action-btn view-btn" onclick="viewDepartmentEmployees('${data.department_id}', '${data.department_name}')">Xem</button>
+                <button class="action-btn edit-btn" onclick="openEditDepartmentModal('${data.department_id}', '${data.department_name}')">Sửa</button>
+                <button class="action-btn delete-btn" onclick="deleteDepartment('${data.department_id}')">Xóa</button>
+            </td>
+        `;
+        tableBody.appendChild(newRow);
+        closeAddDepartmentModal();
+    })
+    .catch(error => {
+        console.error("Lỗi:", error);
+        alert("Đã xảy ra lỗi khi thêm phòng ban.");
+    });
+}
+
+// Xóa phòng ban
+function deleteDepartment(departmentId) {
+    if (confirm(`Bạn có chắc chắn muốn xóa phòng ban có ID ${departmentId}?`)) {
+        fetch(`/api/delete_department/${departmentId}`, { 
+            method: "DELETE" 
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Lỗi khi xóa phòng ban");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const row = document.querySelector(`tr[data-department-id="${departmentId}"]`);
+                if (row) {
+                    row.remove();
+                }
+            }
+        })
+        .catch(error => {
+            console.error("Lỗi:", error);
+            alert("Đã xảy ra lỗi khi xóa phòng ban.");
+        });
+    }
+}
+
+// Modal chỉnh sửa phòng ban
+function openEditDepartmentModal(departmentId, departmentName) {
+    document.getElementById("editDepartmentId").value = departmentId;
+    document.getElementById("editDepartmentName").value = departmentName;
+    document.getElementById("editDepartmentModal").style.display = "block";
+}
+
+function closeEditDepartmentModal() {
+    document.getElementById("editDepartmentModal").style.display = "none";
+    document.getElementById("editDepartmentForm").reset();
+}
+
+// Cập nhật phòng ban
+function updateDepartment() {
+    const departmentId = document.getElementById("editDepartmentId").value;
+    const departmentName = document.getElementById("editDepartmentName").value;
+    
+    fetch(`/api/update_department/${departmentId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ department_name: departmentName })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Lỗi khi cập nhật phòng ban");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const row = document.querySelector(`tr[data-department-id="${departmentId}"]`);
+        if (row) {
+            row.querySelector("td:nth-child(2)").textContent = departmentName;
+            // Cập nhật nút "Xem" với tên mới
+            const viewButton = row.querySelector(".view-btn");
+            viewButton.setAttribute("onclick", `viewDepartmentEmployees('${departmentId}', '${departmentName}')`);
+        }
+        closeEditDepartmentModal();
+    })
+    .catch(error => {
+        console.error("Lỗi:", error);
+        alert("Đã xảy ra lỗi khi cập nhật phòng ban.");
+    });
+}
+
+// Tìm kiếm phòng ban
+function searchDepartments() {
+    const input = document.getElementById("searchDepartmentInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#departmentBody tr");
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+
+// Xem nhân viên theo phòng ban
+function viewDepartmentEmployees(departmentId, departmentName) {
+    document.getElementById("departmentEmployeesModal").style.display = "block";
+    document.getElementById("departmentNameDisplay").textContent = departmentName;
+    
+    fetch(`/api/employees_by_department/${departmentId}`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Lỗi khi lấy dữ liệu nhân viên");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const tableBody = document.getElementById("departmentEmployeesBody");
+        tableBody.innerHTML = "";
+        if (data.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc phòng ban này.</td></tr>`;
+        } else {
+            data.forEach(emp => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${emp.employee_id}</td><td>${emp.full_name}</td><td>${emp.email}</td>`;
+                tableBody.appendChild(row);
+            });
+        }
+    })
+    .catch(error => {
+        console.error("Lỗi:", error);
+        const tableBody = document.getElementById("departmentEmployeesBody");
+        tableBody.innerHTML = `<tr><td colspan="3">Đã xảy ra lỗi khi tải dữ liệu.</td></tr>`;
+    });
+}
+
+function closeDepartmentEmployeesModal() {
+    document.getElementById("departmentEmployeesModal").style.display = "none";
+}
+
+// Thiết lập event listeners khi trang tải xong
+document.addEventListener("DOMContentLoaded", function() {
+    // Event listener cho form thêm công việc
+    const addJobForm = document.getElementById("addJobForm");
+    if (addJobForm) {
+        addJobForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            addJob();
+        });
+    }
+    
+    // Event listener cho form sửa công việc
+    const editJobForm = document.getElementById("editJobForm");
+    if (editJobForm) {
+        editJobForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            updateJob();
+        });
+    }
+    
+    // Event listener cho form thêm phòng ban
+    const addDepartmentForm = document.getElementById("addDepartmentForm");
+    if (addDepartmentForm) {
+        addDepartmentForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            addDepartment();
+        });
+    }
+    
+    // Event listener cho form sửa phòng ban
+    const editDepartmentForm = document.getElementById("editDepartmentForm");
+    if (editDepartmentForm) {
+        editDepartmentForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            updateDepartment();
+        });
+    }
+    
+    // Hiển thị tab công việc mặc định khi tải trang
+    showSection("jobs");
+});
+</script>
