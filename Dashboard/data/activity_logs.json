@@ -1,0 +1,32 @@
+[
+    {
+        "log_id": "log_001",
+        "time": "23/03/2025 10:30",
+        "user": "Nguyễn Văn A",
+        "role": "Admin",
+        "actions": [
+            "Đăng nhập",
+            "Cập nhật hồ sơ",
+            "Phê duyệt báo cáo"
+        ]
+    },
+    {
+        "log_id": "log_002",
+        "time": "22/03/2025 15:20",
+        "user": "Trần Thị B",
+        "role": "Accountant",
+        "actions": [
+            "Cập nhật lương",
+            "Xem báo cáo tài chính"
+        ]
+    },
+    {
+        "log_id": "log_003",
+        "time": "21/03/2025 09:10",
+        "user": "Lê Văn C",
+        "role": "Admin",
+        "actions": [
+            "Xóa tài khoản"
+        ]
+    }
+]
