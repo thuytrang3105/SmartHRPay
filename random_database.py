@@ -16,14 +16,14 @@ DB_PAYROLL = {
     'host': 'localhost',
     'database': 'payroll',
     'user': 'root',
-    'password': '123456123456'
+    'password': '123456'
 }
 
 DB_USER = {
     'host': 'localhost',
     'database': 'user',
     'user': 'root',
-    'password': '123456123456'
+    'password': '123456'
 }
 
 # Kết nối database
