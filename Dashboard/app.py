@@ -530,20 +530,55 @@ def reports_HR():
 
 @app.route('/dashboard_AD')
 def dashboard_AD():
+    conn = pyodbc.connect(conn_str)
+    cursor = conn.cursor()
+
+    # Tổng số nhân viên
+    cursor.execute("SELECT COUNT(*) FROM Employees")
+    totalEmployees = cursor.fetchone()[0]
+
+    # Nhân viên mới trong tháng gần nhất
+    cursor.execute("SELECT COUNT(*) FROM Employees WHERE MONTH(HireDate) = MONTH(GETDATE()) AND YEAR(HireDate) = YEAR(GETDATE())")
+    newEmployees = cursor.fetchone()[0]
+
+    # Nhân viên nghỉ việc (giả định status = 'Inactive')
+    cursor.execute("SELECT COUNT(*) FROM Employees WHERE Status = 'Inactive'")
+    resignedEmployees = cursor.fetchone()[0]
+
+    # Số lượng phòng ban
+    cursor.execute("SELECT COUNT(*) FROM Departments")
+    departments = cursor.fetchone()[0]
+
+    # Phân phối nhân viên theo phòng ban
+    cursor.execute("""
+        SELECT D.DepartmentName, COUNT(*) AS EmployeeCount
+        FROM Employees E
+        JOIN Departments D ON E.DepartmentID = D.DepartmentID
+        GROUP BY D.DepartmentName
+    """)
+    deptDistribution = {row[0]: row[1] for row in cursor.fetchall()}
+
+    # Dữ liệu tăng trưởng (ví dụ: tổng số nhân viên qua 5 tháng gần nhất)
+    cursor.execute("""
+        SELECT TOP 5 FORMAT(HireDate, 'yyyy-MM') AS MonthLabel, COUNT(*) AS Hired
+        FROM Employees
+        GROUP BY FORMAT(HireDate, 'yyyy-MM')
+        ORDER BY MonthLabel
+    """)
+    growthData = [row[1] for row in cursor.fetchall()]
+
+    cursor.close()
+    conn.close()
+
     data = {
-        "totalEmployees": 152,
-        "newEmployees": 12,
-        "resignedEmployees": 3,
-        "departments": 8,
-        "deptDistribution": {
-            "IT": 40,
-            "HR": 30,
-            "Marketing": 25,
-            "Operations": 35,
-            "Finance": 22,
-        },
-        "growthData": [120, 125, 130, 140, 152]  # Dữ liệu tăng trưởng qua các tháng
+        "totalEmployees": totalEmployees,
+        "newEmployees": newEmployees,
+        "resignedEmployees": resignedEmployees,
+        "departments": departments,
+        "deptDistribution": deptDistribution,
+        "growthData": growthData
     }
+
     return render_template('dashboard_AD.html', data=data)
 
 @app.route('/payroll_AD')
@@ -773,36 +808,58 @@ def user_roles():
 # Route render trang báo cáo và truyền dữ liệu vào template
 @app.route('/reports_AD')
 def reports_AD():
-    # Dữ liệu mẫu cho báo cáo nhân sự
-    reports_data = [
-        {"role": "Nhân viên", "total": 50, "newEmployees": 10, "resignedEmployees": 2, "departments": "Kinh doanh"},
-        {"role": "Quản lý", "total": 15, "newEmployees": 3, "resignedEmployees": 1, "departments": "Nhân sự"},
-        {"role": "Giám đốc", "total": 5, "newEmployees": 1, "resignedEmployees": 0, "departments": "Ban điều hành"},
-    ]
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Truy vấn dữ liệu từ bảng
+    query = """
+        SELECT role, total, newEmployees, resignedEmployees, departments
+        FROM employee_reports;
+    """
+    cursor.execute(query)
+    reports_data = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
 
     return render_template('reports_AD.html', reports=reports_data)
 
 @app.route('/shareholder')
 def shareholder():
     # Dữ liệu giả 
-    shareholders = [
-        {"id": 1, "FullName": "Nguyễn Văn A", "Email": "a@gmail.com", "PhoneNumber": "0987654321", "InvestmentAmount": 50000000},
-        {"id": 2, "FullName": "Trần Thị B", "Email": "b@gmail.com", "PhoneNumber": "0976543210", "InvestmentAmount": 75000000},
-        {"id": 3, "FullName": "Lê Văn C", "Email": "c@gmail.com", "PhoneNumber": "0965432109", "InvestmentAmount": 100000000},
-    ]
-    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Truy vấn dữ liệu từ bảng shareholders
+    query = """
+        SELECT id, FullName, Email, PhoneNumber, InvestmentAmount
+        FROM shareholders;
+    """
+    cursor.execute(query)
+    shareholders = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
     return render_template('shareholder_list.html', shareholders=shareholders)
 
 
 @app.route('/shareholder/<int:id>')
 def shareholder_detail(id):
-    shareholders = [
-        {"id": 1, "FullName": "Nguyễn Văn A", "Email": "a@gmail.com", "PhoneNumber": "0987654321", "InvestmentAmount": 50000000, "IsEmployee": "Có", "EmployeeID": 101},
-        {"id": 2, "FullName": "Trần Thị B", "Email": "b@gmail.com", "PhoneNumber": "0976543210", "InvestmentAmount": 75000000, "IsEmployee": "Không", "EmployeeID": None},
-        {"id": 3, "FullName": "Lê Văn C", "Email": "c@gmail.com", "PhoneNumber": "0965432109", "InvestmentAmount": 100000000, "IsEmployee": "Có", "EmployeeID": 103},
-    ]
-    # Tìm cổ đông có ID tương ứng
-    shareholder = next((s for s in shareholders if s["id"] == id), None)
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Truy vấn dữ liệu cổ đông theo ID
+    query = """
+        SELECT id, FullName, Email, PhoneNumber, InvestmentAmount, IsEmployee, EmployeeID
+        FROM shareholders
+        WHERE id = %s
+    """
+    cursor.execute(query, (id,))
+    shareholder = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
 
     if shareholder:
         return render_template('shareholder_detail.html', shareholder=shareholder)
