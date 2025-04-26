@@ -73,65 +73,65 @@ def dashboard_AD():
 
     return render_template('dashboard_AD.html', data=data)
     
-
-@app.route('/activity-log_AD')
+#Lịch sử hoạt động admin
+@app.route('/activity_log_AD')
 def activity_log_AD():
-    activity_logs = [
-        {"time": "23/03/2025 10:30", "user": "Nguyễn Văn A", "role": "Admin", "action": "Đăng nhập"},
-        {"time": "22/03/2025 15:20", "user": "Trần Thị B", "role": "Accountant", "action": "Cập nhật lương"},
-        {"time": "21/03/2025 09:10", "user": "Lê Văn C", "role": "Admin", "action": "Xóa tài khoản"},
-    ]
-
+   with open('data/activity_logs.json', encoding='utf-8') as f:
+        activity_logs = json.load(f)
     return render_template('activity_log_AD.html', activity_logs=activity_logs)
 
 @app.route('/logout')
 def Logout():
     return render_template('logout.html')
-
+#Thông báo 
 @app.route('/notifications_AD')
 def notifications_AD():
-    notifications = [
-    {
-        "title": "Thông báo lương tháng 3/2025",
-        "status": "sent",
-        "recipients": "Tất cả nhân viên (120)",
-        "content": "Bảng lương tháng 3 đã được phát hành. Vui lòng kiểm tra và xác nhận.",
-        "timestamp": "28/03/2025 10:15"
-    },
-    {
-        "title": "Thông báo cập nhật chính sách lương",
-        "status": "sent",
-        "recipients": "Phòng IT, Phòng Marketing (60)",
-        "content": "Chính sách lương mới sẽ được áp dụng từ tháng 4/2025. Chi tiết vui lòng xem tại đây.",
-        "timestamp": "15/03/2025 14:30"
-    },
-    {
-        "title": "Thông báo điều chỉnh lương cho nhân viên kinh doanh",
-        "status": "draft",
-        "recipients": "Phòng Kinh doanh (45)",
-        "content": "Điều chỉnh chế độ thưởng doanh số cho nhân viên kinh doanh từ tháng 4/2025.",
-        "timestamp": "20/03/2025 09:45"
-    }]
+    try:
+        with open('data/notifications.json', encoding='utf-8') as f:
+            notifications = json.load(f)
+     except FileNotFoundError:
+        notifications = []  # Trường hợp không có file thì gửi danh sách trống
+         
     return render_template("notifications_AD.html",notifications=notifications)
 
-
-@app.route('/update-user-role')
+#Hiển Thị Giao Diện Cập Nhật Quyền Người Dùng
+@app.route('/update_user_role')
 def update_user_role():
     return render_template('update_user_role.html')
-
-#Trang hiển thị phân quyền người dùng 
-@app.route('/user-roles')
-def user_roles():
-    # Dữ liệu giả (mock data)
-    users = [
-        {"user_id": 1, "username": "Nguyễn Văn A", "role": "Admin"},
-        {"user_id": 2, "username": "Trần Thị B", "role": "Nhân viên"},
-        {"user_id": 3, "username": "Lê Văn C", "role": "Quản lý"},
-    ]
     
-    return render_template('user_roles_AD.html', users=users) 
+# API: Cập nhật quyền người dùng
+@app.route('/update_user_role/<int:user_id>', methods=['POST'])
+def update_user_role(user_id):
+    data = request.get_json()
+    if not data or 'role' not in data:
+        return jsonify({'message': 'Thiếu thông tin quyền mới'}), 400
 
+    user = User.query.filter_by(user_id=user_id).first()
+    if not user:
+        return jsonify({'message': 'Không tìm thấy người dùng'}), 404
 
+    user.role = data['role']
+    db.session.commit()
+
+    return jsonify({'message': f'Đã cập nhật quyền thành công cho {user.username}'}), 200
+
+# API: Trả danh sách người dùng
+@app.route('/user_roles')
+def user_roles():
+    users = User.query.all()
+    data = [
+        {'user_id': u.user_id, 'username': u.username, 'role': u.role}
+        for u in users
+    ]
+    return jsonify(data)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+    
+#Trang hiển thị phân quyền người dùng 
+@app.route('/user_roles')
+def user_roles():
+    
 # Route render trang báo cáo và truyền dữ liệu vào template
 @app.route('/reports_AD')
 def reports_AD():
