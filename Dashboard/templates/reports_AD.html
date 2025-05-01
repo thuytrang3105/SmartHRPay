@@ -106,7 +106,7 @@
           }
       
           // Lấy dữ liệu từ Flask
-          const reports = {{ reports | tojson }};
+          const reportData = JSON.parse('{{ reports | tojson | safe }}');
       
           if (!Array.isArray(reports) || reports.length === 0) {
             console.error("Không có dữ liệu báo cáo.");
@@ -114,9 +114,9 @@
           }
       
           // Dữ liệu cho biểu đồ
-          const labels = reports.map((report) => report.role);
-          const totalEmployees = reports.map((report) => report.total);
-          const newEmployees = reports.map((report) => report.newEmployees);
+          const labels = reportData.map((report) => report.role);
+          const totalEmployees = reportData.map((report) => report.total);
+          const newEmployees = reportData.map((report) => report.newEmployees);
       
           // 🔹 Biểu đồ tròn - Tổng nhân viên
           new Chart(document.getElementById("totalChart"), {

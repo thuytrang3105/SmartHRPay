@@ -3,6 +3,8 @@ from module  import db, UserAccount ,Employee, Department, Job, Payroll , HumanE
 import random
 import config
 import datetime
+import pyodbc
+
 
 app = Flask(__name__)
 
@@ -530,57 +532,68 @@ def reports_HR():
 
 @app.route('/dashboard_AD')
 def dashboard_AD():
-    conn = pyodbc.connect(conn_str)
-    cursor = conn.cursor()
+    try:
+        # Kết nối DB
+        conn = pyodbc.connect(config.SQL_SERVER_CONN)
+        cursor = conn.cursor()
+        print("Connection successful") 
 
-    # Tổng số nhân viên
-    cursor.execute("SELECT COUNT(*) FROM Employees")
-    totalEmployees = cursor.fetchone()[0]
+        # Tổng số nhân viên
+        cursor.execute("SELECT COUNT(*) FROM Employees")
+        totalEmployees = cursor.fetchone()[0]
 
-    # Nhân viên mới trong tháng gần nhất
-    cursor.execute("SELECT COUNT(*) FROM Employees WHERE MONTH(HireDate) = MONTH(GETDATE()) AND YEAR(HireDate) = YEAR(GETDATE())")
-    newEmployees = cursor.fetchone()[0]
+        # Nhân viên mới trong tháng hiện tại
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM Employees 
+            WHERE MONTH(HireDate) = MONTH(GETDATE()) AND YEAR(HireDate) = YEAR(GETDATE())
+        """)
+        newEmployees = cursor.fetchone()[0]
 
-    # Nhân viên nghỉ việc (giả định status = 'Inactive')
-    cursor.execute("SELECT COUNT(*) FROM Employees WHERE Status = 'Inactive'")
-    resignedEmployees = cursor.fetchone()[0]
+        # Nhân viên nghỉ việc
+        cursor.execute("SELECT COUNT(*) FROM Employees WHERE Status = 'Inactive'")
+        resignedEmployees = cursor.fetchone()[0]
 
-    # Số lượng phòng ban
-    cursor.execute("SELECT COUNT(*) FROM Departments")
-    departments = cursor.fetchone()[0]
+        # Số lượng phòng ban
+        cursor.execute("SELECT COUNT(*) FROM Departments")
+        departments = cursor.fetchone()[0]
 
-    # Phân phối nhân viên theo phòng ban
-    cursor.execute("""
-        SELECT D.DepartmentName, COUNT(*) AS EmployeeCount
-        FROM Employees E
-        JOIN Departments D ON E.DepartmentID = D.DepartmentID
-        GROUP BY D.DepartmentName
-    """)
-    deptDistribution = {row[0]: row[1] for row in cursor.fetchall()}
+        # Phân phối nhân viên theo phòng ban
+        cursor.execute("""
+            SELECT d.DepartmentName, COUNT(*) AS EmployeeCount
+            FROM Employees e
+            JOIN Departments d ON e.DepartmentID = d.DepartmentID
+            GROUP BY d.DepartmentName
+        """)
+        deptDistribution = {row[0]: row[1] for row in cursor.fetchall()}
 
-    # Dữ liệu tăng trưởng (ví dụ: tổng số nhân viên qua 5 tháng gần nhất)
-    cursor.execute("""
-        SELECT TOP 5 FORMAT(HireDate, 'yyyy-MM') AS MonthLabel, COUNT(*) AS Hired
-        FROM Employees
-        GROUP BY FORMAT(HireDate, 'yyyy-MM')
-        ORDER BY MonthLabel
-    """)
-    growthData = [row[1] for row in cursor.fetchall()]
+        # Dữ liệu tăng trưởng theo tháng (5 tháng gần nhất)
+        cursor.execute("""
+            SELECT TOP 5 FORMAT(HireDate, 'yyyy-MM') AS MonthLabel, COUNT(*) AS Hired
+            FROM Employees
+            GROUP BY FORMAT(HireDate, 'yyyy-MM')
+            ORDER BY MonthLabel DESC
+        """)
+        growthData = [row[1] for row in cursor.fetchall()][::-1]
 
-    cursor.close()
-    conn.close()
+        # Đóng kết nối
+        cursor.close()
+        conn.close()
 
-    data = {
-        "totalEmployees": totalEmployees,
-        "newEmployees": newEmployees,
-        "resignedEmployees": resignedEmployees,
-        "departments": departments,
-        "deptDistribution": deptDistribution,
-        "growthData": growthData
-    }
+        data = {
+            "totalEmployees": totalEmployees,
+            "newEmployees": newEmployees,
+            "resignedEmployees": resignedEmployees,
+            "departments": departments,
+            "deptDistribution": deptDistribution,
+            "growthData": growthData
+        }
 
-    return render_template('dashboard_AD.html', data=data)
-
+        return render_template('dashboard_AD.html', data=data)
+    
+    except Exception as e:
+        print(f"Error: {e}")  
+        return f"Lỗi kết nối Dashboard: {e}", 500
 @app.route('/payroll_AD')
 def payroll_AD():
     with app.app_context():
@@ -804,17 +817,29 @@ def user_roles():
     # Trả về template với dữ liệu thực tế
     return render_template('user_roles_AD.html', users=user_list)
 
+# Hàm kết nối cơ sở dữ liệu từ config
+def get_db_connection():
+    conn = pyodbc.connect(config.SQL_SERVER_CONN)  # Sử dụng cấu hình kết nối từ config
+    return conn
 
-# Route render trang báo cáo và truyền dữ liệu vào template
 @app.route('/reports_AD')
 def reports_AD():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Truy vấn dữ liệu từ bảng
+    # Truy vấn dữ liệu báo cáo theo vai trò (role)
     query = """
-        SELECT role, total, newEmployees, resignedEmployees, departments
-        FROM employee_reports;
+        SELECT 
+            e.Role AS role,
+            COUNT(*) AS total,
+            SUM(CASE 
+                WHEN MONTH(e.HireDate) = MONTH(CURDATE()) AND YEAR(e.HireDate) = YEAR(CURDATE())
+                THEN 1 ELSE 0 END) AS newEmployees,
+            SUM(CASE 
+                WHEN e.Status = 'leave' THEN 1 ELSE 0 END) AS resignedEmployees,
+            COUNT(DISTINCT e.DepartmentID) AS departments
+        FROM payroll.employees e
+        GROUP BY e.Role;
     """
     cursor.execute(query)
     reports_data = cursor.fetchall()
@@ -824,16 +849,20 @@ def reports_AD():
 
     return render_template('reports_AD.html', reports=reports_data)
 
+
 @app.route('/shareholder')
 def shareholder():
-    # Dữ liệu giả 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Truy vấn dữ liệu từ bảng shareholders
+    # Truy vấn danh sách cổ đông
     query = """
-        SELECT id, FullName, Email, PhoneNumber, InvestmentAmount
-        FROM shareholders;
+        SELECT ShareholderID AS id,
+               FullName,
+               Email,
+               Phone AS PhoneNumber,
+               InvestmentAmount
+        FROM Shareholders;
     """
     cursor.execute(query)
     shareholders = cursor.fetchall()
@@ -849,11 +878,18 @@ def shareholder_detail(id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Truy vấn dữ liệu cổ đông theo ID
+    # Truy vấn chi tiết cổ đông theo ID
     query = """
-        SELECT id, FullName, Email, PhoneNumber, InvestmentAmount, IsEmployee, EmployeeID
-        FROM shareholders
-        WHERE id = %s
+        SELECT ShareholderID AS id,
+               FullName,
+               Email,
+               Phone AS PhoneNumber,
+               Address,
+               IsEmployee,
+               EmployeeID,
+               InvestmentAmount
+        FROM Shareholders
+        WHERE ShareholderID = %s
     """
     cursor.execute(query, (id,))
     shareholder = cursor.fetchone()
@@ -865,7 +901,6 @@ def shareholder_detail(id):
         return render_template('shareholder_detail.html', shareholder=shareholder)
     else:
         return "Không tìm thấy cổ đông!", 404
-    
 ##########################################################################################################################################
 @app.route("/logout")
 def logout():

@@ -20,57 +20,21 @@ def home_AC ():
     return render_template('home_AC.html')
 
 @app.route('/dashboard_AD')
-
 def dashboard_AD():
-    conn = pyodbc.connect(conn_str)
-    cursor = conn.cursor()
-
-    # Tổng số nhân viên
-    cursor.execute("SELECT COUNT(*) FROM Employees")
-    totalEmployees = cursor.fetchone()[0]
-
-    # Nhân viên mới trong tháng gần nhất
-    cursor.execute("SELECT COUNT(*) FROM Employees WHERE MONTH(HireDate) = MONTH(GETDATE()) AND YEAR(HireDate) = YEAR(GETDATE())")
-    newEmployees = cursor.fetchone()[0]
-
-    # Nhân viên nghỉ việc (giả định status = 'Inactive')
-    cursor.execute("SELECT COUNT(*) FROM Employees WHERE Status = 'Inactive'")
-    resignedEmployees = cursor.fetchone()[0]
-
-    # Số lượng phòng ban
-    cursor.execute("SELECT COUNT(*) FROM Departments")
-    departments = cursor.fetchone()[0]
-
-    # Phân phối nhân viên theo phòng ban
-    cursor.execute("""
-        SELECT D.DepartmentName, COUNT(*) AS EmployeeCount
-        FROM Employees E
-        JOIN Departments D ON E.DepartmentID = D.DepartmentID
-        GROUP BY D.DepartmentName
-    """)
-    deptDistribution = {row[0]: row[1] for row in cursor.fetchall()}
-
-    # Dữ liệu tăng trưởng (ví dụ: tổng số nhân viên qua 5 tháng gần nhất)
-    cursor.execute("""
-        SELECT TOP 5 FORMAT(HireDate, 'yyyy-MM') AS MonthLabel, COUNT(*) AS Hired
-        FROM Employees
-        GROUP BY FORMAT(HireDate, 'yyyy-MM')
-        ORDER BY MonthLabel
-    """)
-    growthData = [row[1] for row in cursor.fetchall()]
-
-    cursor.close()
-    conn.close()
-
     data = {
-        "totalEmployees": totalEmployees,
-        "newEmployees": newEmployees,
-        "resignedEmployees": resignedEmployees,
-        "departments": departments,
-        "deptDistribution": deptDistribution,
-        "growthData": growthData
+        "totalEmployees": 152,
+        "newEmployees": 12,
+        "resignedEmployees": 3,
+        "departments": 8,
+        "deptDistribution": {
+            "IT": 40,
+            "HR": 30,
+            "Marketing": 25,
+            "Operations": 35,
+            "Finance": 22,
+        },
+        "growthData": [120, 125, 130, 140, 152]  # Dữ liệu tăng trưởng qua các tháng
     }
-
     return render_template('dashboard_AD.html', data=data)
     
 
