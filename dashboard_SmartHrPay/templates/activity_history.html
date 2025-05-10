@@ -1,0 +1,96 @@
+{% extends 'base.html' %} {% block title %}Lịch sử hoạt động{% endblock %} {%
+block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='activity_history.css') }}"
+/>
+{% endblock %} {% block content %}
+<!-- Filter Section -->
+<div class="filter-section">
+  <div class="filter-group">
+    <label for="role-filter">Vai trò:</label>
+    <select id="role-filter">
+      <option value="all">Tất cả</option>
+      <option value="admin">Admin</option>
+      <option value="accountant">Kế toán</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="date-from">Từ ngày:</label>
+    <input type="date" id="date-from" />
+  </div>
+  <div class="filter-group">
+    <label for="date-to">Đến ngày:</label>
+    <input type="date" id="date-to" />
+  </div>
+  <button class="filter-btn">Lọc</button>
+</div>
+
+<!-- Activity Log Table -->
+<div class="content">
+  <table class="activity-table">
+    <thead>
+      <tr>
+        <th>Thời gian</th>
+        <th>Người dùng</th>
+        <th>Vai trò</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in activity_logs %}
+      <tr>
+        <td>{{ log.time }}</td>
+        <td>{{ log.user }}</td>
+        <td>{{ log.role }}</td>
+        <td>{{ log.action }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const roleFilter = document.getElementById("role-filter");
+    const dateFrom = document.getElementById("date-from");
+    const dateTo = document.getElementById("date-to");
+    const filterBtn = document.querySelector(".filter-btn");
+    const table = document.querySelector(".activity-table");
+    const rows = table.querySelectorAll("tbody tr");
+
+    filterBtn.addEventListener("click", function () {
+      const selectedRole = roleFilter.value;
+      const fromDate = dateFrom.value ? new Date(dateFrom.value) : null;
+      const toDate = dateTo.value ? new Date(dateTo.value) : null;
+
+      rows.forEach((row) => {
+        const timeCell = row.cells[0].textContent;
+        const roleCell = row.cells[2].textContent;
+
+        const timeParts = timeCell.split(" ");
+        const dateParts = timeParts[0].split("/");
+        const time = timeParts[1];
+        const rowDate = new Date(
+          `${dateParts[2]}-${dateParts[1]}-${dateParts[0]} ${time}`
+        );
+
+        let showRow = true;
+
+        if (selectedRole !== "all" && roleCell.toLowerCase() !== selectedRole) {
+          showRow = false;
+        }
+
+        if (fromDate && rowDate < fromDate) {
+          showRow = false;
+        }
+        if (toDate && rowDate > toDate) {
+          showRow = false;
+        }
+
+        row.style.display = showRow ? "" : "none";
+      });
+    });
+  });
+</script>
+{% endblock %}

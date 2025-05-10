@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}SMART_HR_PAY{% endblock %}</title>
+    <link rel="stylesheet" href="../static/base.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h3 class="sidebar-title">SmartHrPay</h3>
+          <p class="sidebar-subtitle">Hệ thống Quản lý Nhân Sự Và Lương </p>
+        </div>
+        <div class="sidebar-menu">
+          
+          <div class= "menu-group">
+            <h3>Nhân viên</h3>
+              <ul>
+                <li><a href=><i>📋</i> Tạmạm </a></li>
+                <li><a href="{{ url_for('employee_hr') }}"><i>📋</i> Quản lý nhân viên  </a></li>
+                <li><a href="{{ url_for('recruitment_HR') }}"><i>📋</i> Tuyển dụng </a></li>
+                <li><a href=><i>👔</i> Phòng ban và chức vụ </a></li>
+                <li><a href=><i>📊 </i> Báo cáo Nhân sự</a></li>
+              </ul>
+          </div>
+          
+
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="header">
+          <h2>{% block header %}{% endblock %}</h2>
+        </div>
+
+        <!-- Nội dung chính -->
+        <div class="panel">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPath = window.location.pathname;
+    
+      const menuLinks = document.querySelectorAll('.sidebar-menu a');
+      menuLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        
+        if (href) {
+          if (href === currentPath || currentPath.includes(href.replace(/\{\{\s*url_for\(['"](.+?)['"]\)\s*\}\}/g, '$1'))) {
+            link.classList.add('active');
+          }
+        }
+        link.addEventListener('click', function() {
+          menuLinks.forEach(item => item.classList.remove('active'));
+          this.classList.add('active');
+        });
+      })
+      if (!document.querySelector('.sidebar-menu a.active') && menuLinks.length > 0) {
+        menuLinks[0].classList.add('active');
+      }
+    });
+  </script>
+
+</html>

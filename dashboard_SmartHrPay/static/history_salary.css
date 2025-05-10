@@ -1,0 +1,110 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Panel */
+.panel {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+#employee-history .panel-header {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.panel-header {
+  margin-bottom: 20px;
+}
+
+.panel-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.panel-body {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Filter Container */
+.filter-container {
+  margin-bottom: 20px;
+}
+
+.filter-container label {
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.filter-container select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #6b7280;
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.filter-container h2 {
+  font-size: 18px;
+  margin: 15px 0;
+  color: #1f2937;
+}
+
+/* Button */
+.btn {
+  padding: 8px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #2980b9;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th,
+td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+td {
+  color: #6b7280;
+}
+
+tr:hover {
+  background-color: #f1f5f9;
+}

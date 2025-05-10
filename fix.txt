@@ -1,0 +1,15 @@
+fix lại thông báo 
+	+ cái nào cho all Thì NV có thể xem còn lại thì chỉ HR, AC,AD xem
+fix bảng lương NV 
+	+ css lỗi 
+	+ xem chi tiết k hiện phòng ban & chức vụ
+fix QLy Nhân Viên , Tuyển Dụng và Phong ban - Chức vụ 
+	+ css lỏ
+fix Cổ Đông 
+	+ Không hiện Thông tin chi tiết 
+fix Phân Quyền ( áp dụng hết bảng trong database user * QUAN TRỌNG *
+	+ Cách phần quyền cần tận dụng tất cả các bảng
+	+thêm mục Quyền dùng để quản lý role đc vô những phân nào 
+	+ add hết các api tránh thiếu sót
+fix Lịch Sử người dùng
+	+ thêm code cập nhật người dùng đã vô những api nào . thêm vào json

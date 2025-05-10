@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="vi">
+{% extends "test.html" %}
+
+{% block title %}Quản Lý Tuyển Dụng{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='employee_HR.css') }}" />
+{% endblock %}
+
+{% block header %}
+    Quản Lý Tuyển Dụng
+{% endblock %}
+
+{% block content %}
+    <div class="employee-table">
+        <div class="table-header">
+            <div class="search-container">
+                <input
+                    type="text"
+                    class="search-bar"
+                    id="searchInput"
+                    placeholder="Tìm kiếm vị trí tuyển dụng..."
+                />
+                <button class="search-btn" onclick="searchRecruitments()">
+                    Tìm kiếm
+                </button>
+            </div>
+            <button class="add-btn" onclick="openAddModal()">
+                Thêm Vị Trí Tuyển Dụng
+            </button>
+        </div>
+        <table id="recruitmentTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Vị Trí</th>
+                    <th>Phòng Ban</th>
+                    <th>Ngày Đăng</th>
+                    <th>Trạng Thái</th>
+                    <th>Số Ứng Viên</th>
+                    <th>Hành Động</th>
+                </tr>
+            </thead>
+            <tbody id="recruitmentBody">
+                <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Thêm Vị Trí Tuyển Dụng -->
+    <div id="addRecruitmentModal" class="modal">
+        <div class="modal-content">
+            <h2>Thêm Vị Trí Tuyển Dụng</h2>
+            <form id="addRecruitmentForm">
+                <label for="title">Chức danh:</label>
+                <input type="text" id="title" name="title" required />
+
+                <label for="department">Phòng ban:</label>
+                <input type="text" id="department" name="department" required />
+
+                <label for="posted_date">Ngày đăng:</label>
+                <input type="date" id="posted_date" name="posted_date" required />
+
+                <label for="status">Trạng thái:</label>
+                <select id="status" name="status" required>
+                    <option value="Đang tuyển">Đang tuyển</option>
+                    <option value="Tạm dừng">Tạm dừng</option>
+                    <option value="Đã đóng">Đã đóng</option>
+                </select>
+
+                <label for="description">Mô tả công việc:</label>
+                <textarea id="description" name="description" rows="4" required></textarea>
+
+                <label for="requirements">Yêu cầu (mỗi yêu cầu một dòng):</label>
+                <textarea id="requirements" name="requirements" rows="6" required></textarea>
+
+                <div class="modal-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeAddModal()">
+                        Hủy
+                    </button>
+                    <button type="submit" class="save-btn">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Xem và Chỉnh Sửa Vị Trí Tuyển Dụng -->
+    <div id="viewRecruitmentModal" class="modal">
+        <div class="modal-content">
+            <h2>Thông Tin Vị Trí Tuyển Dụng</h2>
+            <table id="recruitmentDetailsTable">
+                <tr>
+                    <th>ID:</th>
+                    <td><input type="text" id="editRecruitmentId" disabled /></td>
+                </tr>
+                <tr>
+                    <th>Chức danh:</th>
+                    <td><input type="text" id="editTitle" /></td>
+                </tr>
+                <tr>
+                    <th>Phòng ban:</th>
+                    <td><input type="text" id="editDepartment" /></td>
+                </tr>
+                <tr>
+                    <th>Ngày đăng:</th>
+                    <td><input type="date" id="editPostedDate" /></td>
+                </tr>
+                <tr>
+                    <th>Trạng thái:</th>
+                    <td>
+                        <select id="editStatus">
+                            <option value="Đang tuyển">Đang tuyển</option>
+                            <option value="Tạm dừng">Tạm dừng</option>
+                            <option value="Đã đóng">Đã đóng</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Mô tả công việc:</th>
+                    <td><textarea id="editDescription" rows="4"></textarea></td>
+                </tr>
+                <tr>
+                    <th>Yêu cầu:</th>
+                    <td><textarea id="editRequirements" rows="6"></textarea></td>
+                </tr>
+            </table>
+            <div class="modal-buttons">
+                <button id="editButton" class="action-btn edit-btn" onclick="enableEditMode()">
+                    Chỉnh sửa
+                </button>
+                <button class="action-btn close-btn" onclick="closeViewModal()">
+                    Thoát
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xem Danh Sách Ứng Viên -->
+    <div id="viewApplicantsModal" class="modal">
+        <div class="modal-content">
+            <h2>Danh Sách Ứng Viên</h2>
+            <div id="recruitmentTitle" class="recruitment-title"></div>
+            <table id="applicantsTable">
+                <thead>
+                    <tr>
+                        <th>Họ Tên</th>
+                        <th>Email</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="applicantsBody">
+                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                </tbody>
+            </table>
+            <div class="modal-buttons">
+                <button class="action-btn close-btn" onclick="closeApplicantsModal()">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sử dụng đường dẫn tương đối vì HTML và API cùng nguồn gốc
+        const API_URL = "/api/recruitments";
+
+        // Tải danh sách vị trí tuyển dụng từ API khi trang được tải
+        window.onload = function () {
+            loadRecruitments();
+        };
+
+        async function loadRecruitments() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(
+                        `Không thể tải dữ liệu từ API. Mã lỗi: ${response.status}`
+                    );
+                }
+                const recruitments = await response.json();
+                console.log("Dữ liệu từ API:", recruitments);
+                const tableBody = document.getElementById("recruitmentBody");
+                tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+
+                recruitments.forEach((recruitment) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${recruitment.id}</td>
+                        <td>${recruitment.title}</td>
+                        <td>${recruitment.department}</td>
+                        <td>${recruitment.posted_date}</td>
+                        <td>${recruitment.status}</td>
+                        <td>${recruitment.applicants ? recruitment.applicants.length : 0}</td>
+                        <td>
+                            <button class="action-btn view-btn" onclick="viewRecruitment(${recruitment.id})">Xem</button>
+                            <button class="action-btn view-btn" onclick="viewApplicants(${recruitment.id})">Ứng viên</button>
+                            <button class="action-btn delete-btn" onclick="deleteRecruitment(${recruitment.id})">Xóa</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Lỗi khi tải danh sách tuyển dụng:", error);
+                alert(
+                    "Không thể tải dữ liệu tuyển dụng. Vui lòng kiểm tra API hoặc kết nối."
+                );
+            }
+        }
+
+        // Xem thông tin vị trí tuyển dụng
+        async function viewRecruitment(recruitmentId) {
+            try {
+                const response = await fetch(`${API_URL}/${recruitmentId}`);
+                if (!response.ok) {
+                    throw new Error(
+                        `Không thể lấy thông tin tuyển dụng. Mã lỗi: ${response.status}`
+                    );
+                }
+                const recruitment = await response.json();
+                if (recruitment) {
+                    document.getElementById("editRecruitmentId").value = recruitment.id;
+                    document.getElementById("editTitle").value = recruitment.title;
+                    document.getElementById("editDepartment").value = recruitment.department;
+                    document.getElementById("editPostedDate").value = formatDateForInput(recruitment.posted_date);
+                    document.getElementById("editStatus").value = recruitment.status;
+                    document.getElementById("editDescription").value = recruitment.description;
+                    document.getElementById("editRequirements").value = recruitment.requirements.join("\n");
+
+                    // Vô hiệu hóa các trường trong chế độ xem
+                    const inputs = document.querySelectorAll(
+                        "#recruitmentDetailsTable input, #recruitmentDetailsTable select, #recruitmentDetailsTable textarea"
+                    );
+                    inputs.forEach((input) => {
+                        if (input.id !== "editRecruitmentId") input.disabled = true;
+                    });
+
+                    document.querySelector(".modal-buttons").innerHTML = `
+                        <button id="editButton" class="action-btn edit-btn" onclick="enableEditMode()">Chỉnh sửa</button>
+                        <button class="action-btn close-btn" onclick="closeViewModal()">Thoát</button>
+                    `;
+
+                    document.getElementById("viewRecruitmentModal").style.display = "flex";
+                }
+            } catch (error) {
+                console.error("Lỗi khi xem thông tin tuyển dụng:", error);
+                alert(
+                    "Không thể xem thông tin tuyển dụng. Vui lòng kiểm tra API hoặc kết nối."
+                );
+            }
+        }
+
+        // Xem danh sách ứng viên
+        async function viewApplicants(recruitmentId) {
+            try {
+                const response = await fetch(`${API_URL}/${recruitmentId}`);
+                if (!response.ok) {
+                    throw new Error(`Không thể lấy thông tin ứng viên. Mã lỗi: ${response.status}`);
+                }
+                const recruitment = await response.json();
+                
+                // Hiển thị tên vị trí tuyển dụng
+                document.getElementById("recruitmentTitle").textContent = 
+                    `Vị trí: ${recruitment.title} - ${recruitment.department}`;
+                
+                const tableBody = document.getElementById("applicantsBody");
+                tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+                
+                if (recruitment.applicants && recruitment.applicants.length > 0) {
+                    recruitment.applicants.forEach((applicant) => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${applicant.name}</td>
+                            <td>${applicant.email}</td>
+                            <td>
+                                <button class="action-btn view-btn" onclick="alert('Chức năng đang phát triển')">Xem hồ sơ</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    // Nếu không có ứng viên
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td colspan="3" style="text-align: center;">Chưa có ứng viên nào cho vị trí này</td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+
+                document.getElementById("viewApplicantsModal").style.display = "flex";
+            } catch (error) {
+                console.error("Lỗi khi xem danh sách ứng viên:", error);
+                alert("Không thể xem danh sách ứng viên. Vui lòng kiểm tra API hoặc kết nối.");
+            }
+        }
+
+        // Kích hoạt chế độ chỉnh sửa
+        function enableEditMode() {
+            const inputs = document.querySelectorAll(
+                "#recruitmentDetailsTable input, #recruitmentDetailsTable select, #recruitmentDetailsTable textarea"
+            );
+            inputs.forEach((input) => {
+                if (input.id !== "editRecruitmentId") input.disabled = false;
+            });
+
+            document.querySelector(".modal-buttons").innerHTML = `
+                <button class="action-btn save-btn" onclick="saveRecruitment()">Lưu</button>
+                <button class="action-btn cancel-btn" onclick="cancelEdit()">Hủy</button>
+            `;
+        }
+
+        // Lưu thay đổi vị trí tuyển dụng
+        async function saveRecruitment() {
+            const recruitmentId = document.getElementById("editRecruitmentId").value;
+            const updatedRecruitment = {
+                title: document.getElementById("editTitle").value,
+                department: document.getElementById("editDepartment").value,
+                posted_date: document.getElementById("editPostedDate").value,
+                status: document.getElementById("editStatus").value,
+                description: document.getElementById("editDescription").value,
+                requirements: document.getElementById("editRequirements").value.split("\n").filter(line => line.trim() !== "")
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/${recruitmentId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(updatedRecruitment),
+                });
+                if (response.ok) {
+                    loadRecruitments();
+                    closeViewModal();
+                    alert("Cập nhật thành công!");
+                } else {
+                    console.error("Lỗi khi cập nhật vị trí tuyển dụng");
+                    alert("Không thể cập nhật vị trí tuyển dụng. Vui lòng thử lại.");
+                }
+            } catch (error) {
+                console.error("Lỗi khi cập nhật vị trí tuyển dụng:", error);
+                alert(
+                    "Không thể cập nhật vị trí tuyển dụng. Vui lòng kiểm tra API hoặc kết nối."
+                );
+            }
+        }
+
+        // Hủy chỉnh sửa
+        function cancelEdit() {
+            const recruitmentId = document.getElementById("editRecruitmentId").value;
+            viewRecruitment(recruitmentId); // Quay lại chế độ xem
+        }
+
+        // Đóng modal xem
+        function closeViewModal() {
+            document.getElementById("viewRecruitmentModal").style.display = "none";
+        }
+
+        // Đóng modal xem ứng viên
+        function closeApplicantsModal() {
+            document.getElementById("viewApplicantsModal").style.display = "none";
+        }
+
+        // Mở modal thêm vị trí tuyển dụng
+        function openAddModal() {
+            // Tự động điền ngày hôm nay
+            const today = new Date();
+            const formattedDate = formatDateForInput(today.toISOString().split('T')[0]);
+            document.getElementById("posted_date").value = formattedDate;
+            
+            document.getElementById("addRecruitmentModal").style.display = "flex";
+        }
+
+        // Đóng modal thêm vị trí tuyển dụng
+        function closeAddModal() {
+            document.getElementById("addRecruitmentModal").style.display = "none";
+            document.getElementById("addRecruitmentForm").reset();
+        }
+
+        // Thêm vị trí tuyển dụng mới
+        document
+            .getElementById("addRecruitmentForm")
+            .addEventListener("submit", async function (e) {
+                e.preventDefault();
+                const newRecruitment = {
+                    title: document.getElementById("title").value,
+                    department: document.getElementById("department").value,
+                    posted_date: document.getElementById("posted_date").value,
+                    status: document.getElementById("status").value,
+                    description: document.getElementById("description").value,
+                    requirements: document.getElementById("requirements").value.split("\n").filter(line => line.trim() !== ""),
+                    applicants: []
+                };
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(newRecruitment),
+                    });
+                    if (response.ok) {
+                        loadRecruitments();
+                        closeAddModal();
+                        alert("Thêm vị trí tuyển dụng thành công!");
+                    } else {
+                        console.error("Lỗi khi thêm vị trí tuyển dụng");
+                        alert("Không thể thêm vị trí tuyển dụng. Vui lòng thử lại.");
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi thêm vị trí tuyển dụng:", error);
+                    alert(
+                        "Không thể thêm vị trí tuyển dụng. Vui lòng kiểm tra API hoặc kết nối."
+                    );
+                }
+            });
+
+        // Xóa vị trí tuyển dụng
+        async function deleteRecruitment(recruitmentId) {
+            try {
+                // Đầu tiên lấy thông tin vị trí để hiển thị tên trong thông báo xác nhận
+                const infoResponse = await fetch(`${API_URL}/${recruitmentId}`);
+                if (!infoResponse.ok) {
+                    throw new Error(`Không thể lấy thông tin tuyển dụng. Mã lỗi: ${infoResponse.status}`);
+                }
+                const recruitment = await infoResponse.json();
+                
+                if (confirm(`Bạn có chắc chắn muốn xóa vị trí "${recruitment.title}" không?`)) {
+                    const response = await fetch(`${API_URL}/${recruitmentId}`, {
+                        method: "DELETE",
+                    });
+                    if (response.ok) {
+                        loadRecruitments();
+                        alert("Xóa vị trí tuyển dụng thành công!");
+                    } else {
+                        console.error("Lỗi khi xóa vị trí tuyển dụng");
+                        alert("Không thể xóa vị trí tuyển dụng. Vui lòng thử lại.");
+                    }
+                }
+            } catch (error) {
+                console.error("Lỗi khi xóa vị trí tuyển dụng:", error);
+                alert(
+                    "Không thể xóa vị trí tuyển dụng. Vui lòng kiểm tra API hoặc kết nối."
+                );
+            }
+        }
+
+        // Tìm kiếm vị trí tuyển dụng
+        function searchRecruitments() {
+            const input = document
+                .getElementById("searchInput")
+                .value.toLowerCase();
+            const rows = document.querySelectorAll("#recruitmentBody tr");
+            rows.forEach((row) => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(input) ? "" : "none";
+            });
+        }
+
+        // Hàm hỗ trợ định dạng ngày tháng từ "yyyy/mm/dd" hoặc "yyyy-mm-dd" sang định dạng cho input type="date"
+        function formatDateForInput(dateString) {
+            if (!dateString) return '';
+            // Xử lý cả định dạng yyyy/mm/dd và yyyy-mm-dd
+            const parts = dateString.includes('/') ? dateString.split('/') : dateString.split('-');
+            if (parts.length !== 3) return dateString;
+            
+            // Đảm bảo định dạng yyyy-mm-dd cho input type="date"
+            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+        }
+    </script>
+{% endblock %}
+</html>

@@ -1,0 +1,194 @@
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Panel */
+.panel {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+#depart-pos .panel-header {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.panel-header {
+  margin-bottom: 20px;
+}
+
+.panel-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.panel-body {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Filter Container */
+.filter-container {
+  margin-bottom: 20px;
+}
+
+.filter-container label {
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.filter-container select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #6b7280;
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.filter-container h2 {
+  font-size: 18px;
+  margin: 15px 0;
+  color: #1f2937;
+}
+
+/* Button */
+.btn {
+  padding: 8px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #2980b9;
+}
+
+/* Table */
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.table-container th,
+.table-container td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-container th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.table-container td {
+  color: #6b7280;
+}
+
+.table-container tr:hover {
+  background-color: #f1f5f9;
+}
+
+/* Tab Container */
+.tab-container {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 5px;
+}
+
+.tab-button.active {
+  background-color: #3498db;
+  color: white;
+  border-bottom: none;
+}
+
+.tab-button:hover {
+  background-color: #e5e7eb;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-buttons .cancel-btn {
+  background-color: #e74c3c;
+}
+
+.modal-buttons .cancel-btn:hover {
+  background-color: #c0392b;
+}
+
+.modal-buttons .save-btn {
+  background-color: #2ecc71;
+}
+
+.modal-buttons .save-btn:hover {
+  background-color: #27ae60;
+}
+
+.modal-buttons .close-btn {
+  background-color: #3498db;
+}
+
+.modal-buttons .close-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Section Tab */
+.section-tab {
+  display: none;
+}

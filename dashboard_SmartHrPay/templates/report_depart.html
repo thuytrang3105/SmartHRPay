@@ -1,0 +1,85 @@
+{% extends 'base.html' %} {% block title %}Báo cáo theo phòng ban{% endblock %}
+{% block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='report_depart.css') }}"
+/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %} {% block content %}
+
+<div class="panel" id="department-report">
+  <div class="panel-header">
+    <h3>Báo cáo lương theo phòng ban</h3>
+  </div>
+  <div class="panel-body">
+    <div class="chart-container">
+      <p>Biểu đồ tổng lương theo phòng ban</p>
+      <canvas id="departmentSalaryChart"></canvas>
+      <script>
+        function renderDepartmentChart() {
+          const ctx = document.getElementById("departmentSalaryChart").getContext("2d");
+          const labels = {{ data.departments | tojson }};
+          const salaries = {{ data.salaries | tojson }};
+          new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [{
+                label: "Tổng lương (VNĐ)",
+                data: salaries,
+                backgroundColor: ["#4CAF50", "#FFC107", "#2196F3", "#E91E63"],
+                borderWidth: 1,
+              }],
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    callback: function (value) {
+                      return value.toLocaleString("vi-VN") + " đ";
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+        renderDepartmentChart();
+      </script>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel-inner">
+        <div class="panel-inner-header">
+          <h3>Phân tích chi tiết</h3>
+        </div>
+        <div class="panel-inner-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Phòng ban</th>
+                <th>Số NV</th>
+                <th>Tổng lương</th>
+                <th>Lương TB</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for dept in data.details %}
+              <tr>
+                <td>{{ dept.department }}</td>
+                <td>{{ dept.employees }}</td>
+                <td>{{ "{:,.0f}".format(dept.total_salary) }} đ</td>
+                <td>{{ "{:,.0f}".format(dept.avg_salary) }} đ</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

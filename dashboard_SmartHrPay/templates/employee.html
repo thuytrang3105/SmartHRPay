@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Thông tin nhân viên{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='employee.css') }}">
+{% endblock %}
+{% block content %}
+  <div class="content-box">
+    <h3>Thông tin cá nhân</h3>
+    <table border="1">
+      <tr>
+        <th>Thuộc tính</th>
+        <th>Giá trị</th>
+      </tr>
+      <tr>
+        <td>ID</td>
+        <td>{{ employee.employee_id }}</td>
+      </tr>
+      <tr>
+        <td>Họ</td>
+        <td>{{ employee.last_name }}</td>
+      </tr>
+      <tr>
+        <td>Tên</td>
+        <td>{{ employee.first_name }}</td>
+      </tr>
+      <tr>
+        <td>Email</td>
+        <td>{{ employee.email }}</td>
+      </tr>
+      <tr>
+        <td>Điện thoại</td>
+        <td>{{ employee.phone }}</td>
+      </tr>
+      <tr>
+        <td>Ngày vào làm</td>
+        <td>{{ employee.start_date }}</td>
+      </tr>
+      <tr>
+        <td>Phòng ban</td>
+        <td>{{ employee.department_name }}</td>
+      </tr>
+      <tr>
+        <td>Công việc</td>
+        <td>{{ employee.job_title }}</td>
+      </tr>
+      <tr>
+        <td>Trạng thái</td>
+        <td>{{ employee.status }}</td>
+      </tr>
+    </table>
+  </div>
+    <div class="tabs">
+      <button class="tab-btn" onclick="showTab('notifications')">
+        Thông báo
+      </button>
+      <button class="tab-btn" onclick="showTab('salary')">Bảng lương</button>
+      <button class="tab-btn" onclick="showTab('attendance')">
+        Ngày công
+      </button>
+    </div>
+
+    <div id="notifications" class="content-box" style="display: block">
+      {% if notifications %}
+      {% for notification in notifications %}
+      <div class="notification">
+        <h3>{{ notification.title }}</h3>
+        <p>{{ notification.content }}</p>
+        <p><small>{{ notification.timestamp }}</small></p>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p>Chưa có thông báo nào.</p>
+      {% endif %}
+    </div>
+
+    <div id="salary" class="content-box" style="display: none">
+      <h3>Chọn tháng/năm để xem bảng lương</h3>
+      <form action="{{ url_for('employee') }}" method="GET">
+        <label>
+          Tháng:
+          <select id="month" name="month">
+            {% for i in range(1, 13) %}
+            <option value="{{ i }}" {% if i == selected_month | int %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          Năm:
+          <select id="year" name="year">
+            {% for i in range(current_year - 5, current_year + 1) %}
+            <option value="{{ i }}" {% if i == selected_year | int %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit">Xem lương</button>
+      </form>
+
+      <div id="salaryTable">
+        <h3>
+          Bảng lương tháng
+          <span id="selectedMonth">{{ selected_month }}</span>/<span id="selectedYear">{{ selected_year }}</span>
+        </h3>
+        <table border="1">
+          <tr>
+            <th>Thuộc tính</th>
+            <th>Giá trị</th>
+          </tr>
+          <tr>
+            <td>Lương cơ bản</td>
+            <td id="baseSalary">{{ salary.base_salary }}</td>
+          </tr>
+          <tr>
+            <td>Thưởng</td>
+            <td id="bonus">{{ salary.bonus }}</td>
+          </tr>
+          <tr>
+            <td>Ngày công</td>
+            <td id="date">{{ salary.date }}</td>
+          </tr>
+          <tr>
+            <td>Khấu trừ</td>
+            <td id="deductions">{{ salary.deductions }}</td>
+          </tr>
+          <tr>
+            <td><b>Tổng lương</b></td>
+            <td id="netSalary"><b>{{ salary.net_salary }}</b></td>
+          </tr>
+        </table>
+        {% if salary.base_salary == "N/A" %}
+        <p id="errorMessage" style="color: red;">Không có dữ liệu bảng lương cho tháng/năm đã chọn.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div id="attendance" class="content-box" style="display: none">
+      <h3>Ngày công</h3>
+      <form action="{{ url_for('employee') }}" method="GET">
+        <label>
+          Tháng:
+          <select id="attendanceMonth" name="month">
+            {% for i in range(1, 13) %}
+            <option value="{{ i }}" {% if i == selected_month | int %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          Năm:
+          <select id="attendanceYear" name="year">
+            {% for i in range(current_year - 5, current_year + 1) %}
+            <option value="{{ i }}" {% if i == selected_year | int %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit">Xem ngày công</button>
+      </form>
+
+      <div id="attendanceTableContainer">
+        <h3>
+          Ngày công tháng <span id="selectedAttendanceMonth">{{ selected_month }}</span>/<span id="selectedAttendanceYear">{{ selected_year }}</span>
+        </h3>
+        <table id="attendanceTable" border="1">
+          <thead>
+            <tr>
+              <th>Ngày</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if attendance %}
+            {% for record in attendance %}
+            <tr>
+              <td>{{ record.date }}</td>
+              <td>{{ record.status }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+              <td colspan="2">Không có dữ liệu ngày công cho tháng/năm đã chọn.</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <div class="timekeeping">
+    <h3>Chấm công</h3>
+    <button class="check-in" onclick="checkIn()">Check-in</button>
+    <button class="check-out" onclick="checkOut()">Check-out</button>
+    <p id="status">Chưa check-in</p>
+  </div>
+
+  <script>
+    function showTab(tab) {
+      document.getElementById("notifications").style.display = tab === "notifications" ? "block" : "none";
+      document.getElementById("salary").style.display = tab === "salary" ? "block" : "none";
+      document.getElementById("attendance").style.display = tab === "attendance" ? "block" : "none";
+    }
+
+    function getCurrentDate() {
+      const today = new Date();
+      return today.toISOString().split("T")[0];
+    }
+
+    function checkIn() {
+      const now = new Date().toLocaleTimeString();
+      localStorage.setItem("checkin_time", now);
+      localStorage.setItem("checkin_date", getCurrentDate());
+      updateStatus();
+    }
+
+    function checkOut() {
+      const now = new Date().toLocaleTimeString();
+      localStorage.setItem("checkout_time", now);
+      updateStatus();
+    }
+
+    function updateStatus() {
+      const checkinTime = localStorage.getItem("checkin_time");
+      const checkoutTime = localStorage.getItem("checkout_time");
+      const checkinDate = localStorage.getItem("checkin_date");
+      const currentDate = getCurrentDate();
+
+      if (checkinDate !== currentDate) {
+        localStorage.removeItem("checkin_time");
+        localStorage.removeItem("checkout_time");
+        localStorage.setItem("checkin_date", currentDate);
+        document.getElementById("status").textContent = "Vắng";
+      } else if (checkoutTime) {
+        document.getElementById("status").textContent = `Nghỉ: ${checkoutTime}`;
+      } else if (checkinTime) {
+        document.getElementById("status").textContent = `Có mặt: ${checkinTime}`;
+      } else {
+        document.getElementById("status").textContent = "Chưa check-in";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", updateStatus);
+  </script>
+</body>
+</html>
+{% endblock %}

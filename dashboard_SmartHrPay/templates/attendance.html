@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Chấm Công Nhân Viên{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='attendance.css') }}">
+  <style>
+    .panel-card {
+      margin: 20px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header-title {
+      color: #333;
+      margin: 0;
+      font-size: 1.5em;
+    }
+    .panel-title {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+    }
+    .attendance-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1em;
+      min-height: 400px; /* Extended height for better visibility */
+    }
+    .attendance-table th, .attendance-table td {
+      padding: 15px; /* Increased padding for readability */
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      vertical-align: middle;
+    }
+    .attendance-table th {
+      background-color: #f4f4f4;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+    }
+    .attendance-table tr:hover {
+      background-color: #f9f9f9;
+    }
+    .action-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 8px;
+      font-size: 0.9em;
+    }
+    .detail-btn {
+      background-color: #28a745;
+      color: white;
+    }
+    .history-btn {
+      background-color: #007bff;
+      color: white;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 25px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      position: relative;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .detail-table, .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .detail-table th, .detail-table td, .history-table th, .history-table td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .info-modal {
+      position: absolute;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+      max-width: 300px;
+      display: none;
+    }
+    @media (max-width: 600px) {
+      .attendance-table th, .attendance-table td {
+        font-size: 0.9em;
+        padding: 10px;
+      }
+      .modal-content {
+        width: 95%;
+        margin: 15% auto;
+      }
+    }
+  </style>
+  {% endblock %}
+
+  {% block content %}
+    <div class="header header-flex">
+      <h2 class="header-title">Chấm Công Nhân Viên</h2>
+    </div>
+  
+    <div class="panel panel-card">
+      <div class="panel-header">
+        <h3 class="panel-title">Bảng Chấm Công ({{ current_date }})</h3>
+      </div>
+      <div class="panel-body">
+        <table class="attendance-table">
+          <thead>
+            <tr>
+              <th>ID Chấm Công</th>
+              <th>ID Nhân Viên</th>
+              <th>Tên nhân viên</th>
+              <th>Ngày</th>
+              <th>Trạng Thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="attendance-tbody">
+            {% for attendance in attendances %}
+            <tr>
+              <td>{{ attendance.attendance_id }}</td>
+              <td>{{ attendance.employee_id }}</td>
+              <td>{{ attendance.employee_name }}</td>
+              <td>{{ attendance.date }}</td>
+              <td>{{ attendance.status }}</td>
+              <td>
+                <button class="detail-btn action-btn" data-employee-id="{{ attendance.employee_id }}">
+                  Chi tiết
+                </button>
+                <button class="history-btn action-btn" data-employee-id="{{ attendance.employee_id }}">
+                  Lịch sử chấm công
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+            {% if not attendances %}
+            <tr>
+              <td colspan="6">Không có dữ liệu chấm công.</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  
+    <!-- Modal cho Chi tiết -->
+    <div id="detail-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">×</span>
+        <h3>Thông tin chi tiết nhân viên</h3>
+        <table class="detail-table">
+          <tr>
+            <th>Thông tin</th>
+            <th>Giá trị</th>
+          </tr>
+          <tr id="detail-content"></tr>
+        </table>
+      </div>
+    </div>
+  
+    <!-- Modal cho Lịch sử chấm công -->
+    <div id="history-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">×</span>
+        <h3>Lịch sử chấm công</h3>
+        <div class="date-filter">
+          <select id="month-select">
+            {% for i in range(1, 13) %}
+              <option value="{{ i }}">{{ i }}</option>
+            {% endfor %}
+          </select>
+          <select id="year-select">
+            {% for i in range(2020, 2026) %}
+              <option value="{{ i }}" {% if i == current_year %}selected{% endif %}>
+                {{ i }}
+              </option>
+            {% endfor %}
+          </select>
+          <button id="history-filter-btn">Xem</button>
+        </div>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Ngày</th>
+              <th>Trạng Thái</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  
+    <script>
+      const detailModal = document.getElementById("detail-modal");
+      const historyModal = document.getElementById("history-modal");
+      const closeDetailModal = document.querySelector("#detail-modal .close-modal");
+      const closeHistoryModal = document.querySelector("#history-modal .close-modal");
+      let currentEmployeeId = null;
+  
+      // Xử lý khi click nút Chi tiết
+      document.querySelectorAll(".detail-btn").forEach(button => {
+        button.addEventListener("click", (e) => {
+          currentEmployeeId = e.target.getAttribute("data-employee-id");
+          fetch(`/api/employee_detail?employee_id=${currentEmployeeId}`)
+            .then(response => {
+              if (!response.ok) {
+                return response.text().then(text => {
+                  throw new Error(`HTTP error! Status: ${response.status}, Response: ${text}`);
+                });
+              }
+              return response.json();
+            })
+            .then(data => {
+              const detailContent = document.getElementById("detail-content");
+              detailContent.innerHTML = `
+                <tr><td>ID Nhân viên</td><td>${data.employee_id}</td></tr>
+                <tr><td>Tên nhân viên</td><td>${data.employee_name}</td></tr>
+                <tr><td>Phòng ban</td><td>${data.department || 'N/A'}</td></tr>
+                <tr><td>Chức vụ</td><td>${data.job_title || 'N/A'}</td></tr>
+              `;
+              detailModal.style.display = "block";
+            })
+            .catch(error => {
+              console.error("Lỗi khi lấy chi tiết nhân viên:", error);
+              alert("Không thể lấy thông tin chi tiết nhân viên: " + error.message);
+            });
+        });
+      });
+  
+      // Xử lý khi click nút Lịch sử chấm công
+      document.querySelectorAll(".history-btn").forEach(button => {
+        button.addEventListener("click", (e) => {
+          currentEmployeeId = e.target.getAttribute("data-employee-id");
+          historyModal.style.display = "block";
+        });
+      });
+  
+      // Đóng modal Chi tiết
+      closeDetailModal.addEventListener("click", () => {
+        detailModal.style.display = "none";
+      });
+  
+      // Đóng modal Lịch sử chấm công
+      closeHistoryModal.addEventListener("click", () => {
+        historyModal.style.display = "none";
+      });
+  
+      // Xử lý khi click nút Xem trong modal Lịch sử
+      document.getElementById("history-filter-btn").addEventListener("click", () => {
+        const month = document.getElementById("month-select").value;
+        const year = document.getElementById("year-select").value;
+        
+        fetch(`/api/attendance_detail?employee_id=${currentEmployeeId}&month=${month}&year=${year}`)
+          .then(response => {
+            if (!response.ok) {
+              return response.text().then(text => {
+                throw new Error(`HTTP error! Status: ${response.status}, Response: ${text}`);
+              });
+            }
+            return response.json();
+          })
+          .then(data => {
+            const tbody = document.getElementById("history-tbody");
+            tbody.innerHTML = "";
+            data.forEach(record => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${record.date}</td>
+                <td>${record.status}</td>
+              `;
+              tbody.appendChild(row);
+            });
+          })
+          .catch(error => {
+            console.error("Lỗi khi lấy lịch sử chấm công:", error);
+            alert("Không thể lấy lịch sử chấm công: " + error.message);
+          });
+      });
+  
+      window.addEventListener("click", function(event) {
+        if (event.target === detailModal) {
+          detailModal.style.display = "none";
+        }
+        if (event.target === historyModal) {
+          historyModal.style.display = "none";
+        }
+      });
+    </script>
+  {% endblock %}

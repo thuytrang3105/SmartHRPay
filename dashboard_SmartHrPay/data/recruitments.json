@@ -1,0 +1,25 @@
+[
+    {
+        "id": 1,
+        "title": "Lập trình viên Python",
+        "department": "Công nghệ Thông tin",
+        "posted_date": "2025-05-01",
+        "status": "Đang tuyển",
+        "description": "Phát triển ứng dụng web bằng Python và Flask.",
+        "requirements": ["3+ năm kinh nghiệm Python", "Hiểu biết về Flask", "Kỹ năng làm việc nhóm"],
+        "applicants": [
+            {"name": "Nguyễn Văn A", "email": "nva@example.com"},
+            {"name": "Trần Thị B", "email": "ttb@example.com"}
+        ]
+    },
+    {
+        "id": 2,
+        "title": "Nhân viên Marketing",
+        "department": "Marketing",
+        "posted_date": "2025-04-15",
+        "status": "Tạm dừng",
+        "description": "Lên kế hoạch và thực hiện các chiến dịch quảng cáo.",
+        "requirements": ["2+ năm kinh nghiệm Marketing", "Kỹ năng phân tích thị trường"],
+        "applicants": []
+    }
+]
