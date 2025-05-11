@@ -1,0 +1,67 @@
+{
+    "notification": [
+        {
+            "title": "Thông báo lương tháng 3/2025",
+            "status": "sent",
+            "recipients": "Tất cả nhân viên",
+            "content": "Bảng lương tháng 3 đã được phát hành. Vui lòng kiểm tra và xác nhận.",
+            "timestamp": "28/03/2025 10:15"
+        },
+        {
+            "title": "Thông báo cập nhật chính sách lương",
+            "status": "sent",
+            "recipients": "Phòng IT, Phòng Marketing (60)",
+            "content": "Chính sách lương mới sẽ được áp dụng từ tháng 4/2025. Chi tiết vui lòng xem tại đây.",
+            "timestamp": "15/03/2025 14:30"
+        },
+        {
+            "title": "Thông báo điều chỉnh lương cho nhân viên kinh doanh",
+            "status": "draft",
+            "recipients": "Phòng Kinh doanh (45)",
+            "content": "Điều chỉnh chế độ thưởng doanh số cho nhân viên kinh doanh từ tháng 4/2025.",
+            "timestamp": "20/03/2025 09:45"
+        },
+        {
+            "title": "alooo",
+            "recipients": "all",
+            "content": "heloo teacher",
+            "status": "draft",
+            "timestamp": "2025-04-19 18:03:56"
+        },
+        {
+            "title": "xin chào",
+            "recipients": "it",
+            "content": "heloo\n",
+            "status": "sent",
+            "timestamp": "2025-04-19 18:04:28"
+        },
+        {
+            "title": "tb",
+            "recipients": "it",
+            "content": "Chậm Tiến độ",
+            "status": "sent",
+            "timestamp": "2025-05-04 22:25:58"
+        },
+        {
+            "title": "dừng hoạt động",
+            "recipients": "all",
+            "content": "Cty Thua lỗ quá . mất hợp đồng chúng ta Phá Sản",
+            "status": "draft",
+            "timestamp": "2025-05-04 22:26:53"
+        },
+        {
+            "title": "Thông báo Chậm Lương",
+            "recipients": "all",
+            "content": "Hiện tại công ty trên bờ vực phá sản . nên lương không thể trả đúng hạn.\nTrân trọng !",
+            "status": "sent",
+            "timestamp": "2025-05-11 20:30:43"
+        },
+        {
+            "title": "trốn nợ",
+            "recipients": "it_support",
+            "content": "bye bye",
+            "status": "sent",
+            "timestamp": "2025-05-11 20:32:12"
+        }
+    ]
+}

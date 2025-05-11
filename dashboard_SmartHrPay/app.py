@@ -16,7 +16,6 @@ logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-DATA_FILE = "data.json"
 
 # Cấu hình database (đảm bảo đã cấu hình đúng trong ứng dụng Flask của bạn)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQL_SERVER_CONN  # Set the primary database to the SQL Server database
@@ -116,7 +115,7 @@ def user_authorization():
     
     # Trả về template HTML với danh sách người dùng
     return render_template('user_authorization.html', users=user_list)
-# Cổ đông
+# Cổ đông ##########################################################33
 @app.route('/shareholder')
 @role_required('Admin')
 def shareholder():
@@ -144,22 +143,23 @@ def shareholder():
 def shareholder_detail(id):
     try:
         # Lấy thông tin cổ đông từ cơ sở dữ liệu theo ID
-        shareholder = db.session.query(Shareholder).filter_by(ShareholderId=id).first()
-
+        shareholder = db.session.query(Shareholder).filter_by(ShareholderID=id).first()
         if shareholder:
             # Kiểm tra xem cổ đông có phải là nhân viên không (join với bảng Employee)
-            #employee = db.session.query(Employee).filter_by(employee_id=shareholder.EmployeeID).first()
-            
+            employee = db.session.query(Employee).filter_by(employee_id=shareholder.EmployeeID).first()
+            print("cổ đông!!!")
             # Tạo dữ liệu chi tiết cổ đông
             shareholder_data = {
                 "id": shareholder.ShareholderID,
                 "FullName": shareholder.FullName,  
                 "Email": shareholder.Email,
                 "PhoneNumber": shareholder.Phone,
-                "InvestmentAmount": float(shareholder.InvestmentAmount) if shareholder.investment_amount else 0,
+                "InvestmentAmount": float(shareholder.InvestmentAmount) if shareholder.InvestmentAmount else 0,
                 "IsEmployee": "Có" if employee else "Không",
                 "EmployeeID": employee.EmployeeID if employee else None
             }
+            
+            print("cổ đông!")
             
             # Trả về trang HTML chi tiết cổ đông
             return render_template('shareholder_detail.html', shareholder=shareholder_data)
@@ -485,7 +485,10 @@ def search_employee():
     else:
         return jsonify({'error': 'Không tìm thấy nhân viên'})
     
-#Thongbao
+#Thongbao ############################################################################
+
+DATA_FILE = "data/notification.json"
+
 def load_notifications():
     try:
         with open(DATA_FILE, 'r', encoding='utf-8') as file:
@@ -522,9 +525,19 @@ def save_notification():
 
 
 @app.route('/notification')
-@role_required('Admin', 'Acounting', 'Hiring')
+@role_required('Admin', 'Acounting', 'Hiring', 'Employee')
 def get_notifications():
+    role = session.get('permission')  # Lấy role từ session
+
     notifications = load_notifications()
+
+    if role == 'Employee':
+        notifications = [
+            n for n in notifications 
+            if n.get('status', '').strip().lower() == 'sent' and
+            n.get('recipients', '').strip().lower() in ['tất cả nhân viên', 'all']
+        ]
+
     return render_template('notification.html', notifications=notifications)
 
  # Chấm công =============================================================
@@ -563,6 +576,7 @@ def attendance():
         .distinct(Employee.employee_id)  # Ensure no duplicate employees
         .all()
     )
+
 
     # Format attendance data for template
     attendance_data = [

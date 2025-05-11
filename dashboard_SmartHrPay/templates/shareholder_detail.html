@@ -20,16 +20,7 @@
   <p><strong>ID Nhân viên (nếu có):</strong> {{ shareholder.EmployeeID }}</p>
 
   <form method="POST" action="/update_shareholder_info/{{ shareholder.id }}">
-    <label for="investment_amount">Số lượng cổ phần:</label>
-    <input
-      type="text"
-      name="investment_amount"
-      class="form-control"
-      value="{{ shareholder.InvestmentAmount }}"
-    />
-    <button type="submit" class="btn btn-warning mt-2">
-      Cập nhật thông tin
-    </button>
+    <li><a href="{{ url_for('shareholder') }}"><i>📋</i> Thoát  </a></li>
   </form>
 </div>
 {% endblock %}
