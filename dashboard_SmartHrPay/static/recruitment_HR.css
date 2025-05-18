@@ -1,0 +1,335 @@
+/* Reset cơ bản */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #f5f7fa;
+  color: #333;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 30px 40px;
+  margin-left: 0 !important; /* Ghi đè margin-left từ base.css */
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+  width: 100%; /* Đảm bảo chiếm toàn bộ không gian */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #303f9f;
+}
+
+.user-info {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Employee Table (sửa class từ recruitment-table thành employee-table để khớp với HTML) */
+.employee-table {
+  width: 98%;
+  margin: 0 auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.search-bar {
+  padding: 6px 6px 6px 30px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 15px;
+  width: 200px;
+}
+
+.search-bar i {
+  left: 8px;
+  font-size: 15px;
+}
+
+.search-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background-color 0.3s;
+}
+
+.search-btn:hover {
+  background-color: #2980b9;
+}
+
+.add-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background-color 0.3s;
+}
+
+.add-btn:hover {
+  background-color: #218838;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 17px;
+}
+
+table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
+table td {
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+table tr:hover {
+  background-color: #f1f5f9;
+}
+
+.action-btn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 15px;
+  margin-right: 4px;
+}
+
+.view-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+.view-btn:hover {
+  background-color: #2980b9;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.table-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 6px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content h2 {
+  font-size: 17px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  width: 100%;
+  padding: 0.4rem;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  outline: none;
+  font-size: 15px;
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+  border-color: #3498db;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.save-btn {
+  padding: 8px 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.save-btn:hover {
+  background-color: #218838;
+}
+
+.cancel-btn {
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.cancel-btn:hover {
+  background-color: #c82333;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .main-content {
+    padding: 25px 30px;
+    margin-left: 0 !important; /* Ghi đè margin-left từ base.css */
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px;
+    margin-left: 0 !important; /* Ghi đè margin-left từ base.css */
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  table th,
+  table td {
+    padding: 6px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content {
+    padding: 10px;
+    margin-left: 0 !important; /* Ghi đè margin-left từ base.css */
+  }
+
+  .search-bar {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .table-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-container {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .search-btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+}

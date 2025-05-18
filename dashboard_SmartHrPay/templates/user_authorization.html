@@ -1,0 +1,35 @@
+{% extends 'base.html' %} {% block title %}Tài Khoản Người Dùng{% endblock %}
+{% block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='user_authorization.css') }}"
+/>
+{% endblock %} {% block content %}
+<h1>Phân Quyền Người Dùng</h1>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tên đăng nhập</th>
+        <th>Quyền</th>
+        <th>Tên người dùng</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.user_id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.role }}</td>
+        <td>{{ user.employee_name }}</td>
+        <td>
+          <a> Chỉnh sửa </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

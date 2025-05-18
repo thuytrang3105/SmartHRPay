@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Lịch sử lương nhân viên{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='history_salary.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></script>
+  <style>
+    .panel {
+      margin: 20px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .filter-container {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .filter-container label {
+      font-weight: bold;
+    }
+    .filter-container select, .filter-container button {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f4f4f4;
+      font-weight: bold;
+    }
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+    .details-link {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .details-link:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .filter-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      table {
+        font-size: 14px;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="panel" id="employee-history">
+    <div class="header">
+      <h2>Lịch sử lương</h2>
+    </div>
+    <div class="panel-body">
+      <div class="filter-container">
+        <label for="year-filter">Chọn năm:</label>
+        <select id="year-filter">
+          {% for year in available_years %}
+            <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>Năm {{ year }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="month-filter">Chọn tháng:</label>
+        <select id="month-filter">
+          {% for month in available_months %}
+            <option value="{{ month }}" {% if month == selected_month %}selected{% endif %}>Tháng {{ month }}</option>
+          {% endfor %}
+        </select>
+
+        {% if selected_month or selected_year %}
+          <button class="btn" id="filter-button">Bỏ Lọc</button>
+        {% endif %}
+      </div>
+
+      <p>
+        <h3>📅 Đang xem bảng lương của 
+          <strong>
+            tháng {{ selected_month }} năm {{ selected_year }}
+          </strong>
+        </h3>
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tên nhân viên</th>
+            <th>Phòng ban</th>
+            <th>Chức vụ</th>
+            <th>Lương cơ bản</th>
+            <th>Thưởng</th>
+            <th>Khấu trừ</th>
+            <th>Tổng lương</th>
+            <th>Chi tiết</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for employee in payroll_data %}
+            <tr>
+              <td>{{ employee.id }}</td>
+              <td>{{ employee.name }}</td>
+              <td>{{ employee.department }}</td>
+              <td>{{ employee.position }}</td>
+              <td>{{ "{:,.0f}".format(employee.base_salary) }} đ</td>
+              <td>{{ "{:,.0f}".format(employee.bonus) }} đ</td>
+              <td>{{ "{:,.0f}".format(employee.deduction) }} đ</td>
+              <td>{{ "{:,.0f}".format(employee.total_salary) }} đ</td>
+              <td>
+                <a href="{{ url_for('payroll_detail', payroll_id=employee.payroll_id) }}" class="details-link">
+                  Xem chi tiết
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+          {% if not payroll_data %}
+            <tr>
+              <td colspan="9">Không có dữ liệu lương cho tháng và năm được chọn.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      document.getElementById("year-filter").addEventListener("change", function() {
+        const selectedYear = this.value;
+        const selectedMonth = document.getElementById("month-filter").value;
+        let url = "/history_salary";
+        const params = new URLSearchParams();
+        if (selectedYear) params.append("year", selectedYear);
+        if (selectedMonth) params.append("month", selectedMonth);
+        window.location.href = url + (params.toString() ? "?" + params.toString() : "");
+      });
+
+      document.getElementById("month-filter").addEventListener("change", function() {
+        const selectedYear = document.getElementById("year-filter").value;
+        const selectedMonth = this.value;
+        let url = "/history_salary";
+        const params = new URLSearchParams();
+        if (selectedYear) params.append("year", selectedYear);
+        if (selectedMonth) params.append("month", selectedMonth);
+        window.location.href = url + (params.toString() ? "?" + params.toString() : "");
+      });
+
+      const filterButton = document.getElementById("filter-button");
+      if (filterButton) {
+        filterButton.addEventListener("click", function() {
+          window.location.href = "/history_salary";
+        });
+      }
+    </script>
+  </div>
+{% endblock %}

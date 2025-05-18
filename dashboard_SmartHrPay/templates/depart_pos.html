@@ -1,0 +1,399 @@
+<DOCUMENT filename="depart_pos.html">
+  {% extends 'base.html' %}
+  {%block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='depart_pos.css') }}" />
+  {% endblock %}
+  {% block content %}
+  <!-- Thanh điều hướng tab -->
+  <div class="tab-container">
+      <button class="tab-button active" onclick="showSection('jobs')">Công Việc</button>
+      <button class="tab-button" onclick="showSection('departments')">Phòng Ban</button>
+  </div>
+  
+  <!-- Phần Công Việc -->
+  <div id="jobs" class="section-tab" style="display: block">
+      <div class="section">
+          <div class="section-title">Công Việc</div>
+          <div class="table-container">
+              <div class="table-header">
+                  <div class="search-container">
+                      <input type="text" class="search-bar" id="searchJobInput" placeholder="Tìm kiếm công việc..." onkeyup="searchJobs()" />
+                      <button class="search-btn" onclick="searchJobs()">Tìm kiếm</button>
+                  </div>
+                  <button class="add-btn" onclick="openAddJobModal()">Thêm Công Việc</button>
+              </div>
+              <table id="jobTable">
+                  <thead>
+                      <tr>
+                          <th>Mã Công Việc</th>
+                          <th>Tên Công Việc</th>
+                          <th>Hành Động</th>
+                      </tr>
+                  </thead>
+                  <tbody id="jobBody">
+                      {% for job in jobs %}
+                      <tr data-job-id="{{ job.job_id }}">
+                          <td>{{ job.job_id }}</td>
+                          <td>{{ job.job_title }}</td>
+                          <td>
+                              <button class="action-btn view-btn" onclick="viewJobEmployees('{{ job.job_id }}', '{{ job.job_title }}')">Xem</button>
+                              <button class="action-btn delete-btn" onclick="deleteJob('{{ job.job_id }}')">Xóa</button>
+                          </td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Phần Phòng Ban -->
+  <div id="departments" class="section-tab" style="display: none">
+      <div class="section">
+          <div class="section-title">Phòng Ban</div>
+          <div class="table-container">
+              <div class="table-header">
+                  <div class="search-container">
+                      <input type="text" class="search-bar" id="searchDepartmentInput" placeholder="Tìm kiếm phòng ban..." onkeyup="searchDepartments()" />
+                      <button class="search-btn" onclick="searchDepartments()">Tìm kiếm</button>
+                  </div>
+                  <button class="add-btn" onclick="openAddDepartmentModal()">Thêm Phòng Ban</button>
+              </div>
+              <table id="departmentTable">
+                  <thead>
+                      <tr>
+                          <th>Mã Phòng Ban</th>
+                          <th>Tên Phòng Ban</th>
+                          <th>Hành Động</th>
+                      </tr>
+                  </thead>
+                  <tbody id="departmentBody">
+                      {% for department in departments %}
+                      <tr data-department-id="{{ department.department_id }}">
+                          <td>{{ department.department_id }}</td>
+                          <td>{{ department.department_name }}</td>
+                          <td>
+                              <button class="action-btn view-btn" onclick="viewDepartmentEmployees('{{ department.department_id }}', '{{ department.department_name }}')">Xem</button>
+                              <button class="action-btn delete-btn" onclick="deleteDepartment('{{ department.department_id }}')">Xóa</button>
+                          </td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Modal Thêm Công Việc -->
+  <div id="addJobModal" class="modal">
+      <div class="modal-content">
+          <h2>Thêm Công Việc</h2>
+          <form id="addJobForm">
+              <label for="jobTitle">Tên Công Việc:</label>
+              <input type="text" id="jobTitle" name="job_title" required />
+              <div class="modal-buttons">
+                  <button type="button" class="cancel-btn" onclick="closeAddJobModal()">Hủy</button>
+                  <button type="submit" class="save-btn">Lưu</button>
+              </div>
+          </form>
+      </div>
+  </div>
+  
+  <!-- Modal Thêm Phòng Ban -->
+  <div id="addDepartmentModal" class="modal">
+      <div class="modal-content">
+          <h2>Thêm Phòng Ban</h2>
+          <form id="addDepartmentForm">
+              <label for="departmentName">Tên Phòng Ban:</label>
+              <input type="text" id="departmentName" name="department_name" required />
+              <div class="modal-buttons">
+                  <button type="button" class="cancel-btn" onclick="closeAddDepartmentModal()">Hủy</button>
+                  <button type="submit" class="save-btn">Lưu</button>
+              </div>
+          </form>
+      </div>
+  </div>
+  
+  <!-- Modal Xem Danh Sách Nhân Viên Theo Công Việc -->
+  <div id="jobEmployeesModal" class="modal">
+      <div class="modal-content">
+          <h2>Danh Sách Nhân Viên Theo Công Việc: <span id="jobTitleDisplay"></span></h2>
+          <table id="jobEmployeesTable">
+              <thead>
+                  <tr>
+                      <th>Mã Nhân Viên</th>
+                      <th>Tên</th>
+                      <th>Email</th>
+                  </tr>
+              </thead>
+              <tbody id="jobEmployeesBody"></tbody>
+          </table>
+          <div class="modal-buttons">
+              <button class="close-btn" onclick="closeJobEmployeesModal()">Đóng</button>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Modal Xem Danh Sách Nhân Viên Theo Phòng Ban -->
+  <div id="departmentEmployeesModal" class="modal">
+      <div class="modal-content">
+          <h2>Danh Sách Nhân Viên Theo Phòng Ban: <span id="departmentNameDisplay"></span></h2>
+          <table id="departmentEmployeesTable">
+              <thead>
+                  <tr>
+                      <th>Mã Nhân Viên</th>
+                      <th>Tên</th>
+                      <th>Email</th>
+                  </tr>
+              </thead>
+              <tbody id="departmentEmployeesBody"></tbody>
+          </table>
+          <div class="modal-buttons">
+              <button class="close-btn" onclick="closeDepartmentEmployeesModal()">Đóng</button>
+          </div>
+      </div>
+  </div>
+  
+  <script>
+  // Hiển thị tab
+  function showSection(sectionId) {
+      document.getElementById("jobs").style.display = "none";
+      document.getElementById("departments").style.display = "none";
+      document.getElementById(sectionId).style.display = "block";
+      document.querySelectorAll(".tab-button").forEach((button) => {
+          button.classList.remove("active");
+      });
+      document.querySelector(`.tab-button[onclick="showSection('${sectionId}')"]`).classList.add("active");
+  }
+  
+  // --- Quản lý công việc ---
+  function openAddJobModal() {
+      document.getElementById("addJobModal").style.display = "block";
+  }
+  
+  function closeAddJobModal() {
+      document.getElementById("addJobModal").style.display = "none";
+      document.getElementById("addJobForm").reset();
+  }
+  
+  // Thêm công việc mới
+  function addJob() {
+      const jobTitle = document.getElementById("jobTitle").value;
+      fetch("/api/add_job", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ job_title: jobTitle })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.error) {
+              throw new Error(data.error);
+          }
+          const tableBody = document.getElementById("jobBody");
+          const newRow = document.createElement("tr");
+          newRow.dataset.jobId = data.job_id;
+          newRow.innerHTML = `
+              <td>${data.job_id}</td>
+              <td>${data.job_title}</td>
+              <td>
+                  <button class="action-btn view-btn" onclick="viewJobEmployees('${data.job_id}', '${data.job_title}')">Xem</button>
+                  <button class="action-btn delete-btn" onclick="deleteJob('${data.job_id}')">Xóa</button>
+              </td>
+          `;
+          tableBody.appendChild(newRow);
+          closeAddJobModal();
+      })
+      .catch(error => {
+          console.error("Lỗi:", error);
+          alert("Đã xảy ra lỗi khi thêm công việc: " + error.message);
+      });
+  }
+  
+  // Xóa công việc
+  function deleteJob(jobId) {
+      if (confirm(`Bạn có chắc chắn muốn xóa công việc có ID ${jobId}?`)) {
+          fetch(`/api/delete_job/${jobId}`, { method: "DELETE" })
+          .then(response => response.json())
+          .then(data => {
+              if (!data.success) {
+                  throw new Error(data.error || "Không thể xóa công việc");
+              }
+              const row = document.querySelector(`tr[data-job-id="${jobId}"]`);
+              if (row) {
+                  row.remove();
+              }
+          })
+          .catch(error => {
+              console.error("Lỗi:", error);
+              alert("Đã xảy ra lỗi khi xóa công việc: " + error.message);
+          });
+      }
+  }
+  
+  // Tìm kiếm công việc
+  function searchJobs() {
+      const input = document.getElementById("searchJobInput").value.toLowerCase();
+      const rows = document.querySelectorAll("#jobBody tr");
+      rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(input) ? "" : "none";
+      });
+  }
+  
+  // Xem nhân viên theo công việc
+  function viewJobEmployees(jobId, jobTitle) {
+      document.getElementById("jobEmployeesModal").style.display = "block";
+      document.getElementById("jobTitleDisplay").textContent = jobTitle;
+      fetch(`/api/employees_by_job/${jobId}`)
+      .then(response => response.json())
+      .then(data => {
+          const tableBody = document.getElementById("jobEmployeesBody");
+          tableBody.innerHTML = "";
+          if (data.length === 0) {
+              tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc công việc này.</td></tr>`;
+          } else {
+              data.forEach(emp => {
+                  const row = document.createElement("tr");
+                  row.innerHTML = `<td>${emp.employee_id}</td><td>${emp.full_name}</td><td>${emp.email}</td>`;
+                  tableBody.appendChild(row);
+              });
+          }
+      })
+      .catch(error => {
+          console.error("Lỗi:", error);
+          const tableBody = document.getElementById("jobEmployeesBody");
+          tableBody.innerHTML = `<tr><td colspan="3">Đã xảy ra lỗi khi tải dữ liệu.</td></tr>`;
+      });
+  }
+  
+  function closeJobEmployeesModal() {
+      document.getElementById("jobEmployeesModal").style.display = "none";
+  }
+  
+  // --- Quản lý phòng ban ---
+  function openAddDepartmentModal() {
+      document.getElementById("addDepartmentModal").style.display = "block";
+  }
+  
+  function closeAddDepartmentModal() {
+      document.getElementById("addDepartmentModal").style.display = "none";
+      document.getElementById("addDepartmentForm").reset();
+  }
+  
+  // Thêm phòng ban mới
+  function addDepartment() {
+      const departmentName = document.getElementById("departmentName").value;
+      fetch("/api/add_department", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ department_name: departmentName })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.error) {
+              throw new Error(data.error);
+          }
+          const tableBody = document.getElementById("departmentBody");
+          const newRow = document.createElement("tr");
+          newRow.dataset.departmentId = data.department_id;
+          newRow.innerHTML = `
+              <td>${data.department_id}</td>
+              <td>${data.department_name}</td>
+              <td>
+                  <button class="action-btn view-btn" onclick="viewDepartmentEmployees('${data.department_id}', '${data.department_name}')">Xem</button>
+                  <button class="action-btn delete-btn" onclick="deleteDepartment('${data.department_id}')">Xóa</button>
+              </td>
+          `;
+          tableBody.appendChild(newRow);
+          closeAddDepartmentModal();
+      })
+      .catch(error => {
+          console.error("Lỗi:", error);
+          alert("Đã xảy ra lỗi khi thêm phòng ban: " + error.message);
+      });
+  }
+  
+  // Xóa phòng ban
+  function deleteDepartment(departmentId) {
+      if (confirm(`Bạn có chắc chắn muốn xóa phòng ban có ID ${departmentId}?`)) {
+          fetch(`/api/delete_department/${departmentId}`, { method: "DELETE" })
+          .then(response => response.json())
+          .then(data => {
+              if (!data.success) {
+                  throw new Error(data.error || "Không thể xóa phòng ban");
+              }
+              const row = document.querySelector(`tr[data-department-id="${departmentId}"]`);
+              if (row) {
+                  row.remove();
+              }
+          })
+          .catch(error => {
+              console.error("Lỗi:", error);
+              alert("Đã xảy ra lỗi khi xóa phòng ban: " + error.message);
+          });
+      }
+  }
+  
+  // Tìm kiếm phòng ban
+  function searchDepartments() {
+      const input = document.getElementById("searchDepartmentInput").value.toLowerCase();
+      const rows = document.querySelectorAll("#departmentBody tr");
+      rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(input) ? "" : "none";
+      });
+  }
+  
+  // Xem nhân viên theo phòng ban
+  function viewDepartmentEmployees(departmentId, departmentName) {
+      document.getElementById("departmentEmployeesModal").style.display = "block";
+      document.getElementById("departmentNameDisplay").textContent = departmentName;
+      fetch(`/api/employees_by_department/${departmentId}`)
+      .then(response => response.json())
+      .then(data => {
+          const tableBody = document.getElementById("departmentEmployeesBody");
+          tableBody.innerHTML = "";
+          if (data.length === 0) {
+              tableBody.innerHTML = `<tr><td colspan="3">Không có nhân viên nào thuộc phòng ban này.</td></tr>`;
+          } else {
+              data.forEach(emp => {
+                  const row = document.createElement("tr");
+                  row.innerHTML = `<td>${emp.employee_id}</td><td>${emp.full_name}</td><td>${emp.email}</td>`;
+                  tableBody.appendChild(row);
+              });
+          }
+      })
+      .catch(error => {
+          console.error("Lỗi:", error);
+          const tableBody = document.getElementById("departmentEmployeesBody");
+          tableBody.innerHTML = `<tr><td colspan="3">Đã xảy ra lỗi khi tải dữ liệu.</td></tr>`;
+      });
+  }
+  
+  function closeDepartmentEmployeesModal() {
+      document.getElementById("departmentEmployeesModal").style.display = "none";
+  }
+  
+  // Thiết lập event listeners khi trang tải xong
+  document.addEventListener("DOMContentLoaded", function() {
+      const addJobForm = document.getElementById("addJobForm");
+      if (addJobForm) {
+          addJobForm.addEventListener("submit", function(e) {
+              e.preventDefault();
+              addJob();
+          });
+      }
+  
+      const addDepartmentForm = document.getElementById("addDepartmentForm");
+      if (addDepartmentForm) {
+          addDepartmentForm.addEventListener("submit", function(e) {
+              e.preventDefault();
+              addDepartment();
+          });
+      }
+  
+      showSection("jobs");
+  });
+  </script>
+  {% endblock %}
+  </DOCUMENT>

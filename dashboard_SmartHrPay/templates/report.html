@@ -1,0 +1,132 @@
+{% extends 'base.html' %} {% block title %}Tổng quan{% endblock %} {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='report.css') }}" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %} {% block content %}
+<div class="header">
+  <h1>Báo cáo</h1>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats">
+  <div class="card">
+    <h3 id="totalEmployees">{{ data.totalEmployees }}</h3>
+    <p>Tổng nhân viên</p>
+    <p class="change" id="totalChange">
+      +{{ data.newEmployees - data.resignedEmployees }} trong tháng này
+    </p>
+  </div>
+  <div class="card">
+    <h3 id="newEmployees">{{ data.newEmployees }}</h3>
+    <p>Nhân viên mới</p>
+    <p class="change" id="newChange">
+      +{{ data.newEmployees }} so với tháng trước
+    </p>
+  </div>
+  <div class="card">
+    <h3 id="departments">{{ data.departments }}</h3>
+    <p>Phòng ban</p>
+    <p class="change" id="deptChange">
+      +{{ data.departments - 7 }} trong tháng này
+    </p>
+  </div>
+  <div class="card">
+    <h3 id="resignedEmployees">{{ data.resignedEmployees }}</h3>
+    <p>Nhân viên nghỉ việc</p>
+    <p class="decrease" id="resignedChange">
+      -{{ data.resignedEmployees }} so với tháng trước
+    </p>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="charts">
+  <div class="chart-box">
+    <h3>Phân bổ nhân viên theo phòng ban</h3>
+    <canvas id="deptChart"></canvas>
+  </div>
+  <div class="chart-box">
+    <h3>Tăng trưởng nhân viên</h3>
+    <canvas id="growthChart"></canvas>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      let data = {{ data | tojson | safe }};
+      console.log("Dữ liệu từ Flask:", data); // Kiểm tra dữ liệu trong console
+
+      function setTextContent(id, value) {
+          let element = document.getElementById(id);
+          if (element) {
+              element.textContent = value;
+          }
+      }
+
+      setTextContent("totalEmployees", data.totalEmployees);
+      setTextContent("totalChange", `+${data.newEmployees - data.resignedEmployees} trong tháng này`);
+
+      // Phân bổ nhân viên theo phòng ban
+      if (data.deptDistribution && Object.keys(data.deptDistribution).length > 0) {
+          const labels = Object.keys(data.deptDistribution);
+          const values = Object.values(data.deptDistribution);
+          const backgroundColors = labels.map(() => '#' + Math.floor(Math.random()*16777215).toString(16));
+
+          new Chart(document.getElementById("deptChart"), {
+              type: "doughnut",
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      data: values,
+                      backgroundColor: backgroundColors,
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  plugins: {
+                      legend: { position: "bottom" }
+                  }
+              }
+          });
+      } else {
+          document.getElementById("deptChart").style.display = "none";
+          console.log("Không có dữ liệu phân bổ phòng ban để hiển thị.");
+      }
+
+      // Tăng trưởng nhân viên
+      if (data.growthData && data.growthData.length > 0) {
+          const months = [];
+          const currentDate = new Date();
+          for (let i = 4; i >= 0; i--) {
+              const month = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1).toLocaleString('default', { month: 'short' });
+              months.push(month);
+          }
+
+          new Chart(document.getElementById("growthChart"), {
+              type: "line",
+              data: {
+                  labels: months,
+                  datasets: [{
+                      label: "Employees",
+                      data: data.growthData,
+                      borderColor: "#3498db",
+                      fill: false,
+                      tension: 0.1
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  scales: {
+                      y: {
+                          beginAtZero: false
+                      }
+                  }
+              }
+          });
+      } else {
+          document.getElementById("growthChart").style.display = "none";
+          console.log("Không có dữ liệu tăng trưởng để hiển thị.");
+      }
+  });
+</script>
+{% endblock %}

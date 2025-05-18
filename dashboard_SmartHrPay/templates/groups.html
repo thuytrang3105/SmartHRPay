@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Group Permissions</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='groups.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="groups-container">
+    <h1>Quản lý phân quyền người dùng </h1>
+    {% for gp in group_permissions %}
+    <div class="group-card">
+        <h2>{{ gp.group.GroupName }}</h2>
+        <p>{{ gp.group.Description or 'Không có mô tả' }}</p>
+        <div class="modules">
+            {% if gp.functions_by_module is mapping and gp.functions_by_module %}
+                {% for module, functions in gp.functions_by_module.items() %}
+                <div class="module-section">
+                    <h3>{{ module }}</h3>
+                    <ul>
+                        {% for function in functions %}
+                        <li>{{ function }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>Không có chức năng nào được phân quyền cho nhóm này.</p>
+            {% endif %}
+        </div>
+        <a href="{{ url_for('update_permissions', group_id=gp.group.GroupID) }}" class="update-btn">Cập nhật quyền</a>
+    </div>
+    {% else %}
+    <p>Không tìm thấy nhóm nào.</p>
+    {% endfor %}
+</div>
+{% endblock %}

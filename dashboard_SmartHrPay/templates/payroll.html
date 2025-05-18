@@ -1,0 +1,284 @@
+{% extends 'base.html' %} {% block title %}Bảng lương nhân viên{% endblock %}
+{%block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='payroll.css') }}" />
+{% endblock %} {%block content %}
+<div class="panel" id="payroll-editor">
+  <div class="panel-header">
+    <h3>Bảng lương nhân viên</h3>
+  </div>
+  <div class="search-box">
+    <i class="fa fa-search"></i>
+    <input type="text" id="search-input" placeholder="Tìm kiếm nhân viên..." />
+    <button id="search-btn" class="btn">Tìm kiếm</button>
+  </div>
+  <div class="panel-body">
+    <table id="payroll-table">
+      <thead>
+        <tr>
+          <th>Mã Lương</th>
+          <th>Mã NV</th>
+          <th>Họ và tên</th>
+          <th>Phòng ban</th>
+          <th>Chức vụ</th>
+          <th>Lương cơ bản</th>
+          <th>Thưởng</th>
+          <th>Khấu trừ</th>
+          <th>Tổng lương</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for payroll, employee in payroll_data %}
+        <tr>
+          <td>{{ payroll.payroll_id }}</td>
+          <td>{{ employee.id_display }}</td>
+          <td>{{ employee.employee_name }}</td>
+          <td>{{ employee.department_name }}</td>
+          <td>{{ employee.job_title }}</td>
+          <td>{{ "{:,.0f}".format(employee.base_salary) }} đ</td>
+          <td>{{ "{:,.0f}".format(employee.bonus) }} đ</td>
+          <td>{{ "{:,.0f}".format(employee.deduction) }} đ</td>
+          <td>{{ "{:,.0f}".format(employee.total_salary) }} đ</td>
+          <td class="table-actions">
+            <button
+              class="btn btn-sm btn-warning edit-payroll"
+              data-id="{{ employee.employee_id }}"
+            >
+              Xem
+            </button>
+          </td>
+        </tr>
+        {% endfor %} {% if payroll_data|length == 0 %}
+        <tr>
+          <td colspan="10" class="text-center">
+            Không có dữ liệu nhân viên nào phù hợp.
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Editing Employee -->
+<div id="employee-modal" class="modal-backdrop" style="display: none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Chỉnh sửa bảng lương nhân viên</h3>
+      <button
+        id="close-modal"
+        style="background: none; border: none; cursor: pointer"
+      >
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <form id="edit-employee-form">
+      <div class="modal-body">
+        <input type="hidden" id="edit-employee-id" name="id" />
+        <div class="grid-cols-2 mb-4">
+          <div>
+            <label>Mã nhân viên</label>
+            <input
+              type="text"
+              id="edit-employee-code"
+              name="employee_code"
+              readonly
+            />
+          </div>
+          <div>
+            <label>Họ và tên</label>
+            <input
+              type="text"
+              id="edit-employee-name"
+              name="employee_name"
+              readonly
+            />
+          </div>
+        </div>
+        <div class="grid-cols-2 mb-4">
+          <div>
+            <label>Phòng ban</label>
+            <input
+              id="edit-employee-department"
+              name="department_name"
+              readonly
+            />
+          </div>
+          <div>
+            <label>Chức vụ</label>
+            <input id="edit-employee-job" name="job_title" readonly />
+          </div>
+        </div>
+        <div class="grid-cols-3 mb-4">
+          <div>
+            <label>Lương cơ bản</label>
+            <input
+              type="number"
+              id="edit-employee-base-salary"
+              name="base_salary"
+              required
+            />
+          </div>
+          <div>
+            <label>Thưởng</label>
+            <input
+              type="number"
+              id="edit-employee-bonus"
+              name="bonus"
+              required
+            />
+          </div>
+          <div>
+            <label>Khấu trừ</label>
+            <input
+              type="number"
+              id="edit-employee-deduction"
+              name="deduction"
+              required
+            />
+          </div>
+        </div>
+        <div class="mb-4">
+          <label>Ghi chú</label>
+          <textarea
+            rows="3"
+            id="edit-employee-notes"
+            name="notes"
+            placeholder="Nhập ghi chú (nếu có)"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          id="cancel-modal"
+          type="button"
+          class="btn"
+          style="background-color: #f5f5f5; color: #333; border: 1px solid #ddd"
+        >
+          Thoát
+        </button>
+        <button type="submit" class="btn">Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function handleResponsive() {
+    const sidebar = document.querySelector(".sidebar");
+    const mainContent = document.querySelector(".main-content");
+    if (window.innerWidth <= 768) {
+      sidebar.style.width = "70px";
+      mainContent.style.marginLeft = "70px";
+    } else {
+      sidebar.style.width = "250px";
+      mainContent.style.marginLeft = "250px";
+    }
+  }
+  handleResponsive();
+  window.addEventListener("resize", handleResponsive);
+
+  const modal = document.getElementById("employee-modal");
+  const editButtons = document.querySelectorAll(".edit-payroll");
+  const closeModalBtn = document.getElementById("close-modal");
+  const cancelModalBtn = document.getElementById("cancel-modal");
+  const searchInput = document.getElementById("search-input");
+  const searchBtn = document.getElementById("search-btn");
+  const editForm = document.getElementById("edit-employee-form");
+
+  function toggleModal() {
+    modal.style.display = modal.style.display === "none" ? "flex" : "none";
+  }
+
+  editButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      const employeeId = this.getAttribute("data-id");
+      fetch(`/get_employee_details/${employeeId}`)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(
+              response.status === 404
+                ? "Nhân viên không tồn tại"
+                : "Lỗi khi tải thông tin nhân viên"
+            );
+          }
+          return response.json();
+        })
+        .then((employee) => {
+          document.getElementById("edit-employee-code").value =
+            employee.employee_id;
+          document.getElementById("edit-employee-name").value =
+            employee.employee_name;
+          document.getElementById("edit-employee-department").value =
+            employee.department_name;
+          document.getElementById("edit-employee-job").value =
+            employee.job_title;
+          document.getElementById("edit-employee-base-salary").value =
+            employee.base_salary;
+          document.getElementById("edit-employee-bonus").value = employee.bonus;
+          document.getElementById("edit-employee-deduction").value =
+            employee.deduction;
+          document.getElementById("edit-employee-notes").value =
+            employee.notes || "";
+
+          // Log for debugging
+          console.log("Department set to:", employee.department_name);
+          console.log("Job set to:", employee.job_title);
+
+          toggleModal();
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert(error.message);
+        });
+    });
+  });
+
+  closeModalBtn.addEventListener("click", toggleModal);
+  cancelModalBtn.addEventListener("click", toggleModal);
+  modal.addEventListener("click", function (e) {
+    if (e.target === this) toggleModal();
+  });
+
+  editForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch("/update_employee", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        if (result.success) {
+          alert("Cập nhật thành công");
+          location.reload();
+        } else {
+          alert("Cập nhật thất bại: " + result.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Có lỗi xảy ra khi cập nhật");
+      });
+  });
+
+  searchBtn.addEventListener("click", function () {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const rows = document.querySelectorAll("#payroll-table tbody tr");
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll("td");
+
+      const allowedIndexes = [1, 2, 3, 4];
+      const rowText = Array.from(cells)
+        .filter((_, index) => allowedIndexes.includes(index))
+        .map((cell) => cell.textContent.toLowerCase())
+        .join(" ");
+      row.style.display = rowText.includes(searchTerm) ? "" : "none";
+    });
+  });
+
+  searchInput.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") searchBtn.click();
+  });
+</script>
+{% endblock %}

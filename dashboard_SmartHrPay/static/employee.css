@@ -1,0 +1,141 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.content-box {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: white;
+  margin-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th,
+td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+th {
+  background: #007bff;
+  color: white;
+}
+
+button {
+  background: #007bff;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  margin-top: 20px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.tab-btn:hover {
+  background: #0056b3;
+}
+
+/* Timekeeping Section */
+.timekeeping {
+  margin-top: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.check-in,
+.check-out {
+  padding: 12px 25px;
+  margin: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.check-in {
+  background: green;
+  color: white;
+}
+
+.check-out {
+  background: red;
+  color: white;
+}
+
+.check-in:hover {
+  background: darkgreen;
+}
+
+.check-out:hover {
+  background: darkred;
+}
+
+#status {
+  font-size: 18px;
+  margin-top: 15px;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .main-content {
+    margin-left: 230px;
+    padding: 25px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 15px;
+  }
+
+  .tabs {
+    flex-direction: column;
+  }
+
+  .tab-btn {
+    margin-bottom: 10px;
+  }
+}

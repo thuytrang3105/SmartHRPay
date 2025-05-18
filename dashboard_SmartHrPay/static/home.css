@@ -1,0 +1,184 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* home.css */
+
+/* Giảm khoảng trắng cho toàn bộ trang */
+body {
+  font-family: "Arial", sans-serif;
+  background-color: #f4f7fc;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+.main-content {
+  flex: 1;
+  padding: 30px 40px;
+  margin-left: 280px;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+}
+
+/* Giảm khoảng cách giữa các panel */
+.panel {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 10px 20px; /* Giảm margin */
+  padding: 20px;
+}
+
+/* Giảm khoảng cách giữa tiêu đề và phần nội dung */
+.panel-header h3 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #4caf50;
+  margin-bottom: 10px; /* Giảm margin dưới */
+}
+
+.header h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 15px; /* Giảm margin dưới */
+  text-align: center;
+}
+
+/* Giảm khoảng cách trong panel-body */
+.panel-body {
+  padding: 10px; /* Giảm padding */
+}
+
+.panel-body p {
+  font-size: 18px;
+  margin-bottom: 8px; /* Giảm margin dưới */
+}
+
+.panel-body .alert-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 13px; /* Giảm padding */
+  font-size: 20px;
+  border: 1px solid #f5c6cb;
+  margin-bottom: 15px; /* Giảm margin dưới */
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.alert-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px; /* Giảm padding */
+  font-size: 20px;
+  border: 1px solid #f5c6cb;
+  margin-bottom: 15px; /* Giảm margin dưới */
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+/* Form đăng nhập */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Giảm khoảng cách giữa các phần tử */
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+form .form-group label {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+form .form-group input {
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+form .form-group input:focus {
+  border-color: #4caf50;
+  outline: none;
+}
+
+form .btn {
+  padding: 12px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form .btn:hover {
+  background-color: #45a049;
+}
+
+/* login.css */
+
+/* Background và thiết kế đăng nhập */
+body {
+  background-color: #f4f7fc;
+  font-family: "Arial", sans-serif;
+}
+
+form {
+  background-color: #fff;
+  padding: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  max-width: 500px;
+  margin: 0 auto;
+  margin-top: 50px; /* Giảm khoảng cách giữa form và trên trang */
+}
+
+form h3 {
+  font-size: 26px;
+  color: #333;
+  margin-bottom: 20px; /* Giảm margin dưới */
+  text-align: center;
+}
+
+form .form-group {
+  margin-bottom: 20px;
+}
+
+form .form-group input {
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+form .form-group input:focus {
+  border-color: #4caf50;
+  outline: none;
+}
+
+form .btn {
+  padding: 12px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form .btn:hover {
+  background-color: #45a049;
+}

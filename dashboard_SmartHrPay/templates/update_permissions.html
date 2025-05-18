@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Cập nhật quyền cho {{ group.GroupName }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='groups.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="groups-container">
+    <h1>Cập nhật quyền cho nhóm {{ group.GroupName }}</h1>
+    <form method="POST">
+        <div class="modules">
+            {% for fm in function_modules %}
+            <div class="module-section">
+                <h3>{{ fm.Module.ModuleName }} - {{ fm.Function.FunctionName }}</h3>
+                <label>
+                    <input type="checkbox" name="function_modules" value="{{ fm.FunctionModuleID }}"
+                           {% if fm.FunctionModuleID in current_fm_ids %}checked{% endif %}>
+                    Cho phép
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="update-btn">Lưu thay đổi</button>
+        <a href="{{ url_for('display_groups') }}" class="cancel-btn">Hủy</a>
+    </form>
+</div>
+{% endblock %}

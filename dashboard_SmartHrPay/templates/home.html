@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Bảng lương nhân viên{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="panel" id="payroll-editor">
+        <div class="panel-header">
+        <h3>Chào mừng đến với hệ thông SmartHRPAY </h3>
+        </div>
+    </div>
+    <div class="header">
+        <h2>TRANG CHỦ </h2>
+    </div>
+    <div class="panel">
+        
+        <div class="panel-body">
+            {% if 'user_id' in session %}
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class=".alert-error">
+                            {{ messages[0] }}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                <h2>Thông tin người dùng</h2>
+                <p><strong>ID:</strong> {{ user_id }}</p>
+                <p><strong>Tên đăng nhập:</strong> {{ username }}</p>
+                <p><strong>Tên đầy đủ:</strong> {{ full_name }}</p>
+                <p><strong>Quyền:</strong> {{ role }}</p>
+                <p><strong>Thời gian đăng nhập:</strong> {{ session_time }}</p>
+                
+            {% else %}
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class=".alert-error">
+                            {{ messages[0] }}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="form-group">
+                        <label for="email">Email hoặc Tên đăng nhập:</label>
+                        <input type="text" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Mật khẩu:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn">Đăng nhập</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

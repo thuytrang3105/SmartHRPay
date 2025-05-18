@@ -1,0 +1,205 @@
+{% extends 'base.html' %} {% block title %}Thông báo bảng lương{% endblock %}
+{%block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='notification.css') }}"
+/>
+{% endblock %} {%block content %}
+<div class="panel" id="notifications">
+  <div class="panel-header">
+    <h3>Thông báo bảng lương</h3>
+    <button class="btn" id="create-notification-btn">Tạo thông báo mới</button>
+  </div>
+
+  <div class="panel-body">
+    <div class="tabs">
+      <div class="tab-item active" data-tab="all">Tất cả thông báo</div>
+      <div class="tab-item" data-tab="sent">Đã gửi</div>
+      <div class="tab-item" data-tab="draft">Lưu nháp</div>
+    </div>
+
+    <div id="notification-list">
+      {% for notification in notifications %}
+      <div class="notification-card">
+        <div class="notification-header">
+          <h4 class="notification-title">{{ notification.title }}</h4>
+          <span class="notification-status {{ notification.status }}">
+            {{ "Đã gửi" if notification.status == "sent" else "Lưu nháp" }}
+          </span>
+        </div>
+        <p class="notification-meta">Gửi đến: {{ notification.recipients }}</p>
+        <p class="notification-content">{{ notification.content }}</p>
+        <div class="notification-footer">
+          <span class="notification-timestamp"
+            >Gửi lúc: {{ notification.timestamp }}</span
+          >
+          <div class="notification-actions">
+            <button class="notification-action-btn primary">Chi tiết</button>
+            {% if notification.status == "draft" %}
+            <button class="notification-action-btn primary">Gửi</button>
+            {% else %}
+            <button class="notification-action-btn secondary">Gửi lại</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal for creating new notification -->
+<div id="notification-modal" class="modal-backdrop" style="display: none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Tạo thông báo mới</h3>
+      <button
+        id="close-notification-modal"
+        style="background: none; border: none; cursor: pointer"
+      >
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Tiêu đề thông báo</label>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Nhập tiêu đề thông báo"
+        />
+      </div>
+      <div class="form-group">
+        <label>Gửi đến</label>
+        <select class="form-control">
+          <option value="all">Tất cả nhân viên</option>
+          <option value="engineering">Engineering</option>
+          <option value="product_management">Product Management</option>
+          <option value="quality_assurance">Quality Assurance</option>
+          <option value="human_resources">Human Resources</option>
+          <option value="it_support">IT Support</option>
+          <option value="marketing">Marketing</option>
+          <option value="finance">Finance</option>
+          <option value="sales">Sales</option>
+          <option value="customer_support">Customer Support</option>
+          <option value="r_d">R&D</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Nội dung thông báo</label>
+        <textarea
+          class="form-control"
+          rows="5"
+          placeholder="Nhập nội dung thông báo"
+        ></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button
+        id="save-draft-btn"
+        class="btn"
+        style="background-color: #f8f9fa; color: #333; border: 1px solid #ddd"
+      >
+        Lưu nháp
+      </button>
+      <button id="send-notification-btn" class="btn">Gửi thông báo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Toàn bộ JavaScript giữ nguyên
+  function handleResponsive() {
+    const sidebar = document.querySelector(".sidebar");
+    const mainContent = document.querySelector(".main-content");
+    if (window.innerWidth <= 768) {
+      sidebar.style.width = "70px";
+      mainContent.style.marginLeft = "70px";
+    } else {
+      sidebar.style.width = "250px";
+      mainContent.style.marginLeft = "250px";
+    }
+  }
+  handleResponsive();
+  window.addEventListener("resize", handleResponsive);
+
+  const tabItems = document.querySelectorAll(".tab-item");
+  tabItems.forEach((tab) => {
+    tab.addEventListener("click", function () {
+      tabItems.forEach((item) => item.classList.remove("active"));
+      this.classList.add("active");
+      filterNotifications(this.getAttribute("data-tab"));
+    });
+  });
+
+  function filterNotifications(type) {
+    const allNotifications = document.querySelectorAll(".notification-card");
+    allNotifications.forEach((card) => {
+      const status = card
+        .querySelector(".notification-status")
+        .classList.contains("sent")
+        ? "sent"
+        : "draft";
+      card.style.display = type === "all" || status === type ? "block" : "none";
+    });
+  }
+
+  const notificationModal = document.getElementById("notification-modal");
+  const createNotificationBtn = document.getElementById(
+    "create-notification-btn"
+  );
+  const closeNotificationModalBtn = document.getElementById(
+    "close-notification-modal"
+  );
+  const saveDraftBtn = document.getElementById("save-draft-btn");
+  const sendNotificationBtn = document.getElementById("send-notification-btn");
+
+  function toggleNotificationModal() {
+    notificationModal.style.display =
+      notificationModal.style.display === "none" ? "flex" : "none";
+  }
+
+  createNotificationBtn.addEventListener("click", toggleNotificationModal);
+  closeNotificationModalBtn.addEventListener("click", toggleNotificationModal);
+  notificationModal.addEventListener("click", function (e) {
+    if (e.target === this) toggleNotificationModal();
+  });
+
+  saveDraftBtn.addEventListener("click", function () {
+    const title = document.querySelector("input[placeholder]").value;
+    const recipients = document.querySelector("select").value;
+    const content = document.querySelector("textarea").value;
+    fetch("/save_notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `title=${encodeURIComponent(title)}&recipients=${encodeURIComponent(
+        recipients
+      )}&content=${encodeURIComponent(content)}&status=draft`,
+    }).then((response) => {
+      if (response.redirected) window.location.href = response.url;
+    });
+  });
+
+  sendNotificationBtn.addEventListener("click", function () {
+    const title = document.querySelector("input[placeholder]").value;
+    const recipients = document.querySelector("select").value;
+    const content = document.querySelector("textarea").value;
+    fetch("/save_notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `title=${encodeURIComponent(title)}&recipients=${encodeURIComponent(
+        recipients
+      )}&content=${encodeURIComponent(content)}&status=sent`,
+    }).then((response) => {
+      if (response.redirected) window.location.href = response.url;
+    });
+  });
+
+  document.querySelectorAll(".notification-action-btn").forEach((button) => {
+    button.addEventListener("click", function () {
+      alert(`Thực hiện hành động: ${this.textContent.trim()}`);
+    });
+  });
+</script>
+{% endblock %}

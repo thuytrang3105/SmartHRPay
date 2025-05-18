@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Chi tiết bảng lương{% endblock %}
+
+{% block head %}
+  <style>
+    .panel {
+      margin: 20px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .detail-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .detail-item {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .detail-item label {
+      font-weight: bold;
+      color: #555;
+    }
+    .detail-item span {
+      color: #333;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    @media (max-width: 600px) {
+      .detail-item {
+        flex-direction: column;
+        gap: 5px;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="panel">
+    <div class="header">
+      <h2>Chi tiết bảng lương</h2>
+    </div>
+    <div class="detail-container">
+      <div class="detail-item">
+        <label>ID Bảng lương:</label>
+        <span>{{ payroll.payroll_id }}</span>
+      </div>
+      <div class="detail-item">
+        <label>ID Nhân viên:</label>
+        <span>{{ payroll.employee_id }}</span>
+      </div>
+      <div class="detail-item">
+        <label>Tên nhân viên:</label>
+        <span>{{ payroll.name }}</span>
+      </div>
+      <div class="detail-item">
+        <label>Phòng ban:</label>
+        <span>{{ payroll.department }}</span>
+      </div>
+      <div class="detail-item">
+        <label>Chức vụ:</label>
+        <span>{{ payroll.job_title }}</span>
+      </div>
+      <div class="detail-item">
+        <label>Ngày chi trả:</label>
+        <span>{{ payroll.pay_date }}</span>
+      </div>
+      <div class="detail-item">
+        <label>Lương cơ bản:</label>
+        <span>{{ "{:,.0f}".format(payroll.base_salary) }} đ</span>
+      </div>
+      <div class="detail-item">
+        <label>Thưởng:</label>
+        <span>{{ "{:,.0f}".format(payroll.bonus) }} đ</span>
+      </div>
+      <div class="detail-item">
+        <label>Khấu trừ:</label>
+        <span>{{ "{:,.0f}".format(payroll.deductions) }} đ</span>
+      </div>
+      <div class="detail-item">
+        <label>Tổng lương:</label>
+        <span>{{ "{:,.0f}".format(payroll.net_salary) }} đ</span>
+      </div>
+      <a href="{{ url_for('history_salary') }}" class="btn">Quay lại</a>
+    </div>
+  </div>
+{% endblock %}

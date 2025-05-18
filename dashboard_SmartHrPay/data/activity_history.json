@@ -1,0 +1,94 @@
+{
+    "activity_logs": [
+        {
+            "time": "01/01/2025 09:00",
+            "user": "Veronica Johnson",
+            "role": "Admin",
+            "action": "Đăng nhập"
+        },
+        {
+            "time": "01/01/2025 10:30",
+            "user": "Ann Strong",
+            "role": "Kế toán",
+            "action": "Cập nhật bảng lương"
+        },
+        {
+            "time": "02/01/2025 15:45",
+            "user": "Patrick Campbell",
+            "role": "HR",
+            "action": "Chỉnh sửa thông tin nhân viên"
+        },
+        {
+            "time": "03/01/2025 14:00",
+            "user": "Ricky Parker",
+            "role": "Admin",
+            "action": "Khởi tạo hệ thống mới"
+        },
+        {
+            "time": "04/01/2025 08:15",
+            "user": "Charles Rivers",
+            "role": "Kế toán",
+            "action": "Thực hiện báo cáo tài chính"
+        },
+        {
+            "time": "04/01/2025 10:45",
+            "user": "Jack Coleman",
+            "role": "HR",
+            "action": "Tổ chức buổi đào tạo nhân viên"
+        },
+        {
+            "time": "05/01/2025 11:20",
+            "user": "Patricia Hayes",
+            "role": "Admin",
+            "action": "Cập nhật quyền người dùng"
+        },
+        {
+            "time": "06/01/2025 09:50",
+            "user": "Ricky Porter",
+            "role": "Kế toán",
+            "action": "Lập báo cáo tài chính"
+        },
+        {
+            "time": "06/01/2025 14:30",
+            "user": "Christopher Arnold",
+            "role": "HR",
+            "action": "Đánh giá nhân viên"
+        },
+        {
+            "time": "07/01/2025 13:15",
+            "user": "Kathleen Calhoun",
+            "role": "Admin",
+            "action": "Xem báo cáo hệ thống"
+        },
+        {
+            "time": "08/01/2025 16:00",
+            "user": "John Rivers",
+            "role": "Kế toán",
+            "action": "Chốt sổ tháng"
+        },
+        {
+            "time": "2025-05-15 18:41:54",
+            "user": "admin",
+            "role": "Admin",
+            "action": " Đăng nhập, Xem lịch sử hoạt động, Xem thông tin chấm công  , Xem báo cáo phòng ban, Xem Bảng lương , Xem thông báo , Đăng xuất"
+        },
+        {
+            "time": "2025-05-15 18:43:51",
+            "user": "Kayla Powers",
+            "role": "Admin",
+            "action": " Đăng nhập, Xem báo cáo phòng ban, Xem thông tin chấm công  , Xem báo cáo nhân sự, Xem danh sách nhân viên , Xem danh sách tuyển dụng , Xem lịch sử hoạt động, Đăng xuất"
+        },
+        {
+            "time": "2025-05-18 13:59:56",
+            "user": "Kayla Powers",
+            "role": "Admin",
+            "action": " Đăng nhập, Xem thông tin cá nhân, Xem quyền người dùng, Đăng xuất"
+        },
+        {
+            "time": "2025-05-18 14:02:13",
+            "user": "Kayla Powers",
+            "role": "Admin",
+            "action": " Đăng nhập, Xem Cổ đông, Xem quyền người dùng, Xem lịch sử hoạt động, Xem quyền người dùng, Đăng xuất"
+        }
+    ]
+}
