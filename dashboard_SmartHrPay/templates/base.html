@@ -19,6 +19,7 @@
         <div class="sidebar-header">
           <h3 class="sidebar-title">SmartHrPay</h3>
           <p class="sidebar-subtitle">Hệ thống Quản lý Nhân Sự Và Lương </p>
+          <h3>{{session.get('permission')}}</h3>
         </div>
         <div class="sidebar-menu">
           <div class= "menu-group">
@@ -26,40 +27,48 @@
               <li><a href="{{ url_for('home') }}"><i>🏠</i> Home </a></li>
             </ul>
           </div>
+          {% if session.get('permission') in ['Admin', 'Acounting','Hiring','Employee'] %}
           <div class= "menu-group">
             <ul>
               <li><a href="{{ url_for('employee') }}"><i>👤</i> Thông tin cá nhân </a></li>
               <li><a href="{{ url_for('get_notifications') }}" ><i>🔔</i> Thông báo</a></li>
             </ul>
           </div>
-          <div class= "menu-group">
-            <h3>Lương</h3>
+          
+          {% endif %}
+          {% if session.get('permission') in ['Admin', 'Acounting'] %}
+          <div class="menu-group">
+              <h3>Lương</h3>
               <ul>
-                <li><a href="{{ url_for('payroll') }}"><i>💰</i> Bảng lương nhân viên </a></li>
-                <li><a href="{{ url_for('report_depart') }}"><i>📈</i> Báo cáo theo phòng ban</a></li>
-                <li><a href="{{ url_for('history_salary') }}"><i>📜</i> Lịch sử lương nhân viên</a></li>
-                <li><a href="{{ url_for('attendance') }}"><i>🕒</i> Chấm công </a></li>
+                  <li><a href="{{ url_for('payroll') }}"><i>💰</i> Bảng lương nhân viên </a></li>
+                  <li><a href="{{ url_for('report_depart') }}"><i>📈</i> Báo cáo theo phòng ban</a></li>
+                  <li><a href="{{ url_for('history_salary') }}"><i>📜</i> Lịch sử lương nhân viên</a></li>
+                  <li><a href="{{ url_for('attendance') }}"><i>🕒</i> Chấm công </a></li>
               </ul>
           </div>
+          {% endif %}
+          {% if session.get('permission') in ['Admin', 'Hiring'] %} 
           <div class= "menu-group">
             <h3>Nhân viên</h3>
               <ul>
-                <li><a href="{{ url_for('manage_employees') }}"><i>📋</i> Tạmạm </a></li>
                 <li><a href="{{ url_for('employee_HR') }}"><i>📋</i> Quản lý nhân viên  </a></li>
                 <li><a href="{{ url_for('recruitment_HR') }}"><i>📋</i> Tuyển dụng </a></li>
                 <li><a href="{{ url_for('department_position') }}"><i>👔</i> Phòng ban và chức vụ </a></li>
                 <li><a href="{{ url_for('report') }}"><i>📊 </i> Báo cáo Nhân sự</a></li>
               </ul>
           </div>
+          {% endif %}
+          {% if session.get('permission') in ['Admin'] %}
           <div class= "menu-group">
             <h3>Hệ thống</h3>
               <ul>
                 <li><a href="{{ url_for('shareholder') }}">🏢<i></i>Cổ đông </a></li>
-                <li><a href="{{ url_for('user_authorization') }}"><i>🔑</i> Phân quyền người dùng </a></li>
+                <li><a href="{{ url_for('user_authorization') }}"><i>🔑</i> DS tài khoản gười dùng </a></li>
+                <li><a href="{{ url_for('display_groups') }}">🏢<i></i>Phân quyền người dùng </a></li>
                 <li><a href="{{ url_for('activity_history') }}"><i>⏳</i> Lịch sử hoạt động </a></li>
               </ul>
           </div>
-
+          {% endif %}
         <a href="{{ url_for('logout') }}"><i>🚪</i> Đăng xuất</a>
         </div>
       </div>
@@ -77,25 +86,27 @@
     </div>
   </body>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener("DOMContentLoaded", function () {
       const currentPath = window.location.pathname;
-    
-      const menuLinks = document.querySelectorAll('.sidebar-menu a');
-      menuLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        
-        if (href) {
-          if (href === currentPath || currentPath.includes(href.replace(/\{\{\s*url_for\(['"](.+?)['"]\)\s*\}\}/g, '$1'))) {
-            link.classList.add('active');
-          }
+      const menuLinks = document.querySelectorAll(".sidebar-menu a");
+      menuLinks.forEach((item) => item.classList.remove("active"));
+      menuLinks.forEach((link) => {
+        const href = link.getAttribute("href");
+        if (href === currentPath) {
+          link.classList.add("active"); 
         }
-        link.addEventListener('click', function() {
-          menuLinks.forEach(item => item.classList.remove('active'));
-          this.classList.add('active');
+        link.addEventListener("click", function () {
+          menuLinks.forEach((item) => item.classList.remove("active"));
+          this.classList.add("active");
         });
-      })
-      if (!document.querySelector('.sidebar-menu a.active') && menuLinks.length > 0) {
-        menuLinks[0].classList.add('active');
+      });
+
+      // gan active mac dinh homehome
+      if (
+        !document.querySelector(".sidebar-menu a.active") &&
+        menuLinks.length > 0
+      ) {
+        menuLinks[0].classList.add("active");
       }
     });
   </script>

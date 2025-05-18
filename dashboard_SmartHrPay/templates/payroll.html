@@ -31,7 +31,7 @@
         {% for payroll, employee in payroll_data %}
         <tr>
           <td>{{ payroll.payroll_id }}</td>
-          <td>{{ employee.employee_id }}</td>
+          <td>{{ employee.id_display }}</td>
           <td>{{ employee.employee_name }}</td>
           <td>{{ employee.department_name }}</td>
           <td>{{ employee.job_title }}</td>
@@ -42,7 +42,8 @@
           <td class="table-actions">
             <button
               class="btn btn-sm btn-warning edit-payroll"
-              data-id="{{ employee.employee_id }}">
+              data-id="{{ employee.employee_id }}"
+            >
               Xem
             </button>
           </td>
@@ -59,11 +60,11 @@
   </div>
 </div>
 
-<!-- Modal for Editing Employee -->
+<!-- Modal Editing Employee -->
 <div id="employee-modal" class="modal-backdrop" style="display: none">
   <div class="modal">
     <div class="modal-header">
-      <h3>Chỉnh sửa nhân viên</h3>
+      <h3>Chỉnh sửa bảng lương nhân viên</h3>
       <button
         id="close-modal"
         style="background: none; border: none; cursor: pointer"
@@ -90,27 +91,23 @@
               type="text"
               id="edit-employee-name"
               name="employee_name"
-              required
+              readonly
             />
           </div>
         </div>
         <div class="grid-cols-2 mb-4">
-            <div>
-              <label>Phòng ban</label>
-              <select id="edit-employee-department" name="department_name" required>
-                {% for dept in department %}
-                  <option value="{{ dept.select_value }}">{{ dept.department_name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label>Chức vụ</label>
-              <select id="edit-employee-job" name="job_title" required>
-                {% for job in job %}
-                  <option value="{{ job.select_value }}">{{ job.job_title }}</option>
-                {% endfor %}
-              </select>
-            </div>
+          <div>
+            <label>Phòng ban</label>
+            <input
+              id="edit-employee-department"
+              name="department_name"
+              readonly
+            />
+          </div>
+          <div>
+            <label>Chức vụ</label>
+            <input id="edit-employee-job" name="job_title" readonly />
+          </div>
         </div>
         <div class="grid-cols-3 mb-4">
           <div>
@@ -199,24 +196,35 @@
       fetch(`/get_employee_details/${employeeId}`)
         .then((response) => {
           if (!response.ok) {
-            throw new Error(response.status === 404 ? "Nhân viên không tồn tại" : "Lỗi khi tải thông tin nhân viên");
+            throw new Error(
+              response.status === 404
+                ? "Nhân viên không tồn tại"
+                : "Lỗi khi tải thông tin nhân viên"
+            );
           }
           return response.json();
         })
         .then((employee) => {
-          document.getElementById("edit-employee-code").value = employee.employee_id;
-          document.getElementById("edit-employee-name").value = employee.employee_name;
-          document.getElementById("edit-employee-department").value = employee.department_name;
-          document.getElementById("edit-employee-job").value = employee.job_title;
-          document.getElementById("edit-employee-base-salary").value = employee.base_salary;
+          document.getElementById("edit-employee-code").value =
+            employee.employee_id;
+          document.getElementById("edit-employee-name").value =
+            employee.employee_name;
+          document.getElementById("edit-employee-department").value =
+            employee.department_name;
+          document.getElementById("edit-employee-job").value =
+            employee.job_title;
+          document.getElementById("edit-employee-base-salary").value =
+            employee.base_salary;
           document.getElementById("edit-employee-bonus").value = employee.bonus;
-          document.getElementById("edit-employee-deduction").value = employee.deduction;
-          document.getElementById("edit-employee-notes").value = employee.notes || "";
-          
+          document.getElementById("edit-employee-deduction").value =
+            employee.deduction;
+          document.getElementById("edit-employee-notes").value =
+            employee.notes || "";
+
           // Log for debugging
           console.log("Department set to:", employee.department_name);
           console.log("Job set to:", employee.job_title);
-          
+
           toggleModal();
         })
         .catch((error) => {
@@ -259,8 +267,10 @@
     const rows = document.querySelectorAll("#payroll-table tbody tr");
     rows.forEach((row) => {
       const cells = row.querySelectorAll("td");
+
+      const allowedIndexes = [1, 2, 3, 4];
       const rowText = Array.from(cells)
-        .slice(0, -1)
+        .filter((_, index) => allowedIndexes.includes(index))
         .map((cell) => cell.textContent.toLowerCase())
         .join(" ");
       row.style.display = rowText.includes(searchTerm) ? "" : "none";

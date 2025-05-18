@@ -1,0 +1,89 @@
+.groups-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.group-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.group-card h2 {
+    color: #2c3e50;
+    margin-top: 0;
+}
+
+.group-card p {
+    color: #666;
+    margin: 0.5rem 0;
+}
+
+.modules {
+    margin-top: 1rem;
+}
+
+.module-section {
+    margin: 1rem 0;
+}
+
+.module-section h3 {
+    color: #2980b9;
+    margin-bottom: 0.5rem;
+}
+
+.module-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.module-section li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.module-section li:last-child {
+    border-bottom: none;
+}
+
+.update-btn, .cancel-btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    margin-top: 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.update-btn {
+    background: #2980b9;
+    color: #fff;
+}
+
+.update-btn:hover {
+    background: #3498db;
+}
+
+.cancel-btn {
+    background: #e74c3c;
+    color: #fff;
+    margin-left: 1rem;
+}
+
+.cancel-btn:hover {
+    background: #c0392b;
+}
+
+form .module-section label {
+    display: block;
+    margin: 0.5rem 0;
+}

@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, jsonify, redirect , url_for ,session, flash
 from functools import wraps
-from module  import db, Account, AccountGroup,Attendance , Group ,Employee, Department, Job, Payroll , HumanEmployee, HumanPayroll, HumanDepartment, HumanJob, Shareholder , Applicant, Dividend
+from module  import db, Account, AccountGroup,Attendance , Group ,Employee, Department, Job, Payroll , HumanEmployee, HumanPayroll, HumanDepartment, HumanJob, Shareholder , Applicant, Dividend, Group, Permission, Function, Module, FunctionModule
 import config
 from datetime import  datetime,  timedelta
 import json
-from sqlalchemy import extract, func
+from sqlalchemy import extract, func, or_
 import bcrypt
 import traceback
 import os 
@@ -31,6 +31,8 @@ app.config['SECRET_KEY'] = os.urandom(24)
 
 # Khởi tạo db với ứng dụng Flask
 db.init_app(app)
+
+atc=""
 
 def role_required(*roles):
     def decorator(f):
@@ -62,6 +64,7 @@ def login():
         session['permission'] = user.role or 'employee'  # Sử dụng role từ cột role trong Account
         session['session_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(f"Session after login: {session}")
+        session["atc"] = session.get("atc", "") + " Đăng nhập"
         return redirect(url_for('home'))
 
     # Nếu thông tin đăng nhập sai
@@ -87,6 +90,24 @@ def home():
 
 @app.route('/logout', methods=['GET'])
 def logout():
+    # Đọc dữ liệu hiện tại
+    activity_data = r_activity_history()
+    
+    # Tạo bản ghi đăng xuất
+    data = {
+        "time": session.get('session_time'),
+        "user": session.get('full_name'),
+        "role": session.get('permission'),
+        "action": session.get('atc', '') + ", Đăng xuất"
+    }
+    
+    # Thêm bản ghi vào activity_logs
+    activity_data["activity_logs"].append(data)
+    session["atc"] = ""  # ng # dùng lại
+    
+    # Ghi lại dữ liệu vào file JSON
+    save_activity_history(activity_data)
+    
     session.clear()
     flash("Bạn đã đăng xuất thành công.")
     return redirect(url_for('home'))
@@ -111,8 +132,8 @@ def user_authorization():
             "employee_name": user.Account.FullName
         }
         for user in users
-    ]
-    
+    ] 
+    session["atc"] = session.get("atc", "") + ", Xem quyền người dùng"
     # Trả về template HTML với danh sách người dùng
     return render_template('user_authorization.html', users=user_list)
 # Cổ đông ##########################################################33
@@ -131,6 +152,7 @@ def shareholder():
             }
             for shareholder in shareholders
         ]
+        session["atc"] = session.get("atc", "") + ", Xem Cổ đông"
         return render_template('shareholder.html', shareholders=shareholders_list)
     except Exception as e:
         # In ra chi tiết lỗi
@@ -156,11 +178,11 @@ def shareholder_detail(id):
                 "PhoneNumber": shareholder.Phone,
                 "InvestmentAmount": float(shareholder.InvestmentAmount) if shareholder.InvestmentAmount else 0,
                 "IsEmployee": "Có" if employee else "Không",
-                "EmployeeID": employee.EmployeeID if employee else None
+                "EmployeeID": employee.employee_id if employee else None
             }
             
             print("cổ đông!")
-            
+            session["atc"] = session.get("atc", "") + ", Xem Chi tiết Cổ Đông"
             # Trả về trang HTML chi tiết cổ đông
             return render_template('shareholder_detail.html', shareholder=shareholder_data)
         else:
@@ -180,7 +202,7 @@ def shareholder_detail(id):
 def activity_history():
     with open('data/activity_history.json', encoding='utf-8') as f:
         activity_logs = json.load(f)["activity_logs"]
-    
+    session["atc"] = session.get("atc", "") + ", Xem lịch sử hoạt động"
     return render_template('activity_history.html', activity_logs=activity_logs)
 
 
@@ -242,7 +264,7 @@ def report():
             "deptDistribution": dept_distribution,
             "growthData": growth_data
         }
-
+        session["atc"] = session.get("atc", "") + ", Xem báo cáo nhân sự"
         return render_template('report.html', data=data)
     except Exception as e:
         flash(f"Lỗi khi truy xuất báo cáo: {str(e)}")
@@ -323,7 +345,7 @@ def employee():
 
     # Get current year
     current_year = datetime.now().year
-
+    session["atc"] = session.get("atc", "") + ", Xem thông tin cá nhân"
     return render_template("employee.html", 
                            employee=employee_data, 
                            salary=salary, 
@@ -390,6 +412,7 @@ def payroll():
         ]
         departments = Department.query.all()
         jobs = Job.query.all()
+        session["atc"] = session.get("atc", "") + ", Xem Bảng lương "
     return render_template(
         'payroll.html',
         payroll_data=payroll_data,
@@ -467,21 +490,29 @@ def update_employee():
 def search_employee():
     search_term = request.args.get('search_term', '').lower()
     
-    # Tìm kiếm nhân viên theo tên (case-insensitive)
-    employee = Employee.query.filter(Employee.employee_name.ilike(f"%{search_term}%")).first()
+    employees = Employee.query.filter(
+        or_(
+            Employee.employee_id.ilike(f"%{search_term}%"),
+            Employee.employee_name.ilike(f"%{search_term}%"),
+            Employee.department_name.ilike(f"%{search_term}%"),
+            Employee.job_title.ilike(f"%{search_term}%")
+        )
+    ).all()
     
-    if employee:
+    if employees:
         # Trả về thông tin chi tiết của nhân viên tìm được
-        return jsonify({
-            'employee_id': employee.employee_id,
-            'employee_name': employee.employee_name,
-            'department_name': employee.department_name,
-            'job_title': employee.job_title,
-            'base_salary': employee.base_salary,
-            'bonus': employee.bonus,
-            'deduction': employee.deduction,
-            'notes': employee.notes
-        })
+        return jsonify([
+            {
+                'employee_id': employee.employee_id,
+                'employee_name': employee.employee_name,
+                'department_name': employee.department_name,
+                'job_title': employee.job_title,
+                'base_salary': employee.base_salary,
+                'bonus': employee.bonus,
+                'deduction': employee.deduction,
+                'notes': employee.notes
+            }for e in employees
+        ])
     else:
         return jsonify({'error': 'Không tìm thấy nhân viên'})
     
@@ -537,7 +568,7 @@ def get_notifications():
             if n.get('status', '').strip().lower() == 'sent' and
             n.get('recipients', '').strip().lower() in ['tất cả nhân viên', 'all']
         ]
-
+    session["atc"] = session.get("atc", "") + ", Xem thông báo "
     return render_template('notification.html', notifications=notifications)
 
  # Chấm công =============================================================
@@ -589,7 +620,7 @@ def attendance():
         }
         for att in employees_with_attendance
     ]
-
+    session["atc"] = session.get("atc", "") + ", Xem thông tin chấm công  "
     return render_template(
         'attendance.html',
         attendances=attendance_data,
@@ -789,7 +820,7 @@ def report_depart():
         if payroll_row:
             data["summary"]["total_bonus"] += float(payroll_row.total_bonus or 0)
             data["summary"]["total_deductions"] += float(payroll_row.total_deductions or 0)
-
+    session["atc"] = session.get("atc", "") + ", Xem báo cáo phòng ban"
     return render_template('report_depart.html', data=data)
 
 # Lịch Sử Lương 
@@ -879,7 +910,7 @@ def history_salary():
             }
             for row in results
         ]
-
+        session["atc"] = session.get("atc", "") + ", Xem lịch sử lương "
         return render_template(
             "history_salary.html",
             payroll_data=payroll_data,
@@ -939,7 +970,7 @@ def payroll_detail(payroll_id):
             "deductions": float(payroll.deductions or 0),
             "net_salary": float(payroll.net_salary or 0)
         }
-
+        session["atc"] = session.get("atc", "") + f", Xem chi tiết bảng lương ID {payroll_id}"
         return render_template("payroll_detail.html", payroll=payroll_data)
 
     except Exception as e:
@@ -981,6 +1012,8 @@ def employee_HR():
                 'deductions': float(payroll.Deductions) if payroll and payroll.Deductions else 0.0
             }
             employees_data.append(employee_data)
+        session["atc"] = session.get("atc", "") + f", Xem danh sách nhân viên "
+
         return render_template('employee_HR.html', employees=employees_data)
     except Exception as e:
         logger.error(f"Error in /employees GET: {str(e)}")
@@ -1134,6 +1167,8 @@ recruitments = load_recruitments()
 @app.route('/recruitments')
 @role_required('Admin', 'Hiring')
 def recruitment_HR():
+    session["atc"] = session.get("atc", "") + f", Xem danh sách tuyển dụng "
+
     return render_template('recruitment_HR.html')
 
 # API: Lấy danh sách tất cả vị trí tuyển dụng
@@ -1701,6 +1736,8 @@ def department_position():
     with app.app_context():
         departments = Department.query.all()
         jobs = Job.query.all()
+    session["atc"] = session.get("atc", "") + f", Xem Phòng ban và chức vụ "
+
     return render_template('depart_pos.html', departments=departments, jobs=jobs)
 
 # API: Thêm công việc
@@ -1787,463 +1824,72 @@ def employees_by_department(department_id):
         'email': emp.email
     } for emp in employees])
 
-
-"""
-@app.route('/employee_detail/<employee_id>')
-def employee_detail(employee_id):
-    try:
-        employee = HumanEmployee.query.filter_by(employee_id=employee_id).first()
-        if not employee:
-            flash("Employee not found", "error")
-            return redirect(url_for('employee_HR'))
-            
-        departments = HumanDepartment.query.all()
-        jobs = HumanJob.query.all()
+# Quyền #####################################################################
+@app.route('/groups')
+@role_required('Admin')
+def display_groups():
+    groups = Group.query.all()
+    group_permissions = []
+    
+    for group in groups:
+        permissions = Permission.query.filter_by(GroupID=group.GroupID, IsAllowed=True).join(
+            FunctionModule
+        ).join(
+            Function
+        ).join(
+            Module
+        ).all()
         
-        return render_template('employee_detail.html', 
-                            employee_id=employee_id,
-                            departments=departments,
-                            jobs=jobs)
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /employee_detail/{employee_id}: {str(e)}")
-        flash("Database schema error: Unable to load employee details.", "error")
-        return redirect(url_for('employee_HR'))
-    except Exception as e:
-        logger.error(f"Error in /employee_detail/{employee_id}: {str(e)}")
-        flash(f"Error loading employee details: {str(e)}", "error")
-        return redirect(url_for('employee_HR'))
-
-@app.route('/api/applicants', methods=['GET'])
-def get_applicants():
-    try:
-        applicants = Applicant.query.all()
-        applicants_data = [{
-            'applicant_id': app.applicant_id,
-            'first_name': app.first_name,
-            'last_name': app.last_name,
-            'full_name': f"{app.last_name} {app.first_name}",
-            'email': app.email,
-            'phone': app.phone_number,
-            'application_date': app.application_date.strftime('%Y-%m-%d') if app.application_date else None,
-            'status': app.status,
-            'job_id': app.job_id,
-            'job_title': app.job.job_title if app.job else None
-        } for app in applicants]
-        return jsonify(applicants_data)
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/applicants: {str(e)}")
-        return jsonify([]), 200
-    except Exception as e:
-        logger.error(f"Error in /api/applicants: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/applicants/<applicant_id>', methods=['GET', 'PUT'])
-def manage_applicant(applicant_id):
-    try:
-        applicant = Applicant.query.filter_by(applicant_id=applicant_id).first()
-        if not applicant:
-            return jsonify({"error": "Applicant not found"}), 404
-
-        if request.method == 'GET':
-            applicant_data = {
-                'applicant_id': applicant.applicant_id,
-                'first_name': applicant.first_name,
-                'last_name': applicant.last_name,
-                'full_name': f"{applicant.last_name} {applicant.first_name}",
-                'email': applicant.email,
-                'phone': applicant.phone_number,
-                'application_date': applicant.application_date.strftime('%Y-%m-%d') if applicant.application_date else None,
-                'status': applicant.status,
-                'job_id': applicant.job_id,
-                'job_title': applicant.job.job_title if applicant.job else None
-            }
-            return jsonify(applicant_data)
-
-        elif request.method == 'PUT':
-            data = request.get_json()
-            valid_statuses = ['Pending', 'Interviewing', 'Hired', 'Rejected']
-            if 'status' in data and data['status'] not in valid_statuses:
-                return jsonify({"error": f"Invalid status. Must be one of: {', '.join(valid_statuses)}"}), 400
-
-            if 'status' in data:
-                applicant.status = data['status']
-                if data['status'] == 'Hired':
-                    existing_employee = HumanEmployee.query.filter_by(applicant_id=applicant.applicant_id).first()
-                    if existing_employee:
-                        return jsonify({"error": "Employee already exists for this applicant"}), 409
-
-                    human_employee = HumanEmployee(
-                        applicant_id=applicant.applicant_id,
-                        department_id=data.get('department_id', 1),
-                        hire_date=datetime.now(),
-                        salary=data.get('base_salary', 0),
-                        status='Active'
-                    )
-                    db.session.add(human_employee)
-                    db.session.flush()
-
-                    payroll_employee = Employee(
-                        first_name=applicant.first_name,
-                        last_name=applicant.last_name,
-                        email=applicant.email,
-                        phone=applicant.phone_number,
-                        hire_date=datetime.now(),
-                        department_id=data.get('department_id', 1),
-                        job_id=applicant.job_id,
-                        salary=data.get('base_salary', 0),
-                        status='active'
-                    )
-                    db.session.add(payroll_employee)
-                    db.session.flush()
-
-                    human_payroll = HumanPayroll(
-                        employee_id=human_employee.employee_id,
-                        pay_date=datetime.now(),
-                        base_salary=data.get('base_salary', 0),
-                        bonus=data.get('bonus', 0),
-                        deductions=data.get('deductions', 0)
-                    )
-                    db.session.add(human_payroll)
-
-                    payroll_record = Payroll(
-                        employee_id=payroll_employee.employee_id,
-                        pay_date=datetime.now(),
-                        base_salary=data.get('base_salary', 0),
-                        bonus=data.get('bonus', 0),
-                        deductions=data.get('deductions', 0),
-                        net_salary=float(data.get('base_salary', 0)) + float(data.get('bonus', 0)) - float(data.get('deductions', 0))
-                    )
-                    db.session.add(payroll_record)
-
-            for field in ['first_name', 'last_name', 'email', 'phone_number', 'job_id']:
-                if field in data:
-                    setattr(applicant, field, data[field])
-
-            db.session.commit()
-            return jsonify({"success": True, "message": "Applicant updated successfully"})
-
-    except IntegrityError as e:
-        logger.error(f"Integrity error in /api/applicants/{applicant_id}: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Database integrity error: Possible duplicate or invalid foreign key."}), 400
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/applicants/{applicant_id}: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Unable to manage applicant due to database schema issue."}), 500
-    except Exception as e:
-        logger.error(f"Error in /api/applicants/{applicant_id}: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/attendance', methods=['POST'])
-def record_attendance():
-    try:
-        data = request.get_json()
-        required_fields = ['employee_id', 'date', 'status']
-        for field in required_fields:
-            if field not in data or not data[field]:
-                return jsonify({"error": f"Missing required field: {field}"}), 400
-
-        valid_statuses = ['present', 'absent', 'leave']
-        if data['status'] not in valid_statuses:
-            return jsonify({"error": f"Invalid status. Must be one of: {', '.join(valid_statuses)}"}), 400
-
-        employee = Employee.query.filter_by(employee_id=data['employee_id']).first()
-        if not employee:
-            return jsonify({"error": "Employee not found in Payroll database"}), 404
-
-        existing_attendance = Attendance.query.filter_by(
-            employee_id=data['employee_id'],
-            date=datetime.strptime(data['date'], '%Y-%m-%d')
-        ).first()
-        if existing_attendance:
-            return jsonify({"error": "Attendance record already exists for this date"}), 409
-
-        attendance = Attendance(
-            employee_id=data['employee_id'],
-            date=datetime.strptime(data['date'], '%Y-%m-%d'),
-            status=data['status']
-        )
-        db.session.add(attendance)
-        db.session.commit()
-
-        return jsonify({"success": True, "message": "Attendance recorded successfully"}), 201
-    except IntegrityError as e:
-        logger.error(f"Integrity error in /api/attendance POST: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Database integrity error: Possible invalid foreign key."}), 400
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/attendance POST: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Unable to record attendance due to database schema issue."}), 500
-    except Exception as e:
-        logger.error(f"Error in /api/attendance POST: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/attendance/<employee_id>', methods=['GET'])
-def get_attendance(employee_id):
-    try:
-        attendance_records = Attendance.query.filter_by(employee_id=employee_id).all()
-        attendance_data = [{
-            'attendance_id': record.attendance_id,
-            'employee_id': record.employee_id,
-            'date': record.date.strftime('%Y-%m-%d') if record.date else None,
-            'status': record.status
-        } for record in attendance_records]
-        return jsonify(attendance_data)
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/attendance/{employee_id}: {str(e)}")
-        return jsonify([]), 200
-    except Exception as e:
-        logger.error(f"Error in /api/attendance/{employee_id}: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/employees_by_job/<job_id>')
-def employees_by_job(job_id):
-    try:
-        employees = HumanEmployee.query.join(Applicant).filter(Applicant.job_id == job_id).all()
-        if not employees:
-            return jsonify([]), 200
-            
-        employees_data = [{
-            'employee_id': emp.employee_id,
-            'first_name': emp.applicant.first_name if emp.applicant else None,
-            'last_name': emp.applicant.last_name if emp.applicant else None,
-            'full_name': f"{emp.applicant.last_name} {emp.applicant.first_name}" if emp.applicant else None,
-            'email': emp.applicant.email if emp.applicant else None,
-            'phone': emp.applicant.phone_number if emp.applicant else None,
-            'hire_date': emp.hire_date.strftime('%Y-%m-%d') if emp.hire_date else None,
-            'department_id': emp.department_id,
-            'department_name': emp.department.department_name if emp.department else None,
-            'job_id': emp.applicant.job_id if emp.applicant else None,
-            'job_title': emp.applicant.job.job_title if emp.applicant and emp.applicant.job else None,
-            'base_salary': float(emp.salary) if emp.salary else 0.0,
-            'status': emp.status
-        } for emp in employees]
-        return jsonify(employees_data), 200
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/employees_by_job/{job_id}: {str(e)}")
-        return jsonify([]), 200
-    except Exception as e:
-        logger.error(f"Error in /api/employees_by_job/{job_id}: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/employees_by_department/<department_id>')
-def employees_by_department(department_id):
-    try:
-        employees = HumanEmployee.query.filter_by(department_id=department_id).all()
-        if not employees:
-            return jsonify([]), 200
-            
-        employees_data = [{
-            'employee_id': emp.employee_id,
-            'first_name': emp.applicant.first_name if emp.applicant else None,
-            'last_name': emp.applicant.last_name if emp.applicant else None,
-            'full_name': f"{emp.applicant.last_name} {emp.applicant.first_name}" if emp.applicant else None,
-            'email': emp.applicant.email if emp.applicant else None,
-            'phone': emp.applicant.phone_number if emp.applicant else None,
-            'hire_date': emp.hire_date.strftime('%Y-%m-%d') if emp.hire_date else None,
-            'department_id': emp.department_id,
-            'department_name': emp.department.department_name if emp.department else None,
-            'job_id': emp.applicant.job_id if emp.applicant else None,
-            'job_title': emp.applicant.job.job_title if emp.applicant and emp.applicant.job else None,
-            'base_salary': float(emp.salary) if emp.salary else 0.0,
-            'status': emp.status
-        } for emp in employees]
-        return jsonify(employees_data), 200
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/employees_by_department/{department_id}: {str(e)}")
-        return jsonify([]), 200
-    except Exception as e:
-        logger.error(f"Error in /api/employees_by_department/{department_id}: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/jobs', methods=['POST'])
-def add_job():
-    try:
-        data = request.json or request.form.to_dict()
+        functions_by_module = {}
+        for perm in permissions:
+            module_name = perm.FunctionModule.Module.ModuleName
+            function_name = perm.FunctionModule.Function.FunctionName
+            if module_name not in functions_by_module:
+                functions_by_module[module_name] = []
+            functions_by_module[module_name].append(function_name)
         
-        if 'job_title' not in data or not data['job_title']:
-            return jsonify({"error": "Job title is required"}), 400
-            
-        existing_job = HumanJob.query.filter(func.lower(HumanJob.job_title) == func.lower(data['job_title'])).first()
-        if existing_job:
-            return jsonify({"error": "A job with this title already exists"}), 409
-            
-        new_job = HumanJob(
-            job_title=data['job_title'],
-            min_salary=data.get('min_salary'),
-            max_salary=data.get('max_salary')
-        )
-        db.session.add(new_job)
-        db.session.commit()
+        app.logger.debug(f"Group: {group.GroupName}, Functions by Module: {functions_by_module}")
         
-        return jsonify({
-            'success': True,
-            'message': 'Job position added successfully',
-            'data': {
-                'job_id': new_job.job_id,
-                'job_title': new_job.job_title,
-                'min_salary': float(new_job.min_salary) if new_job.min_salary else None,
-                'max_salary': float(new_job.max_salary) if new_job.max_salary else None
-            }
-        }), 201
-    except IntegrityError as e:
-        logger.error(f"Integrity error in /api/jobs POST: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Database integrity error: Possible duplicate or invalid data."}), 400
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/jobs POST: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Unable to add job due to database schema issue."}), 500
-    except Exception as e:
-        logger.error(f"Error in /api/jobs POST: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/jobs/<job_id>', methods=['PUT'])
-def update_job(job_id):
-    try:
-        data = request.json or request.form.to_dict()
-        job = HumanJob.query.filter_by(job_id=job_id).first()
-        
-        if not job:
-            return jsonify({"error": "Job position not found"}), 404
-            
-        if 'job_title' in data and data['job_title']:
-            existing_job = HumanJob.query.filter(
-                func.lower(HumanJob.job_title) == func.lower(data['job_title']),
-                HumanJob.job_id != job_id
-            ).first()
-            
-            if existing_job:
-                return jsonify({"error": "Another job with this title already exists"}), 409
-                
-            job.job_title = data['job_title']
-            
-        if 'min_salary' in data:
-            job.min_salary = data['min_salary']
-        if 'max_salary' in data:
-            job.max_salary = data['max_salary']
-            
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'message': 'Job position updated successfully',
-            'data': {
-                'job_id': job.job_id,
-                'job_title': job.job_title,
-                'min_salary': float(job.min_salary) if job.min_salary else None,
-                'max_salary': float(job.max_salary) if job.max_salary else None
-            }
+        group_permissions.append({
+            'group': group,
+            'functions_by_module': functions_by_module
         })
-    except IntegrityError as e:
-        logger.error(f"Integrity error in /api/jobs/{job_id} PUT: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Database integrity error: Possible duplicate or invalid data."}), 400
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/jobs/{job_id} PUT: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Unable to update job due to database schema issue."}), 500
-    except Exception as e:
-        logger.error(f"Error in /api/jobs/{job_id} PUT: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+    
+    app.logger.debug(f"Group Permissions: {group_permissions}")
+    
+    return render_template('groups.html', group_permissions=group_permissions)
 
-@app.route('/api/delete_department/<department_id>', methods=['DELETE'])
-def delete_department(department_id):
-    try:
-        department = HumanDepartment.query.filter_by(department_id=department_id).first()
-        if department:
-            employees = HumanEmployee.query.filter_by(department_id=department_id).first()
-            if employees:
-                return jsonify({"error": "Cannot delete department with assigned employees"}), 400
-            db.session.delete(department)
-            db.session.commit()
-            return jsonify({"success": True, "message": "Department deleted successfully"}), 200
-        return jsonify({"error": "Department not found"}), 404
-    except IntegrityError as e:
-        logger.error(f"Integrity error in /api/delete_department/{department_id}: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Database integrity error: Cannot delete due to related records."}), 400
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/delete_department/{department_id}: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": "Unable to delete department due to database schema issue."}), 500
-    except Exception as e:
-        logger.error(f"Error in /api/delete_department/{department_id}: {str(e)}")
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/recruitments', methods=['GET'])
-def get_all_recruitments():
-    try:
-        jobs = HumanJob.query.all()
-        recruitments_data = []
-        for job in jobs:
-            applicants = Applicant.query.filter_by(job_id=job.job_id).all()
-            applicant_list = [{
-                'applicant_id': app.applicant_id,
-                'first_name': app.first_name,
-                'last_name': app.last_name,
-                'email': app.email,
-                'status': app.status
-            } for app in applicants]
-            
-            recruitments_data.append({
-                'id': job.job_id,
-                'title': job.job_title,
-                'department': HumanDepartment.query.first().department_name if HumanDepartment.query.first() else 'N/A',
-                'posted_date': datetime.now().strftime('%Y/%m/%d'),
-                'status': 'Open' if applicants else 'Closed',
-                'description': f"Recruitment for {job.job_title}",
-                'requirements': f"Salary range: {job.min_salary} - {job.max_salary}",
-                'applicants': applicant_list
-            })
-        return jsonify(recruitments_data)
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/recruitments: {str(e)}")
-        return jsonify([]), 200
-    except Exception as e:
-        logger.error(f"Error in /api/recruitments: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/recruitments/<int:recruitment_id>', methods=['GET'])
-def get_recruitment(recruitment_id):
-    try:
-        job = HumanJob.query.filter_by(job_id=recruitment_id).first()
-        if job:
-            applicants = Applicant.query.filter_by(job_id=job.job_id).all()
-            applicant_list = [{
-                'applicant_id': app.applicant_id,
-                'first_name': app.first_name,
-                'last_name': app.last_name,
-                'email': app.email,
-                'status': app.status
-            } for app in applicants]
-            
-            recruitment_data = {
-                'id': job.job_id,
-                'title': job.job_title,
-                'department': HumanDepartment.query.first().department_name if HumanDepartment.query.first() else 'N/A',
-                'posted_date': datetime.now().strftime('%Y/%m/%d'),
-                'status': 'Open' if applicants else 'Closed',
-                'description': f"Recruitment for {job.job_title}",
-                'requirements': f"Salary range: {job.min_salary} - {job.max_salary}",
-                'applicants': applicant_list
-            }
-            return jsonify(recruitment_data)
-        return jsonify({"error": "Recruitment not found"}), 404
-    except NoReferencedColumnError as e:
-        logger.error(f"Schema error in /api/recruitments/{recruitment_id}: {str(e)}")
-        return jsonify({"error": "Unable to load recruitment data due to database schema issue."}), 404
-    except Exception as e:
-        logger.error(f"Error in /api/recruitments/{recruitment_id}: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-  """  
+@app.route('/update_permissions/<int:group_id>', methods=['GET', 'POST'])
+@role_required('Admin')
+def update_permissions(group_id):
+    group = Group.query.get_or_404(group_id)
+    
+    if request.method == 'POST':
+        # Lấy danh sách FunctionModuleID được chọn từ form
+        selected_function_modules = request.form.getlist('function_modules')
+        selected_function_modules = [int(fm_id) for fm_id in selected_function_modules]
+        
+        # Xóa tất cả quyền hiện tại của group
+        Permission.query.filter_by(GroupID=group_id).delete()
+        
+        # Thêm quyền mới
+        for fm_id in selected_function_modules:
+            permission = Permission(
+                GroupID=group_id,
+                FunctionModuleID=fm_id,
+                IsAllowed=True
+            )
+            db.session.add(permission)
+        
+        db.session.commit()
+        return redirect(url_for('display_groups'))
+    
+    # Lấy tất cả FunctionModule và quyền hiện tại của group
+    function_modules = FunctionModule.query.join(Function).join(Module).all()
+    current_permissions = Permission.query.filter_by(GroupID=group_id, IsAllowed=True).all()
+    current_fm_ids = {perm.FunctionModuleID for perm in current_permissions}
+    
+    return render_template('update_permissions.html', group=group, function_modules=function_modules, current_fm_ids=current_fm_ids)
   
 # lich Su Hoat Dong ##########################################################################
    
@@ -2251,7 +1897,7 @@ def get_recruitment(recruitment_id):
 JSON_FILE = "data/activity_history.json"
 
 # Hàm đọc dữ liệu từ file JSON
-def activity_history():
+def r_activity_history():
     try:
         if os.path.exists(JSON_FILE):
             with open(JSON_FILE, 'r', encoding='utf-8') as f:
@@ -2270,7 +1916,7 @@ def save_activity_history(recruitments):
         print(f"Error writing to {JSON_FILE}: {e}")
 
 # Đọc dữ liệu ban đầu
-activity_history = activity_history()
+#activity_history = activity_history()
 
 
 if __name__ == '__main__':

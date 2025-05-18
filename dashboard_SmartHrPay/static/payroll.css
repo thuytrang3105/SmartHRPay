@@ -12,12 +12,6 @@ body {
 }
 
 /* Main Content */
-.main-content {
-  flex: 1;
-  padding: 30px;
-  margin-left: 250px;
-  transition: margin-left 0.3s ease;
-}
 
 .header {
   display: flex;
